@@ -45,10 +45,10 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
-      - uses: github/codeql-action/init@01ae7e994a8073d655aa825064a5b66c33afc2b3  # v3.36.2
+      - uses: github/codeql-action/init@v3
         with:
           languages: python
-      - uses: github/codeql-action/analyze@01ae7e994a8073d655aa825064a5b66c33afc2b3  # v3.36.2
+      - uses: github/codeql-action/analyze@v3
 
   security-sca:
     runs-on: ubuntu-latest
