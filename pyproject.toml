@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest", "pytest-cov"]
+dev = ["pytest>=9", "pytest-cov>=7", "pytest-xdist>=3.6"]
 lint = ["ruff", "mypy", "deptry"]
 
 [tool.ruff]
@@ -46,4 +46,6 @@ python_version = "3.12"
 strict = true
 
 [tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "--cov=src", "--cov-branch"]
 testpaths = ["tests"]
+filterwarnings = ["error"]
