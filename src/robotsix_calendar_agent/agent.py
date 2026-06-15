@@ -158,107 +158,14 @@ class CalendarAgent:
 
         logger.debug("Dispatching operation=%r params=%r", op, params)
 
-        # -- Calendar operations --
-        if op == "list_events":
-            return [
-                _event_to_dict(e)
-                for e in self._caldav.list_events(
-                    start=params.get("start", ""),
-                    end=params.get("end", ""),
-                    calendar_id=params.get("calendar_id", ""),
-                )
-            ]
-
-        if op == "create_event":
-            event = CalendarEvent(
-                summary=params.get("summary", ""),
-                description=params.get("description", ""),
-                location=params.get("location", ""),
-                dtstart=params.get("dtstart", ""),
-                dtend=params.get("dtend", ""),
-                calendar_id=params.get("calendar_id", ""),
-            )
-            return _event_to_dict(
-                self._caldav.create_event(
-                    event, calendar_id=params.get("calendar_id", "")
-                )
+        handler = _DISPATCH.get(op)
+        if handler is None:
+            raise OperationError(
+                code="unknown_operation",
+                message=f"Unknown operation: {op}",
             )
 
-        if op == "update_event":
-            event = CalendarEvent(
-                summary=params.get("summary", ""),
-                description=params.get("description", ""),
-                location=params.get("location", ""),
-                dtstart=params.get("dtstart", ""),
-                dtend=params.get("dtend", ""),
-                calendar_id=params.get("calendar_id", ""),
-            )
-            return _event_to_dict(
-                self._caldav.update_event(
-                    uid=params.get("uid", ""),
-                    event=event,
-                    calendar_id=params.get("calendar_id", ""),
-                )
-            )
-
-        if op == "delete_event":
-            self._caldav.delete_event(
-                uid=params.get("uid", ""),
-                calendar_id=params.get("calendar_id", ""),
-            )
-            return {"deleted": True}
-
-        # -- Contacts operations --
-        if op == "list_contacts":
-            return [
-                _contact_to_dict(c)
-                for c in self._caldav.list_contacts(
-                    addressbook_id=params.get("addressbook_id", ""),
-                )
-            ]
-
-        if op == "create_contact":
-            contact = Contact(
-                full_name=params.get("full_name", ""),
-                email=params.get("email", ""),
-                phone=params.get("phone", ""),
-                address=params.get("address", ""),
-                addressbook_id=params.get("addressbook_id", ""),
-            )
-            return _contact_to_dict(
-                self._caldav.create_contact(
-                    contact,
-                    addressbook_id=params.get("addressbook_id", ""),
-                )
-            )
-
-        if op == "update_contact":
-            contact = Contact(
-                full_name=params.get("full_name", ""),
-                email=params.get("email", ""),
-                phone=params.get("phone", ""),
-                address=params.get("address", ""),
-                addressbook_id=params.get("addressbook_id", ""),
-            )
-            return _contact_to_dict(
-                self._caldav.update_contact(
-                    uid=params.get("uid", ""),
-                    contact=contact,
-                    addressbook_id=params.get("addressbook_id", ""),
-                )
-            )
-
-        if op == "delete_contact":
-            self._caldav.delete_contact(
-                uid=params.get("uid", ""),
-                addressbook_id=params.get("addressbook_id", ""),
-            )
-            return {"deleted": True}
-
-        raise OperationError(
-            code="unknown_operation",
-            message=f"Unknown operation: {op}",
-        )
+        return handler(self._caldav, params)
 
     # ------------------------------------------------------------------
     # lifecycle
@@ -287,8 +194,31 @@ class CalendarAgent:
 
 
 # ---------------------------------------------------------------------------
-# serialization helpers
+# dispatch infrastructure
 # ---------------------------------------------------------------------------
+
+
+def _build_event(params: dict[str, Any]) -> CalendarEvent:
+    """Build a :class:`CalendarEvent` from parsed intent *params*."""
+    return CalendarEvent(
+        summary=params.get("summary", ""),
+        description=params.get("description", ""),
+        location=params.get("location", ""),
+        dtstart=params.get("dtstart", ""),
+        dtend=params.get("dtend", ""),
+        calendar_id=params.get("calendar_id", ""),
+    )
+
+
+def _build_contact(params: dict[str, Any]) -> Contact:
+    """Build a :class:`Contact` from parsed intent *params*."""
+    return Contact(
+        full_name=params.get("full_name", ""),
+        email=params.get("email", ""),
+        phone=params.get("phone", ""),
+        address=params.get("address", ""),
+        addressbook_id=params.get("addressbook_id", ""),
+    )
 
 
 def _event_to_dict(event: CalendarEvent) -> dict[str, Any]:
@@ -312,3 +242,101 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
         "address": contact.address,
         "addressbook_id": contact.addressbook_id,
     }
+
+
+def _handle_list_events(
+    client: CalDavClient, params: dict[str, Any]
+) -> list[dict[str, Any]]:
+    return [
+        _event_to_dict(e)
+        for e in client.list_events(
+            start=params.get("start", ""),
+            end=params.get("end", ""),
+            calendar_id=params.get("calendar_id", ""),
+        )
+    ]
+
+
+def _handle_create_event(
+    client: CalDavClient, params: dict[str, Any]
+) -> dict[str, Any]:
+    event = _build_event(params)
+    return _event_to_dict(
+        client.create_event(event, calendar_id=params.get("calendar_id", ""))
+    )
+
+
+def _handle_update_event(
+    client: CalDavClient, params: dict[str, Any]
+) -> dict[str, Any]:
+    event = _build_event(params)
+    return _event_to_dict(
+        client.update_event(
+            uid=params.get("uid", ""),
+            event=event,
+            calendar_id=params.get("calendar_id", ""),
+        )
+    )
+
+
+def _handle_delete_event(
+    client: CalDavClient, params: dict[str, Any]
+) -> dict[str, bool]:
+    client.delete_event(
+        uid=params.get("uid", ""),
+        calendar_id=params.get("calendar_id", ""),
+    )
+    return {"deleted": True}
+
+
+def _handle_list_contacts(
+    client: CalDavClient, params: dict[str, Any]
+) -> list[dict[str, Any]]:
+    return [
+        _contact_to_dict(c)
+        for c in client.list_contacts(addressbook_id=params.get("addressbook_id", ""))
+    ]
+
+
+def _handle_create_contact(
+    client: CalDavClient, params: dict[str, Any]
+) -> dict[str, Any]:
+    contact = _build_contact(params)
+    return _contact_to_dict(
+        client.create_contact(contact, addressbook_id=params.get("addressbook_id", ""))
+    )
+
+
+def _handle_update_contact(
+    client: CalDavClient, params: dict[str, Any]
+) -> dict[str, Any]:
+    contact = _build_contact(params)
+    return _contact_to_dict(
+        client.update_contact(
+            uid=params.get("uid", ""),
+            contact=contact,
+            addressbook_id=params.get("addressbook_id", ""),
+        )
+    )
+
+
+def _handle_delete_contact(
+    client: CalDavClient, params: dict[str, Any]
+) -> dict[str, bool]:
+    client.delete_contact(
+        uid=params.get("uid", ""),
+        addressbook_id=params.get("addressbook_id", ""),
+    )
+    return {"deleted": True}
+
+
+_DISPATCH = {
+    "list_events": _handle_list_events,
+    "create_event": _handle_create_event,
+    "update_event": _handle_update_event,
+    "delete_event": _handle_delete_event,
+    "list_contacts": _handle_list_contacts,
+    "create_contact": _handle_create_contact,
+    "update_contact": _handle_update_contact,
+    "delete_contact": _handle_delete_contact,
+}
