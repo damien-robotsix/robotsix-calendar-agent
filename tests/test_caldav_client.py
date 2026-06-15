@@ -230,12 +230,13 @@ class TestDeleteContact:
 
         mock_contact.delete.assert_called_once()
 
-    def test_raises_not_found_for_unknown_uid(self, client: CalDavClient) -> None:
+    def test_returns_none_for_unknown_uid(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
         ab.search.return_value = []
 
-        with pytest.raises(OperationError, match="not found"):
-            client.delete_contact("unknown")
+        result = client.delete_contact("unknown")
+
+        assert result is None
 
 
 # ---------------------------------------------------------------------------
