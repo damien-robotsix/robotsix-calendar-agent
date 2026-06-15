@@ -6,11 +6,14 @@ with one of 8 operation types and extracted parameters.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 
 class CalendarOperation(StrEnum):
@@ -96,14 +99,20 @@ class IntentParser:
                     f"Unexpected output type from llmio: {type(output)}"
                 )
 
-            return ParsedIntent(
+            result = ParsedIntent(
                 operation=output.operation,  # type: ignore[arg-type]
                 params=output.params or {},
                 original_text=text,
             )
-        except IntentParseError:
+            logger.info("Parsed intent: operation=%r text=%r", result.operation, text)
+            return result
+        except IntentParseError as exc:
+            logger.error("Intent parse error for '%s': %s", text, exc)
             raise
         except Exception as exc:
+            logger.error(
+                "Unexpected error during intent parsing for '%s': %s", text, exc
+            )
             raise IntentParseError(f"Intent parsing failed: {exc}") from exc
 
 
