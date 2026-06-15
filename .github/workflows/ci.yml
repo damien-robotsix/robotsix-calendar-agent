@@ -8,6 +8,13 @@ permissions:
   contents: read
 
 jobs:
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --with 'detect-secrets>=1.5' detect-secrets scan --baseline .secrets.baseline .
+
   ci:
     strategy:
       fail-fast: false
