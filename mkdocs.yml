@@ -1,0 +1,17 @@
+site_name: robotsix-calendar-agent
+site_description: Agent-comm calendar and contacts agent for Radicale
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+nav:
+  - Home: index.md
+  - API Reference: api/
+  - Tutorials: tutorials/index.md
