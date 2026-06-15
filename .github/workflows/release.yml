@@ -1,0 +1,13 @@
+name: Release
+
+on:
+  push:
+    tags: ["*"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-release.yml@main
