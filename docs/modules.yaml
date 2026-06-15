@@ -1,0 +1,22 @@
+modules:
+  - name: init
+    path: src/robotsix_calendar_agent/__init__.py
+    depends_on:
+      - agent
+      - caldav_client
+      - intent_parser
+
+  - name: agent
+    path: src/robotsix_calendar_agent/agent.py
+    depends_on:
+      - caldav_client
+      - intent_parser
+
+  - name: caldav_client
+    path: src/robotsix_calendar_agent/caldav_client.py
+    depends_on: []
+
+  - name: intent_parser
+    path: src/robotsix_calendar_agent/intent_parser.py
+    depends_on:
+      - robotsix-llmio
