@@ -264,3 +264,262 @@ class TestTransportFailure:
         with pytest.raises(OperationError) as exc_info:
             client.list_events("2026-01-01", "2026-01-31")
         assert exc_info.value.code == "caldav_error"
+
+
+class TestConnectFailure:
+    def test_raises_caldav_error_on_generic_connect_exception(self) -> None:
+        _mock_caldav.DAVClient.side_effect = Exception("connection refused")
+
+        with pytest.raises(OperationError) as exc_info:
+            CalDavClient("https://x.com", "user", "pass")
+        assert exc_info.value.code == "caldav_error"
+
+
+# ---------------------------------------------------------------------------
+# Calendar / addressbook resolution
+# ---------------------------------------------------------------------------
+
+
+class TestGetCalendar:
+    def test_no_calendars_raises_not_found(self, client: CalDavClient) -> None:
+        client._principal.calendars.return_value = []
+
+        with pytest.raises(OperationError) as exc_info:
+            client._get_calendar()
+        assert exc_info.value.code == "not_found"
+
+    def test_named_calendar_returned(self, client: CalDavClient) -> None:
+        cal_a = MagicMock()
+        cal_a.name = "work"
+        cal_b = MagicMock()
+        cal_b.name = "home"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        assert client._get_calendar("home") is cal_b
+
+    def test_named_calendar_not_found_raises(self, client: CalDavClient) -> None:
+        cal_a = MagicMock()
+        cal_a.name = "work"
+        client._principal.calendars.return_value = [cal_a]
+
+        with pytest.raises(OperationError) as exc_info:
+            client._get_calendar("missing")
+        assert exc_info.value.code == "not_found"
+
+
+class TestGetAddressbook:
+    def test_no_addressbooks_raises_not_found(self, client: CalDavClient) -> None:
+        client._principal.addressbooks.return_value = []
+
+        with pytest.raises(OperationError) as exc_info:
+            client._get_addressbook()
+        assert exc_info.value.code == "not_found"
+
+    def test_named_addressbook_returned(self, client: CalDavClient) -> None:
+        ab_a = MagicMock()
+        ab_a.name = "personal"
+        ab_b = MagicMock()
+        ab_b.name = "team"
+        client._principal.addressbooks.return_value = [ab_a, ab_b]
+
+        assert client._get_addressbook("team") is ab_b
+
+    def test_named_addressbook_not_found_raises(self, client: CalDavClient) -> None:
+        ab_a = MagicMock()
+        ab_a.name = "personal"
+        client._principal.addressbooks.return_value = [ab_a]
+
+        with pytest.raises(OperationError) as exc_info:
+            client._get_addressbook("missing")
+        assert exc_info.value.code == "not_found"
+
+
+# ---------------------------------------------------------------------------
+# Conversion / serialization helpers
+# ---------------------------------------------------------------------------
+
+
+class TestIsoDateRange:
+    def test_unparseable_returned_as_string(self) -> None:
+        start, end = CalDavClient._iso_date_range("not-a-date", "also-bad")
+        assert start == "not-a-date"
+        assert end == "also-bad"
+
+    def test_date_only_format(self) -> None:
+        import datetime
+
+        start, _ = CalDavClient._iso_date_range("2026-06-15", "2026-06-16")
+        assert isinstance(start, datetime.datetime)
+
+
+class TestToCalendarEvent:
+    def test_formats_datetime_and_date_values(self) -> None:
+        import datetime
+
+        obj = MagicMock()
+        ve = obj.vobject_instance.vevent
+        ve.uid.value = "evt-x"
+        ve.summary.value = "Sum"
+        ve.description.value = "Desc"
+        ve.location.value = "Loc"
+        ve.dtstart.value = datetime.datetime(2026, 6, 15, 9, 0, 0)
+        ve.dtend.value = datetime.date(2026, 6, 15)
+
+        event = CalDavClient._to_calendar_event(obj, calendar_id="cal")
+
+        assert event.dtstart == "2026-06-15T09:00:00"
+        assert event.dtend == "2026-06-15"
+        assert event.calendar_id == "cal"
+
+
+class TestToContact:
+    def test_missing_optional_fields_yield_empty(self) -> None:
+        vcard = MagicMock(spec=["uid", "fn"])
+        vcard.uid = MagicMock()
+        vcard.uid.value = "cnt-9"
+        vcard.fn = MagicMock()
+        vcard.fn.value = "Only Name"
+        obj = MagicMock()
+        obj.vobject_instance = vcard
+
+        contact = CalDavClient._to_contact(obj, addressbook_id="ab")
+
+        assert contact.uid == "cnt-9"
+        assert contact.full_name == "Only Name"
+        assert contact.email == ""
+        assert contact.phone == ""
+        assert contact.address == ""
+
+    def test_empty_optional_values_yield_empty(self) -> None:
+        vcard = MagicMock()
+        vcard.uid.value = "cnt-10"
+        vcard.fn.value = "Name"
+        vcard.email.value = ""
+        vcard.tel.value = ""
+        vcard.adr.value = ""
+        obj = MagicMock()
+        obj.vobject_instance = vcard
+
+        contact = CalDavClient._to_contact(obj)
+
+        assert contact.email == ""
+        assert contact.phone == ""
+        assert contact.address == ""
+
+    def test_no_uid_or_fn_yield_empty(self) -> None:
+        vcard = MagicMock(spec=[])
+        obj = MagicMock()
+        obj.vobject_instance = vcard
+
+        contact = CalDavClient._to_contact(obj)
+
+        assert contact.uid == ""
+        assert contact.full_name == ""
+
+
+class TestVcardSerialization:
+    def test_includes_optional_fields(self, client: CalDavClient) -> None:
+        contact = Contact(
+            full_name="Jane",
+            email="jane@example.com",
+            phone="555-1234",
+            address="123 Main St",
+        )
+        vcard = client._contact_to_vcard(contact)
+        assert "EMAIL:jane@example.com" in vcard
+        assert "TEL:555-1234" in vcard
+        assert "ADR:;;123 Main St;;;" in vcard
+
+
+# ---------------------------------------------------------------------------
+# Error propagation for each operation
+# ---------------------------------------------------------------------------
+
+
+class TestOperationErrorPropagation:
+    def test_list_events_reraises_operation_error(self, client: CalDavClient) -> None:
+        client._principal.calendars.return_value = []
+        with pytest.raises(OperationError) as exc_info:
+            client.list_events("2026-01-01", "2026-01-31")
+        assert exc_info.value.code == "not_found"
+
+    def test_create_event_wraps_exception(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
+        assert exc_info.value.code == "caldav_error"
+
+    def test_create_event_reraises_operation_error(self, client: CalDavClient) -> None:
+        client._principal.calendars.return_value = []
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
+        assert exc_info.value.code == "not_found"
+
+    def test_create_contact_reraises_operation_error(
+        self, client: CalDavClient
+    ) -> None:
+        client._principal.addressbooks.return_value = []
+        with pytest.raises(OperationError) as exc_info:
+            client.create_contact(Contact(full_name="X"))
+        assert exc_info.value.code == "not_found"
+
+    def test_create_event_keeps_existing_uid(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.return_value = _mock_vevent(uid="kept")
+        result = client.create_event(_make_event(uid="kept"))
+        assert result.uid == "kept"
+
+    def test_update_event_wraps_exception(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.event.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.update_event("evt-1", _make_event())
+        assert exc_info.value.code == "caldav_error"
+
+    def test_delete_event_wraps_exception(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.event.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.delete_event("evt-1")
+        assert exc_info.value.code == "caldav_error"
+
+    def test_list_contacts_wraps_exception(self, client: CalDavClient) -> None:
+        ab = client._principal.addressbooks.return_value[0]
+        ab.search.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.list_contacts()
+        assert exc_info.value.code == "caldav_error"
+
+    def test_list_contacts_reraises_operation_error(self, client: CalDavClient) -> None:
+        client._principal.addressbooks.return_value = []
+        with pytest.raises(OperationError) as exc_info:
+            client.list_contacts()
+        assert exc_info.value.code == "not_found"
+
+    def test_create_contact_wraps_exception(self, client: CalDavClient) -> None:
+        ab = client._principal.addressbooks.return_value[0]
+        ab.save_object.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.create_contact(Contact(full_name="X"))
+        assert exc_info.value.code == "caldav_error"
+
+    def test_create_contact_keeps_existing_uid(self, client: CalDavClient) -> None:
+        ab = client._principal.addressbooks.return_value[0]
+        ab.save_object.return_value = _mock_vcard(uid="kept")
+        result = client.create_contact(Contact(uid="kept", full_name="X"))
+        assert result.uid == "kept"
+
+    def test_update_contact_wraps_exception(self, client: CalDavClient) -> None:
+        ab = client._principal.addressbooks.return_value[0]
+        ab.search.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.update_contact("cnt-1", Contact(full_name="X"))
+        assert exc_info.value.code == "caldav_error"
+
+    def test_delete_contact_wraps_exception(self, client: CalDavClient) -> None:
+        ab = client._principal.addressbooks.return_value[0]
+        ab.search.side_effect = Exception("boom")
+        with pytest.raises(OperationError) as exc_info:
+            client.delete_contact("cnt-1")
+        assert exc_info.value.code == "caldav_error"

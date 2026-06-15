@@ -219,3 +219,197 @@ class TestHandleRequest:
             _mock_agent_comm_sdk.Agent.assert_called_with(
                 "calendar", _mock_agent_comm_transport.Registry.return_value
             )
+
+    def test_unexpected_exception_returns_internal_error(
+        self, calendar_agent: MagicMock
+    ) -> None:
+        mock_parser = calendar_agent._mock_parser
+        mock_parser.parse.return_value = MagicMock(
+            operation="delete_event",
+            params={"uid": "evt-1"},
+        )
+
+        mock_caldav = calendar_agent._mock_caldav
+        mock_caldav.delete_event.side_effect = RuntimeError("boom")
+
+        req = _make_request({"instruction": "delete event evt-1"})
+        calendar_agent._handle_request(req)
+
+        call_args = _mock_agent_comm_protocol.Error.to.call_args
+        _, kwargs = call_args
+        assert kwargs.get("code") == "internal_error"
+
+    def test_empty_body_returns_missing_instruction(
+        self, calendar_agent: MagicMock
+    ) -> None:
+        req = MagicMock()
+        req.body = None
+        calendar_agent._handle_request(req)
+
+        call_args = _mock_agent_comm_protocol.Error.to.call_args
+        _, kwargs = call_args
+        assert kwargs.get("code") == "missing_instruction"
+
+
+# ---------------------------------------------------------------------------
+# Dispatch — exercise every operation branch
+# ---------------------------------------------------------------------------
+
+
+def _caldav_event(uid: str = "evt-1") -> MagicMock:
+    return MagicMock(
+        uid=uid,
+        summary="S",
+        description="D",
+        location="L",
+        dtstart="2026-01-02",
+        dtend="2026-01-02",
+        calendar_id="cal",
+    )
+
+
+def _caldav_contact(uid: str = "cnt-1") -> MagicMock:
+    return MagicMock(
+        uid=uid,
+        full_name="John Doe",
+        email="j@example.com",
+        phone="123",
+        address="addr",
+        addressbook_id="ab",
+    )
+
+
+class TestDispatch:
+    def test_create_event(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="create_event",
+            params={
+                "summary": "Lunch",
+                "dtstart": "2026-01-02T12:00:00",
+                "dtend": "2026-01-02T13:00:00",
+            },
+        )
+        calendar_agent._mock_caldav.create_event.return_value = _caldav_event("new")
+
+        calendar_agent._handle_request(_make_request({"instruction": "add lunch"}))
+
+        calendar_agent._mock_caldav.create_event.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"]["uid"] == "new"
+
+    def test_update_event(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="update_event",
+            params={"uid": "evt-1", "summary": "Updated"},
+        )
+        calendar_agent._mock_caldav.update_event.return_value = _caldav_event("evt-1")
+
+        calendar_agent._handle_request(_make_request({"instruction": "update"}))
+
+        calendar_agent._mock_caldav.update_event.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"]["uid"] == "evt-1"
+
+    def test_delete_event_returns_deleted_flag(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="delete_event",
+            params={"uid": "evt-1"},
+        )
+
+        calendar_agent._handle_request(_make_request({"instruction": "delete"}))
+
+        calendar_agent._mock_caldav.delete_event.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"] == {"deleted": True}
+
+    def test_list_contacts(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="list_contacts",
+            params={},
+        )
+        calendar_agent._mock_caldav.list_contacts.return_value = [_caldav_contact()]
+
+        calendar_agent._handle_request(_make_request({"instruction": "list contacts"}))
+
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        result = kwargs["body"]["result"]
+        assert result[0]["uid"] == "cnt-1"
+        assert result[0]["full_name"] == "John Doe"
+
+    def test_create_contact(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="create_contact",
+            params={"full_name": "Jane", "email": "jane@example.com"},
+        )
+        calendar_agent._mock_caldav.create_contact.return_value = _caldav_contact("new")
+
+        calendar_agent._handle_request(_make_request({"instruction": "add jane"}))
+
+        calendar_agent._mock_caldav.create_contact.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"]["uid"] == "new"
+
+    def test_update_contact(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="update_contact",
+            params={"uid": "cnt-1", "email": "new@example.com"},
+        )
+        calendar_agent._mock_caldav.update_contact.return_value = _caldav_contact(
+            "cnt-1"
+        )
+
+        calendar_agent._handle_request(_make_request({"instruction": "update jane"}))
+
+        calendar_agent._mock_caldav.update_contact.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"]["uid"] == "cnt-1"
+
+    def test_delete_contact_returns_deleted_flag(
+        self, calendar_agent: MagicMock
+    ) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="delete_contact",
+            params={"uid": "cnt-1"},
+        )
+
+        calendar_agent._handle_request(_make_request({"instruction": "remove jane"}))
+
+        calendar_agent._mock_caldav.delete_contact.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"] == {"deleted": True}
+
+    def test_unknown_operation_returns_error(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="frobnicate",
+            params={},
+        )
+
+        calendar_agent._handle_request(_make_request({"instruction": "frobnicate"}))
+
+        _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
+        assert kwargs.get("code") == "unknown_operation"
+
+
+# ---------------------------------------------------------------------------
+# Lifecycle
+# ---------------------------------------------------------------------------
+
+
+class TestLifecycle:
+    def test_start_delegates_to_agent(self, calendar_agent: MagicMock) -> None:
+        calendar_agent.start()
+        calendar_agent._mock_agent_comm.start.assert_called_once()
+
+    def test_stop_delegates_to_agent(self, calendar_agent: MagicMock) -> None:
+        calendar_agent.stop()
+        calendar_agent._mock_agent_comm.stop.assert_called_once()
+
+    def test_close_aliases_stop(self, calendar_agent: MagicMock) -> None:
+        calendar_agent.close()
+        calendar_agent._mock_agent_comm.stop.assert_called_once()
+
+    def test_context_manager(self, calendar_agent: MagicMock) -> None:
+        with calendar_agent as ctx:
+            assert ctx is calendar_agent
+        calendar_agent._mock_agent_comm.start.assert_called_once()
+        calendar_agent._mock_agent_comm.stop.assert_called_once()
