@@ -8,11 +8,14 @@ from __future__ import annotations
 
 import functools
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 if TYPE_CHECKING:
     pass
+
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 logger = logging.getLogger(__name__)
 
@@ -278,7 +281,7 @@ class CalDavClient:
         return "\n".join(lines) + "\n"
 
     @staticmethod
-    def _wrap_caldav_op(op_name: str):
+    def _wrap_caldav_op(op_name: str) -> Callable[[_F], _F]:
         """Wrap a method with standard CalDAV error handling.
 
         ``OperationError`` exceptions are re-raised as-is.
@@ -286,9 +289,9 @@ class CalDavClient:
         ``OperationError`` with code ``"caldav_error"``.
         """
 
-        def decorator(func):
+        def decorator(func: _F) -> _F:
             @functools.wraps(func)
-            def wrapper(self, *args, **kwargs):
+            def wrapper(self: CalDavClient, *args: Any, **kwargs: Any) -> Any:
                 try:
                     return func(self, *args, **kwargs)
                 except OperationError:
@@ -300,7 +303,7 @@ class CalDavClient:
                         message=f"Failed to {op_name}: {exc}",
                     ) from exc
 
-            return wrapper
+            return cast(_F, wrapper)
 
         return decorator
 
