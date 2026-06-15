@@ -95,7 +95,12 @@ class CalDavClient:
     """
 
     def __init__(self, url: str, username: str, password: str) -> None:
-        import caldav as _caldav  # type: ignore[import-not-found]
+        # ``caldav`` ships incomplete type information (mypy resolves the
+        # module to ``object``), so route it through ``Any`` to keep the
+        # wrapper strict-clean without per-call ignores.
+        import caldav
+
+        _caldav: Any = caldav
 
         self._url = url
         try:

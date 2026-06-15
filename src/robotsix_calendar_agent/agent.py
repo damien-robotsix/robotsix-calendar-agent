@@ -52,10 +52,10 @@ class CalendarAgent:
     ) -> None:
         import os
 
-        from robotsix_agent_comm.sdk import (  # type: ignore[import-not-found]
+        from robotsix_agent_comm.sdk import (
             Agent as AgentCommAgent,
         )
-        from robotsix_agent_comm.transport import (  # type: ignore[import-not-found]
+        from robotsix_agent_comm.transport import (
             Registry,
         )
 
@@ -91,7 +91,7 @@ class CalendarAgent:
         intent, dispatches to the CalDAV/CardDAV client, and returns
         a correlated response or error.
         """
-        from robotsix_agent_comm.protocol import (  # type: ignore[import-not-found]
+        from robotsix_agent_comm.protocol import (
             Error,
             Response,
         )
