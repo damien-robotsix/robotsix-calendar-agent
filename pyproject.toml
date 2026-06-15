@@ -42,8 +42,8 @@ docs = [
 ]
 
 [tool.uv.sources]
-robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "main" }
-robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "main" }
+robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "bf5ad0dc5bd63556439c1366b4c85637d47e6288" }
+robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "6d068118191a3c504ebf3f513c6e69208f759e15" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/robotsix_calendar_agent"]
