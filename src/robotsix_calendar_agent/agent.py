@@ -10,9 +10,11 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 try:
+    from robotsix_llmio.core import setup_langfuse_tracing  # pragma: no cover
     from robotsix_llmio.logging import setup_logging  # pragma: no cover
 
     setup_logging(loggers=["robotsix_calendar_agent"])
+    setup_langfuse_tracing()
 except ImportError:  # pragma: no cover
     pass
 
