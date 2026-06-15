@@ -481,17 +481,13 @@ class CalDavClient:
     def delete_contact(self, uid: str, addressbook_id: str = "") -> None:
         """Delete the contact identified by *uid*. Idempotent.
 
-        Raises:
-            OperationError: If the contact is not found (code ``"not_found"``).
+        Returns ``None`` when the UID does not exist (already deleted).
         """
         try:
             ab = self._get_addressbook(addressbook_id)
             existing = ab.search(f"UID:{uid}")
             if not existing:
-                raise OperationError(
-                    code="not_found",
-                    message=f"Contact with UID {uid!r} not found.",
-                )
+                return None
             existing[0].delete()
         except OperationError:
             raise
