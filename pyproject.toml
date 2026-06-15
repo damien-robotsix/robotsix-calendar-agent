@@ -27,6 +27,11 @@ classifiers = [
     "Typing :: Typed",
 ]
 
+[project.urls]
+Homepage = "https://github.com/damien-robotsix/robotsix-calendar-agent"
+Repository = "https://github.com/damien-robotsix/robotsix-calendar-agent"
+Issues = "https://github.com/damien-robotsix/robotsix-calendar-agent/issues"
+
 [dependency-groups]
 dev = [
     "ruff",
