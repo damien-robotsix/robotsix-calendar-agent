@@ -346,6 +346,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("create_event failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to create event: {exc}",
