@@ -6,11 +6,14 @@ All caldav-specific exceptions are converted to :class:`OperationError`.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     pass
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "CalDavClient",
@@ -108,12 +111,15 @@ class CalDavClient:
                 url=url, username=username, password=password
             )
             self._principal = self._client.principal()
+            logger.info("CalDavClient connected to %s as %s", url, username)
         except _caldav.error.AuthorizationError as exc:
+            logger.error("CalDAV auth failed for %s as %s: %s", url, username, exc)
             raise OperationError(
                 code="auth_failed",
                 message=f"Authentication failed: {exc}",
             ) from exc
         except Exception as exc:
+            logger.error("Failed to connect to Radicale at %s: %s", url, exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to connect to Radicale: {exc}",
@@ -281,6 +287,12 @@ class CalDavClient:
 
         If *calendar_id* is empty, search all calendars.
         """
+        logger.debug(
+            "list_events start=%r end=%r calendar_id=%r",
+            start,
+            end,
+            calendar_id,
+        )
         try:
             start_dt, end_dt = self._iso_date_range(start, end)
             cal = self._get_calendar(calendar_id)
@@ -294,6 +306,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("list_events failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to list events: {exc}",
@@ -306,6 +319,12 @@ class CalDavClient:
 
         If *calendar_id* is empty, use the default calendar.
         """
+        logger.debug(
+            "create_event uid=%r calendar_id=%r summary=%r",
+            event.uid,
+            calendar_id,
+            event.summary,
+        )
         try:
             import uuid
 
@@ -340,6 +359,12 @@ class CalDavClient:
         Raises:
             OperationError: If the UID doesn't exist (code ``"not_found"``).
         """
+        logger.debug(
+            "update_event uid=%r calendar_id=%r summary=%r",
+            uid,
+            calendar_id,
+            event.summary,
+        )
         try:
             cal = self._get_calendar(calendar_id)
             # Fetch the existing event to confirm it exists
@@ -365,6 +390,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("update_event failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to update event: {exc}",
@@ -376,6 +402,7 @@ class CalDavClient:
         Raises:
             OperationError: If the event is not found (code ``"not_found"``).
         """
+        logger.debug("delete_event uid=%r calendar_id=%r", uid, calendar_id)
         try:
             cal = self._get_calendar(calendar_id)
             event_obj = cal.event(uid=uid)
@@ -388,6 +415,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("delete_event failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to delete event: {exc}",
@@ -402,6 +430,7 @@ class CalDavClient:
 
         If *addressbook_id* is empty, search all address books.
         """
+        logger.debug("list_contacts addressbook_id=%r", addressbook_id)
         try:
             ab = self._get_addressbook(addressbook_id)
             results = ab.search()
@@ -409,6 +438,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("list_contacts failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to list contacts: {exc}",
@@ -416,6 +446,12 @@ class CalDavClient:
 
     def create_contact(self, contact: Contact, addressbook_id: str = "") -> Contact:
         """Create a contact; return the contact with server-assigned uid."""
+        logger.debug(
+            "create_contact uid=%r addressbook_id=%r full_name=%r",
+            contact.uid,
+            addressbook_id,
+            contact.full_name,
+        )
         try:
             import uuid
 
@@ -435,6 +471,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("create_contact failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to create contact: {exc}",
@@ -448,6 +485,12 @@ class CalDavClient:
         Raises:
             OperationError: If the UID doesn't exist (code ``"not_found"``).
         """
+        logger.debug(
+            "update_contact uid=%r addressbook_id=%r full_name=%r",
+            uid,
+            addressbook_id,
+            contact.full_name,
+        )
         try:
             ab = self._get_addressbook(addressbook_id)
             # Fetch to confirm existence — caldav addressbook search by UID
@@ -473,6 +516,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("update_contact failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to update contact: {exc}",
@@ -483,6 +527,7 @@ class CalDavClient:
 
         Returns ``None`` when the UID does not exist (already deleted).
         """
+        logger.debug("delete_contact uid=%r addressbook_id=%r", uid, addressbook_id)
         try:
             ab = self._get_addressbook(addressbook_id)
             existing = ab.search(f"UID:{uid}")
@@ -492,6 +537,7 @@ class CalDavClient:
         except OperationError:
             raise
         except Exception as exc:
+            logger.error("delete_contact failed: %s", exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to delete contact: {exc}",

@@ -6,13 +6,23 @@ agent-comm messaging layer into a single runnable agent.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
+
+try:
+    from robotsix_llmio.logging import setup_logging  # pragma: no cover
+
+    setup_logging(loggers=["robotsix_calendar_agent"])
+except ImportError:  # pragma: no cover
+    pass
 
 if TYPE_CHECKING:
     pass
 
 from .caldav_client import CalDavClient, CalendarEvent, Contact, OperationError
 from .intent_parser import IntentParseError, IntentParser, ParsedIntent
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["CalendarAgent"]
 
@@ -100,23 +110,39 @@ class CalendarAgent:
 
         instruction: str | None = body.get("instruction")
         if not instruction:
+            logger.error("Request missing 'instruction' key: %s", body)
             return Error.to(
                 request,
                 code="missing_instruction",
                 message="Request body must contain an 'instruction' key.",
             )
 
+        logger.info("Processing instruction: %s", instruction)
+
         try:
             parsed: ParsedIntent = self._intent_parser.parse(instruction)
         except IntentParseError as exc:
+            logger.error("Intent parse error for '%s': %s", instruction, exc)
             return Error.to(request, code="parse_error", message=str(exc))
 
         try:
             result = self._dispatch(parsed)
             return Response.to(request, body={"result": result})
         except OperationError as exc:
+            logger.error(
+                "Operation error for '%s' (op=%s): %s",
+                instruction,
+                parsed.operation,
+                exc,
+            )
             return Error.to(request, code=exc.code, message=exc.message)
         except Exception as exc:
+            logger.error(
+                "Internal error for '%s' (op=%s): %s",
+                instruction,
+                parsed.operation,
+                exc,
+            )
             return Error.to(request, code="internal_error", message=str(exc))
 
     # ------------------------------------------------------------------
@@ -127,6 +153,8 @@ class CalendarAgent:
         """Route a parsed intent to the appropriate CalDavClient method."""
         op = parsed.operation
         params: dict[str, Any] = parsed.params
+
+        logger.debug("Dispatching operation=%r params=%r", op, params)
 
         # -- Calendar operations --
         if op == "list_events":
@@ -236,10 +264,12 @@ class CalendarAgent:
 
     def start(self) -> None:
         """Start the agent-comm transport and register the endpoint."""
+        logger.info("Starting CalendarAgent (agent_id=%r)", self._agent_id)
         self._agent.start()
 
     def stop(self) -> None:
         """Stop the agent-comm transport and unregister."""
+        logger.info("Stopping CalendarAgent (agent_id=%r)", self._agent_id)
         self._agent.stop()
 
     def close(self) -> None:
