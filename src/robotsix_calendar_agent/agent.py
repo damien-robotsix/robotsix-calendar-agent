@@ -26,6 +26,13 @@ from .intent_parser import IntentParseError, IntentParser, ParsedIntent
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Error codes used in validation responses — shared with tests.
+# ---------------------------------------------------------------------------
+ERROR_MISSING_SUBJECT = "missing_subject"
+ERROR_MISSING_DATES = "missing_dates"
+ERROR_INVALID_DATES = "invalid_dates"
+
 __all__ = ["CalendarAgent"]
 
 
@@ -190,7 +197,7 @@ class CalendarAgent:
             return Response.to(
                 request,
                 body=_build_error_body(
-                    "missing_subject",
+                    ERROR_MISSING_SUBJECT,
                     "Subject is required and must be a non-empty string.",
                     correlation_id,
                 ),
@@ -205,7 +212,7 @@ class CalendarAgent:
             return Response.to(
                 request,
                 body=_build_error_body(
-                    "missing_dates",
+                    ERROR_MISSING_DATES,
                     "Both suggested_dtstart and suggested_dtend are required "
                     "and must be non-empty strings.",
                     correlation_id,
@@ -219,7 +226,7 @@ class CalendarAgent:
             return Response.to(
                 request,
                 body=_build_error_body(
-                    "invalid_dates",
+                    ERROR_INVALID_DATES,
                     "Cannot parse one or both date strings as ISO 8601.",
                     correlation_id,
                 ),
@@ -229,7 +236,7 @@ class CalendarAgent:
             return Response.to(
                 request,
                 body=_build_error_body(
-                    "invalid_dates",
+                    ERROR_INVALID_DATES,
                     "End time must be after start time.",
                     correlation_id,
                 ),

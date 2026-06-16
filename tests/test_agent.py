@@ -8,6 +8,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from robotsix_calendar_agent.agent import (
+    ERROR_INVALID_DATES,
+    ERROR_MISSING_DATES,
+    ERROR_MISSING_SUBJECT,
+)
+
 # ---------------------------------------------------------------------------
 # Mock robotsix_agent_comm in sys.modules before anything imports it
 # ---------------------------------------------------------------------------
@@ -454,7 +460,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "missing_subject"
+        assert body["error"]["code"] == ERROR_MISSING_SUBJECT
         assert body["correlation_id"] == "corr-1"
 
     def test_missing_dates_returns_error(self, calendar_agent: MagicMock) -> None:
@@ -472,7 +478,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "missing_dates"
+        assert body["error"]["code"] == ERROR_MISSING_DATES
         assert body["correlation_id"] == "corr-2"
 
     def test_empty_dtstart_returns_missing_dates(
@@ -494,7 +500,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "missing_dates"
+        assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_invalid_date_string_returns_invalid_dates(
         self, calendar_agent: MagicMock
@@ -515,7 +521,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "invalid_dates"
+        assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_before_dtstart_returns_invalid_dates(
         self, calendar_agent: MagicMock
@@ -536,7 +542,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "invalid_dates"
+        assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_equal_to_dtstart_returns_invalid_dates(
         self, calendar_agent: MagicMock
@@ -557,7 +563,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "invalid_dates"
+        assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_operation_error_propagates_code(self, calendar_agent: MagicMock) -> None:
         from robotsix_calendar_agent.caldav_client import OperationError
@@ -723,7 +729,7 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         _, kwargs = call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == "missing_subject"
+        assert body["error"]["code"] == ERROR_MISSING_SUBJECT
 
 
 # ---------------------------------------------------------------------------
