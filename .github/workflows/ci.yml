@@ -15,6 +15,13 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv run --with 'detect-secrets>=1.5' detect-secrets scan --baseline .secrets.baseline .
 
+  vulture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run vulture src/ vulture_whitelist.py
+
   ci:
     strategy:
       fail-fast: false
