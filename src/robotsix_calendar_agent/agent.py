@@ -154,9 +154,7 @@ class CalendarAgent:
     # add-to-calendar (structured, no LLM)
     # ------------------------------------------------------------------
 
-    def _handle_add_to_calendar(
-        self, request: Any, payload: dict[str, Any]
-    ) -> Any:
+    def _handle_add_to_calendar(self, request: Any, payload: dict[str, Any]) -> Any:
         """Handle a structured add-to-calendar request from auto-mail.
 
         Validates the payload, creates a :class:`CalendarEvent` via
@@ -250,17 +248,13 @@ class CalendarAgent:
         try:
             created = self._caldav.create_event(event)
         except OperationError as exc:
-            logger.error(
-                "CalDAV error creating event '%s': %s", subject, exc
-            )
+            logger.error("CalDAV error creating event '%s': %s", subject, exc)
             return Response.to(
                 request,
                 body=_build_error_body(exc.code, exc.message, correlation_id),
             )
         except Exception as exc:
-            logger.error(
-                "Internal error creating event '%s': %s", subject, exc
-            )
+            logger.error("Internal error creating event '%s': %s", subject, exc)
             return Response.to(
                 request,
                 body=_build_error_body(
@@ -389,9 +383,7 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
     }
 
 
-def _build_error_body(
-    code: str, message: str, correlation_id: str
-) -> dict[str, Any]:
+def _build_error_body(code: str, message: str, correlation_id: str) -> dict[str, Any]:
     """Build the error-shaped body for add-to-calendar error responses."""
     return {
         "error": {"code": code, "message": message},
