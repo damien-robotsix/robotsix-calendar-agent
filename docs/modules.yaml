@@ -5,6 +5,8 @@ modules:
       - agent
       - caldav_client
       - intent_parser
+    test_paths:
+      - tests/test_smoke.py
 
   - name: agent
     path: src/robotsix_calendar_agent/agent.py
