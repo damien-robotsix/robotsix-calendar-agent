@@ -110,6 +110,9 @@ class CalendarAgent:
 
         body: dict[str, Any] = request.body or {}
 
+        if "add_to_calendar" in body:
+            return self._handle_add_to_calendar(request, body["add_to_calendar"])
+
         instruction: str | None = body.get("instruction")
         if not instruction:
             logger.error("Request missing 'instruction' key: %s", body)
@@ -146,6 +149,148 @@ class CalendarAgent:
                 exc,
             )
             return Error.to(request, code="internal_error", message=str(exc))
+
+    # ------------------------------------------------------------------
+    # add-to-calendar (structured, no LLM)
+    # ------------------------------------------------------------------
+
+    def _handle_add_to_calendar(
+        self, request: Any, payload: dict[str, Any]
+    ) -> Any:
+        """Handle a structured add-to-calendar request from auto-mail.
+
+        Validates the payload, creates a :class:`CalendarEvent` via
+        :meth:`CalDavClient.create_event`, and returns a correlated
+        :class:`Response` — always carrying the ``correlation_id``
+        from the request, whether successful or not.
+        """
+        import datetime
+
+        from robotsix_agent_comm.protocol import Response
+
+        if not isinstance(payload, dict):
+            return Response.to(
+                request,
+                body=_build_error_body(
+                    "internal_error",
+                    "add_to_calendar payload must be a dictionary.",
+                    "",
+                ),
+            )
+
+        subject = payload.get("subject")
+        _ = payload.get("body_text")  # extracted per spec, unused in LLM-free path
+        suggested_dtstart = payload.get("suggested_dtstart")
+        suggested_dtend = payload.get("suggested_dtend")
+        description = payload.get("description")
+        location = payload.get("location")
+        correlation_id: str = payload.get("correlation_id", "")
+
+        # -- validation ---------------------------------------------------
+
+        if not subject or not isinstance(subject, str) or not subject.strip():
+            return Response.to(
+                request,
+                body=_build_error_body(
+                    "missing_subject",
+                    "Subject is required and must be a non-empty string.",
+                    correlation_id,
+                ),
+            )
+
+        if (
+            not suggested_dtstart
+            or not suggested_dtend
+            or not isinstance(suggested_dtstart, str)
+            or not isinstance(suggested_dtend, str)
+        ):
+            return Response.to(
+                request,
+                body=_build_error_body(
+                    "missing_dates",
+                    "Both suggested_dtstart and suggested_dtend are required "
+                    "and must be non-empty strings.",
+                    correlation_id,
+                ),
+            )
+
+        try:
+            dtstart = datetime.datetime.fromisoformat(suggested_dtstart)
+            dtend = datetime.datetime.fromisoformat(suggested_dtend)
+        except (ValueError, TypeError):
+            return Response.to(
+                request,
+                body=_build_error_body(
+                    "invalid_dates",
+                    "Cannot parse one or both date strings as ISO 8601.",
+                    correlation_id,
+                ),
+            )
+
+        if dtend <= dtstart:
+            return Response.to(
+                request,
+                body=_build_error_body(
+                    "invalid_dates",
+                    "End time must be after start time.",
+                    correlation_id,
+                ),
+            )
+
+        # -- event creation -----------------------------------------------
+
+        event = CalendarEvent(
+            summary=subject.strip(),
+            description=description or "",
+            location=location or "",
+            dtstart=suggested_dtstart,
+            dtend=suggested_dtend,
+        )
+
+        try:
+            created = self._caldav.create_event(event)
+        except OperationError as exc:
+            logger.error(
+                "CalDAV error creating event '%s': %s", subject, exc
+            )
+            return Response.to(
+                request,
+                body=_build_error_body(exc.code, exc.message, correlation_id),
+            )
+        except Exception as exc:
+            logger.error(
+                "Internal error creating event '%s': %s", subject, exc
+            )
+            return Response.to(
+                request,
+                body=_build_error_body(
+                    "internal_error",
+                    f"Unexpected error: {exc}",
+                    correlation_id,
+                ),
+            )
+
+        # -- success response ---------------------------------------------
+
+        event_dict = _event_to_dict(created)
+        confirmation_text = (
+            f"Created event '{created.summary}' on "
+            f"{dtstart.strftime('%b %d, %Y at %I:%M %p')}"
+        )
+
+        logger.info("Created event '%s' (uid=%s)", created.summary, created.uid)
+
+        return Response.to(
+            request,
+            body={
+                "result": {
+                    "status": "created",
+                    "event": event_dict,
+                    "confirmation_text": confirmation_text,
+                },
+                "correlation_id": correlation_id,
+            },
+        )
 
     # ------------------------------------------------------------------
     # dispatch
@@ -241,6 +386,16 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
         "phone": contact.phone,
         "address": contact.address,
         "addressbook_id": contact.addressbook_id,
+    }
+
+
+def _build_error_body(
+    code: str, message: str, correlation_id: str
+) -> dict[str, Any]:
+    """Build the error-shaped body for add-to-calendar error responses."""
+    return {
+        "error": {"code": code, "message": message},
+        "correlation_id": correlation_id,
     }
 
 
