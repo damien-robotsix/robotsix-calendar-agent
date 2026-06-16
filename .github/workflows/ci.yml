@@ -8,12 +8,12 @@ permissions:
   contents: read
 
 jobs:
-  secrets-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv run --with 'detect-secrets>=1.5' detect-secrets scan --baseline .secrets.baseline .
+  security:
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-security.yml@main
+    with:
+      install-extras: ""
+      trufflehog-pr-diff: true
+      trufflehog-extra-args: "--results=verified,unknown"
 
   vulture:
     runs-on: ubuntu-latest
