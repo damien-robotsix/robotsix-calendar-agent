@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -14,91 +13,16 @@ from robotsix_calendar_agent.agent import (
     ERROR_MISSING_SUBJECT,
 )
 
-# ---------------------------------------------------------------------------
-# Mock robotsix_agent_comm in sys.modules before anything imports it
-# ---------------------------------------------------------------------------
-
-_mock_agent_comm = MagicMock()
-_mock_agent_comm_sdk = MagicMock()
-_mock_agent_comm_protocol = MagicMock()
-_mock_agent_comm_transport = MagicMock()
-
-sys.modules["robotsix_agent_comm"] = _mock_agent_comm
-sys.modules["robotsix_agent_comm.sdk"] = _mock_agent_comm_sdk
-sys.modules["robotsix_agent_comm.protocol"] = _mock_agent_comm_protocol
-sys.modules["robotsix_agent_comm.transport"] = _mock_agent_comm_transport
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _setup_mocks() -> tuple[MagicMock, MagicMock, MagicMock, MagicMock]:
-    """Configure the mocked robotsix_agent_comm modules and return key mocks."""
-    mock_registry = MagicMock()
-    mock_agent = MagicMock()
-
-    _mock_agent_comm_transport.Registry.return_value = mock_registry
-    _mock_agent_comm_sdk.Agent.return_value = mock_agent
-
-    # Use MagicMock for Response.to and Error.to so we can inspect call_args
-    _mock_response_to = MagicMock(return_value=MagicMock())
-    _mock_error_to = MagicMock(return_value=MagicMock())
-    _mock_agent_comm_protocol.Response.to = _mock_response_to
-    _mock_agent_comm_protocol.Error.to = _mock_error_to
-
-    return mock_registry, mock_agent, _mock_response_to, _mock_error_to
-
-
-def _make_request(body: dict) -> MagicMock:
-    req = MagicMock()
-    req.body = body
-    return req
-
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def clean_env() -> None:
-    """Remove Radicale env vars so tests don't leak state."""
-    for key in ("RADICALE_URL", "RADICALE_USERNAME", "RADICALE_PASSWORD"):
-        os.environ.pop(key, None)
-
-
-@pytest.fixture
-def calendar_agent() -> object:
-    """Create a CalendarAgent with all external deps mocked."""
-    _setup_mocks()
-
-    with (
-        patch(
-            "robotsix_calendar_agent.agent.CalDavClient",
-            autospec=True,
-        ) as mock_caldav,
-        patch(
-            "robotsix_calendar_agent.agent.IntentParser",
-            autospec=True,
-        ) as mock_parser_cls,
-    ):
-        mock_parser = MagicMock()
-        mock_parser_cls.return_value = mock_parser
-
-        os.environ["RADICALE_URL"] = "https://radicale.example.com"
-        os.environ["RADICALE_USERNAME"] = "user"
-        os.environ["RADICALE_PASSWORD"] = "pass"
-
-        from robotsix_calendar_agent.agent import CalendarAgent
-
-        agent = CalendarAgent()
-        agent._mock_parser = mock_parser  # type: ignore[attr-defined]
-        agent._mock_caldav = mock_caldav.return_value  # type: ignore[attr-defined]
-        agent._mock_agent_comm = _mock_agent_comm_sdk.Agent.return_value  # type: ignore[attr-defined]
-
-        yield agent
-
+# Shared helpers and module-level mocks live in conftest.
+from tests.conftest import (  # noqa: E402
+    _mock_agent_comm_protocol,
+    _mock_agent_comm_sdk,
+    _mock_agent_comm_transport,
+    caldav_contact,
+    caldav_event,
+    make_request,
+    setup_mocks,
+)
 
 # ---------------------------------------------------------------------------
 # Tests
@@ -107,7 +31,7 @@ def calendar_agent() -> object:
 
 class TestCalendarAgentInit:
     def test_creates_with_env_vars(self) -> None:
-        _setup_mocks()
+        setup_mocks()
 
         os.environ["RADICALE_URL"] = "https://x.com"
         os.environ["RADICALE_USERNAME"] = "u"
@@ -123,7 +47,7 @@ class TestCalendarAgentInit:
             assert agent._agent_id == "calendar"
 
     def test_raises_value_error_for_missing_credentials(self) -> None:
-        _setup_mocks()
+        setup_mocks()
 
         with (
             patch("robotsix_calendar_agent.agent.CalDavClient"),
@@ -159,14 +83,14 @@ class TestHandleRequest:
             )
         ]
 
-        req = _make_request({"instruction": "list events this week"})
+        req = make_request({"instruction": "list events this week"})
         result = calendar_agent._handle_request(req)
 
         assert result is not None
         _mock_agent_comm_protocol.Response.to.assert_called()
 
     def test_missing_instruction_returns_error(self, calendar_agent: MagicMock) -> None:
-        req = _make_request({"not_instruction": "x"})
+        req = make_request({"not_instruction": "x"})
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Error.to.call_args
@@ -179,7 +103,7 @@ class TestHandleRequest:
         mock_parser = calendar_agent._mock_parser
         mock_parser.parse.side_effect = IntentParseError("bad input")
 
-        req = _make_request({"instruction": "gibberish"})
+        req = make_request({"instruction": "gibberish"})
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Error.to.call_args
@@ -200,7 +124,7 @@ class TestHandleRequest:
             code="not_found", message="Event not found"
         )
 
-        req = _make_request({"instruction": "delete event evt-1"})
+        req = make_request({"instruction": "delete event evt-1"})
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Error.to.call_args
@@ -208,7 +132,7 @@ class TestHandleRequest:
         assert kwargs.get("code") == "not_found"
 
     def test_agent_registers_as_calendar(self) -> None:
-        _setup_mocks()
+        setup_mocks()
 
         os.environ["RADICALE_URL"] = "https://x.com"
         os.environ["RADICALE_USERNAME"] = "u"
@@ -238,7 +162,7 @@ class TestHandleRequest:
         mock_caldav = calendar_agent._mock_caldav
         mock_caldav.delete_event.side_effect = RuntimeError("boom")
 
-        req = _make_request({"instruction": "delete event evt-1"})
+        req = make_request({"instruction": "delete event evt-1"})
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Error.to.call_args
@@ -262,29 +186,6 @@ class TestHandleRequest:
 # ---------------------------------------------------------------------------
 
 
-def _caldav_event(uid: str = "evt-1") -> MagicMock:
-    return MagicMock(
-        uid=uid,
-        summary="S",
-        description="D",
-        location="L",
-        dtstart="2026-01-02",
-        dtend="2026-01-02",
-        calendar_id="cal",
-    )
-
-
-def _caldav_contact(uid: str = "cnt-1") -> MagicMock:
-    return MagicMock(
-        uid=uid,
-        full_name="John Doe",
-        email="j@example.com",
-        phone="123",
-        address="addr",
-        addressbook_id="ab",
-    )
-
-
 class TestDispatch:
     def test_create_event(self, calendar_agent: MagicMock) -> None:
         calendar_agent._mock_parser.parse.return_value = MagicMock(
@@ -295,9 +196,9 @@ class TestDispatch:
                 "dtend": "2026-01-02T13:00:00",
             },
         )
-        calendar_agent._mock_caldav.create_event.return_value = _caldav_event("new")
+        calendar_agent._mock_caldav.create_event.return_value = caldav_event("new")
 
-        calendar_agent._handle_request(_make_request({"instruction": "add lunch"}))
+        calendar_agent._handle_request(make_request({"instruction": "add lunch"}))
 
         calendar_agent._mock_caldav.create_event.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
@@ -308,9 +209,9 @@ class TestDispatch:
             operation="update_event",
             params={"uid": "evt-1", "summary": "Updated"},
         )
-        calendar_agent._mock_caldav.update_event.return_value = _caldav_event("evt-1")
+        calendar_agent._mock_caldav.update_event.return_value = caldav_event("evt-1")
 
-        calendar_agent._handle_request(_make_request({"instruction": "update"}))
+        calendar_agent._handle_request(make_request({"instruction": "update"}))
 
         calendar_agent._mock_caldav.update_event.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
@@ -322,7 +223,7 @@ class TestDispatch:
             params={"uid": "evt-1"},
         )
 
-        calendar_agent._handle_request(_make_request({"instruction": "delete"}))
+        calendar_agent._handle_request(make_request({"instruction": "delete"}))
 
         calendar_agent._mock_caldav.delete_event.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
@@ -333,9 +234,9 @@ class TestDispatch:
             operation="list_contacts",
             params={},
         )
-        calendar_agent._mock_caldav.list_contacts.return_value = [_caldav_contact()]
+        calendar_agent._mock_caldav.list_contacts.return_value = [caldav_contact()]
 
-        calendar_agent._handle_request(_make_request({"instruction": "list contacts"}))
+        calendar_agent._handle_request(make_request({"instruction": "list contacts"}))
 
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
         result = kwargs["body"]["result"]
@@ -347,9 +248,9 @@ class TestDispatch:
             operation="create_contact",
             params={"full_name": "Jane", "email": "jane@example.com"},
         )
-        calendar_agent._mock_caldav.create_contact.return_value = _caldav_contact("new")
+        calendar_agent._mock_caldav.create_contact.return_value = caldav_contact("new")
 
-        calendar_agent._handle_request(_make_request({"instruction": "add jane"}))
+        calendar_agent._handle_request(make_request({"instruction": "add jane"}))
 
         calendar_agent._mock_caldav.create_contact.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
@@ -360,11 +261,11 @@ class TestDispatch:
             operation="update_contact",
             params={"uid": "cnt-1", "email": "new@example.com"},
         )
-        calendar_agent._mock_caldav.update_contact.return_value = _caldav_contact(
+        calendar_agent._mock_caldav.update_contact.return_value = caldav_contact(
             "cnt-1"
         )
 
-        calendar_agent._handle_request(_make_request({"instruction": "update jane"}))
+        calendar_agent._handle_request(make_request({"instruction": "update jane"}))
 
         calendar_agent._mock_caldav.update_contact.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
@@ -378,7 +279,7 @@ class TestDispatch:
             params={"uid": "cnt-1"},
         )
 
-        calendar_agent._handle_request(_make_request({"instruction": "remove jane"}))
+        calendar_agent._handle_request(make_request({"instruction": "remove jane"}))
 
         calendar_agent._mock_caldav.delete_contact.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
@@ -390,7 +291,7 @@ class TestDispatch:
             params={},
         )
 
-        calendar_agent._handle_request(_make_request({"instruction": "frobnicate"}))
+        calendar_agent._handle_request(make_request({"instruction": "frobnicate"}))
 
         _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
         assert kwargs.get("code") == "unknown_operation"
@@ -402,7 +303,9 @@ class TestDispatch:
 
 
 class TestHandleAddToCalendar:
-    def test_valid_request_creates_event(self, calendar_agent: MagicMock) -> None:
+    def test_valid_request_creates_event(
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
+    ) -> None:
         mock_caldav = calendar_agent._mock_caldav
         created_event = MagicMock(
             uid="evt-1",
@@ -415,19 +318,7 @@ class TestHandleAddToCalendar:
         )
         mock_caldav.create_event.return_value = created_event
 
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test Subject",
-                    "body_text": "Some body text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "description": "Test Description",
-                    "location": "Office",
-                    "correlation_id": "corr-123",
-                }
-            }
-        )
+        req = make_add_to_calendar_request(correlation_id="corr-123")
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Response.to.call_args
@@ -443,18 +334,10 @@ class TestHandleAddToCalendar:
         mock_caldav.create_event.assert_called_once()
         calendar_agent._mock_parser.parse.assert_not_called()
 
-    def test_missing_subject_returns_error(self, calendar_agent: MagicMock) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "corr-1",
-                }
-            }
-        )
+    def test_missing_subject_returns_error(
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
+    ) -> None:
+        req = make_add_to_calendar_request(subject="", correlation_id="corr-1")
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Response.to.call_args
@@ -463,15 +346,11 @@ class TestHandleAddToCalendar:
         assert body["error"]["code"] == ERROR_MISSING_SUBJECT
         assert body["correlation_id"] == "corr-1"
 
-    def test_missing_dates_returns_error(self, calendar_agent: MagicMock) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "correlation_id": "corr-2",
-                }
-            }
+    def test_missing_dates_returns_error(
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
+    ) -> None:
+        req = make_add_to_calendar_request(
+            suggested_dtstart="", suggested_dtend="", correlation_id="corr-2"
         )
         calendar_agent._handle_request(req)
 
@@ -482,18 +361,10 @@ class TestHandleAddToCalendar:
         assert body["correlation_id"] == "corr-2"
 
     def test_empty_dtstart_returns_missing_dates(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "suggested_dtstart": "",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "corr-3",
-                }
-            }
+        req = make_add_to_calendar_request(
+            suggested_dtstart="", correlation_id="corr-3"
         )
         calendar_agent._handle_request(req)
 
@@ -503,18 +374,10 @@ class TestHandleAddToCalendar:
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_invalid_date_string_returns_invalid_dates(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "suggested_dtstart": "not-a-date",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "corr-4",
-                }
-            }
+        req = make_add_to_calendar_request(
+            suggested_dtstart="not-a-date", correlation_id="corr-4"
         )
         calendar_agent._handle_request(req)
 
@@ -524,18 +387,12 @@ class TestHandleAddToCalendar:
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_before_dtstart_returns_invalid_dates(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T10:00:00",
-                    "suggested_dtend": "2026-03-15T09:00:00",
-                    "correlation_id": "corr-5",
-                }
-            }
+        req = make_add_to_calendar_request(
+            suggested_dtstart="2026-03-15T10:00:00",
+            suggested_dtend="2026-03-15T09:00:00",
+            correlation_id="corr-5",
         )
         calendar_agent._handle_request(req)
 
@@ -545,18 +402,12 @@ class TestHandleAddToCalendar:
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_equal_to_dtstart_returns_invalid_dates(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T09:00:00",
-                    "correlation_id": "corr-eq",
-                }
-            }
+        req = make_add_to_calendar_request(
+            suggested_dtstart="2026-03-15T09:00:00",
+            suggested_dtend="2026-03-15T09:00:00",
+            correlation_id="corr-eq",
         )
         calendar_agent._handle_request(req)
 
@@ -565,7 +416,9 @@ class TestHandleAddToCalendar:
         body = kwargs["body"]
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
-    def test_operation_error_propagates_code(self, calendar_agent: MagicMock) -> None:
+    def test_operation_error_propagates_code(
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
+    ) -> None:
         from robotsix_calendar_agent.caldav_client import OperationError
 
         mock_caldav = calendar_agent._mock_caldav
@@ -573,17 +426,7 @@ class TestHandleAddToCalendar:
             code="auth_failed", message="Authentication failed"
         )
 
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "corr-6",
-                }
-            }
-        )
+        req = make_add_to_calendar_request(correlation_id="corr-6")
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Response.to.call_args
@@ -593,22 +436,12 @@ class TestHandleAddToCalendar:
         assert body["correlation_id"] == "corr-6"
 
     def test_unexpected_exception_returns_internal_error(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
         mock_caldav = calendar_agent._mock_caldav
         mock_caldav.create_event.side_effect = RuntimeError("boom")
 
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "Test",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "corr-7",
-                }
-            }
-        )
+        req = make_add_to_calendar_request(correlation_id="corr-7")
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Response.to.call_args
@@ -618,7 +451,7 @@ class TestHandleAddToCalendar:
         assert body["correlation_id"] == "corr-7"
 
     def test_add_to_calendar_bypasses_intent_parser(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
         mock_caldav = calendar_agent._mock_caldav
         created_event = MagicMock(
@@ -632,22 +465,19 @@ class TestHandleAddToCalendar:
         )
         mock_caldav.create_event.return_value = created_event
 
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "S",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "c",
-                }
-            }
+        req = make_add_to_calendar_request(
+            subject="S",
+            description="",
+            location="",
+            correlation_id="c",
         )
         calendar_agent._handle_request(req)
 
         calendar_agent._mock_parser.parse.assert_not_called()
 
-    def test_correlation_id_echoed_on_success(self, calendar_agent: MagicMock) -> None:
+    def test_correlation_id_echoed_on_success(
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
+    ) -> None:
         mock_caldav = calendar_agent._mock_caldav
         created_event = MagicMock(
             uid="evt-y",
@@ -660,16 +490,11 @@ class TestHandleAddToCalendar:
         )
         mock_caldav.create_event.return_value = created_event
 
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "S",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "my-custom-id",
-                }
-            }
+        req = make_add_to_calendar_request(
+            subject="S",
+            description="",
+            location="",
+            correlation_id="my-custom-id",
         )
         calendar_agent._handle_request(req)
 
@@ -679,7 +504,7 @@ class TestHandleAddToCalendar:
         assert body["correlation_id"] == "my-custom-id"
 
     def test_missing_correlation_id_echoes_empty_string(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
         mock_caldav = calendar_agent._mock_caldav
         created_event = MagicMock(
@@ -693,15 +518,11 @@ class TestHandleAddToCalendar:
         )
         mock_caldav.create_event.return_value = created_event
 
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "S",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                }
-            }
+        req = make_add_to_calendar_request(
+            subject="S",
+            description="",
+            location="",
+            correlation_id="",
         )
         calendar_agent._handle_request(req)
 
@@ -711,19 +532,9 @@ class TestHandleAddToCalendar:
         assert body["correlation_id"] == ""
 
     def test_whitespace_only_subject_returns_missing_subject(
-        self, calendar_agent: MagicMock
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
-        req = _make_request(
-            {
-                "add_to_calendar": {
-                    "subject": "   ",
-                    "body_text": "text",
-                    "suggested_dtstart": "2026-03-15T09:00:00",
-                    "suggested_dtend": "2026-03-15T10:00:00",
-                    "correlation_id": "corr-ws",
-                }
-            }
-        )
+        req = make_add_to_calendar_request(subject="   ", correlation_id="corr-ws")
         calendar_agent._handle_request(req)
 
         call_args = _mock_agent_comm_protocol.Response.to.call_args
