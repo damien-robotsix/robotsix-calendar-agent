@@ -135,7 +135,7 @@ def make_add_to_calendar_request() -> Any:
         req = make_add_to_calendar_request(subject="Lunch", correlation_id="c1")
         calendar_agent._handle_request(req)
     """
-    from robotsix_calendar_agent.agent import (
+    from robotsix_calendar_agent.add_to_calendar_handler import (
         ERROR_INVALID_DATES,
         ERROR_MISSING_DATES,
         ERROR_MISSING_SUBJECT,
