@@ -21,17 +21,14 @@ except ImportError:  # pragma: no cover
 if TYPE_CHECKING:
     pass
 
+from .add_to_calendar_handler import (
+    _event_to_dict,
+    handle_add_to_calendar,
+)
 from .caldav_client import CalDavClient, CalendarEvent, Contact, OperationError
 from .intent_parser import IntentParseError, IntentParser, ParsedIntent
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Error codes used in validation responses — shared with tests.
-# ---------------------------------------------------------------------------
-ERROR_MISSING_SUBJECT = "missing_subject"
-ERROR_MISSING_DATES = "missing_dates"
-ERROR_INVALID_DATES = "invalid_dates"
 
 __all__ = ["CalendarAgent"]
 
@@ -118,7 +115,9 @@ class CalendarAgent:
         body: dict[str, Any] = request.body or {}
 
         if "add_to_calendar" in body:
-            return self._handle_add_to_calendar(request, body["add_to_calendar"])
+            return handle_add_to_calendar(
+                self._caldav, request, body["add_to_calendar"]
+            )
 
         instruction: str | None = body.get("instruction")
         if not instruction:
@@ -156,142 +155,6 @@ class CalendarAgent:
                 exc,
             )
             return Error.to(request, code="internal_error", message=str(exc))
-
-    # ------------------------------------------------------------------
-    # add-to-calendar (structured, no LLM)
-    # ------------------------------------------------------------------
-
-    def _handle_add_to_calendar(self, request: Any, payload: dict[str, Any]) -> Any:
-        """Handle a structured add-to-calendar request from auto-mail.
-
-        Validates the payload, creates a :class:`CalendarEvent` via
-        :meth:`CalDavClient.create_event`, and returns a correlated
-        :class:`Response` — always carrying the ``correlation_id``
-        from the request, whether successful or not.
-        """
-        import datetime
-
-        from robotsix_agent_comm.protocol import Response
-
-        if not isinstance(payload, dict):
-            return Response.to(
-                request,
-                body=_build_error_body(
-                    "internal_error",
-                    "add_to_calendar payload must be a dictionary.",
-                    "",
-                ),
-            )
-
-        subject = payload.get("subject")
-        _ = payload.get("body_text")  # extracted per spec, unused in LLM-free path
-        suggested_dtstart = payload.get("suggested_dtstart")
-        suggested_dtend = payload.get("suggested_dtend")
-        description = payload.get("description")
-        location = payload.get("location")
-        correlation_id: str = payload.get("correlation_id", "")
-
-        # -- validation ---------------------------------------------------
-
-        if not subject or not isinstance(subject, str) or not subject.strip():
-            return Response.to(
-                request,
-                body=_build_error_body(
-                    ERROR_MISSING_SUBJECT,
-                    "Subject is required and must be a non-empty string.",
-                    correlation_id,
-                ),
-            )
-
-        if (
-            not suggested_dtstart
-            or not suggested_dtend
-            or not isinstance(suggested_dtstart, str)
-            or not isinstance(suggested_dtend, str)
-        ):
-            return Response.to(
-                request,
-                body=_build_error_body(
-                    ERROR_MISSING_DATES,
-                    "Both suggested_dtstart and suggested_dtend are required "
-                    "and must be non-empty strings.",
-                    correlation_id,
-                ),
-            )
-
-        try:
-            dtstart = datetime.datetime.fromisoformat(suggested_dtstart)
-            dtend = datetime.datetime.fromisoformat(suggested_dtend)
-        except (ValueError, TypeError):
-            return Response.to(
-                request,
-                body=_build_error_body(
-                    ERROR_INVALID_DATES,
-                    "Cannot parse one or both date strings as ISO 8601.",
-                    correlation_id,
-                ),
-            )
-
-        if dtend <= dtstart:
-            return Response.to(
-                request,
-                body=_build_error_body(
-                    ERROR_INVALID_DATES,
-                    "End time must be after start time.",
-                    correlation_id,
-                ),
-            )
-
-        # -- event creation -----------------------------------------------
-
-        event = CalendarEvent(
-            summary=subject.strip(),
-            description=description or "",
-            location=location or "",
-            dtstart=suggested_dtstart,
-            dtend=suggested_dtend,
-        )
-
-        try:
-            created = self._caldav.create_event(event)
-        except OperationError as exc:
-            logger.error("CalDAV error creating event '%s': %s", subject, exc)
-            return Response.to(
-                request,
-                body=_build_error_body(exc.code, exc.message, correlation_id),
-            )
-        except Exception as exc:
-            logger.error("Internal error creating event '%s': %s", subject, exc)
-            return Response.to(
-                request,
-                body=_build_error_body(
-                    "internal_error",
-                    f"Unexpected error: {exc}",
-                    correlation_id,
-                ),
-            )
-
-        # -- success response ---------------------------------------------
-
-        event_dict = _event_to_dict(created)
-        confirmation_text = (
-            f"Created event '{created.summary}' on "
-            f"{dtstart.strftime('%b %d, %Y at %I:%M %p')}"
-        )
-
-        logger.info("Created event '%s' (uid=%s)", created.summary, created.uid)
-
-        return Response.to(
-            request,
-            body={
-                "result": {
-                    "status": "created",
-                    "event": event_dict,
-                    "confirmation_text": confirmation_text,
-                },
-                "correlation_id": correlation_id,
-            },
-        )
 
     # ------------------------------------------------------------------
     # dispatch
@@ -367,18 +230,6 @@ def _build_contact(params: dict[str, Any]) -> Contact:
     )
 
 
-def _event_to_dict(event: CalendarEvent) -> dict[str, Any]:
-    return {
-        "uid": event.uid,
-        "summary": event.summary,
-        "description": event.description,
-        "location": event.location,
-        "dtstart": event.dtstart,
-        "dtend": event.dtend,
-        "calendar_id": event.calendar_id,
-    }
-
-
 def _contact_to_dict(contact: Contact) -> dict[str, Any]:
     return {
         "uid": contact.uid,
@@ -387,14 +238,6 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
         "phone": contact.phone,
         "address": contact.address,
         "addressbook_id": contact.addressbook_id,
-    }
-
-
-def _build_error_body(code: str, message: str, correlation_id: str) -> dict[str, Any]:
-    """Build the error-shaped body for add-to-calendar error responses."""
-    return {
-        "error": {"code": code, "message": message},
-        "correlation_id": correlation_id,
     }
 
 
