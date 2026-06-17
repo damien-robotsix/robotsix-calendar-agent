@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from robotsix_calendar_agent.agent import (
+from robotsix_calendar_agent.add_to_calendar_handler import (
     ERROR_INVALID_DATES,
     ERROR_MISSING_DATES,
     ERROR_MISSING_SUBJECT,
