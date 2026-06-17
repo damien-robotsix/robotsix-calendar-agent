@@ -27,6 +27,9 @@ classifiers = [
     "Typing :: Typed",
 ]
 
+[project.scripts]
+calendar-agent = "robotsix_calendar_agent.brokered_entrypoint:main"
+
 [project.urls]
 Homepage = "https://github.com/damien-robotsix/robotsix-calendar-agent"
 Repository = "https://github.com/damien-robotsix/robotsix-calendar-agent"
