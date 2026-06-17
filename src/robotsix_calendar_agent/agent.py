@@ -51,6 +51,11 @@ class CalendarAgent:
             ``RADICALE_PASSWORD``).
         llm_model_config: Forwarded to :class:`IntentParser` for llmio
             model selection.
+        transport: Optional transport object to wire the agent-comm
+            :class:`Agent` to. When ``None`` (the default), an
+            in-process :class:`Registry` is created — full backward
+            compatibility. When provided (e.g. a brokered transport
+            client), it is used in place of the in-process registry.
 
     Raises:
         ValueError: If Radicale credentials are missing after
@@ -65,14 +70,12 @@ class CalendarAgent:
         radicale_username: str | None = None,
         radicale_password: str | None = None,
         llm_model_config: dict[str, Any] | None = None,
+        transport: Any | None = None,
     ) -> None:
         import os
 
         from robotsix_agent_comm.sdk import (
             Agent as AgentCommAgent,
-        )
-        from robotsix_agent_comm.transport import (
-            Registry,
         )
 
         self._agent_id = agent_id
@@ -91,8 +94,16 @@ class CalendarAgent:
         self._caldav = CalDavClient(url, username, password)
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
-        self._registry = Registry()
-        self._agent = AgentCommAgent(agent_id, self._registry)
+        if transport is None:
+            from robotsix_agent_comm.transport import (
+                Registry,
+            )
+
+            self._transport: Any = Registry()
+        else:
+            self._transport = transport
+
+        self._agent = AgentCommAgent(agent_id, self._transport)
 
         self._agent.on_request(self._handle_request)
 

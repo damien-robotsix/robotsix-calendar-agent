@@ -7,6 +7,11 @@ messages, parses intent through `robotsix-llmio`, executes the operation
 against a Radicale server, and returns a correlated `Response` or `Error`.
 No CLI, no web UI, no separate HTTP API — agent-comm intake only.
 
+It can run in-process (default) or as a long-lived brokered service via
+the `calendar-agent` console-script entrypoint, with a `Dockerfile` and
+`docker-compose.yml` for containerised deployment against a secured
+TLS broker.
+
 ## Status
 
 Early scaffold — under active development.

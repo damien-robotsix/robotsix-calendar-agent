@@ -1,0 +1,54 @@
+services:
+  calendar-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - broker
+    environment:
+      # Transport
+      CALENDAR_AGENT_TRANSPORT: brokered
+      # Broker connection
+      BROKER_HOST: broker
+      BROKER_PORT: "9090"
+      BROKER_TLS_CA: /certs/ca.pem
+      BROKER_CLIENT_CERT: /certs/client.pem
+      BROKER_CLIENT_KEY: /certs/client.key
+      BROKER_AGENT_TOKEN: ${BROKER_AGENT_TOKEN:?set BROKER_AGENT_TOKEN}
+      # Radicale backend
+      RADICALE_URL: ${RADICALE_URL:?set RADICALE_URL}
+      RADICALE_USERNAME: ${RADICALE_USERNAME:?set RADICALE_USERNAME}
+      RADICALE_PASSWORD: ${RADICALE_PASSWORD:?set RADICALE_PASSWORD}
+    volumes:
+      # Mount TLS material read-only.
+      - ./certs/ca.pem:/certs/ca.pem:ro
+      - ./certs/client.pem:/certs/client.pem:ro
+      - ./certs/client.key:/certs/client.key:ro
+
+  # The broker service itself is defined in the robotsix-agent-comm repo.
+  # Reference deployment (see that repo's docker-compose.yml for the real
+  # definition) — replace this stub with the actual broker service or
+  # connect both via a shared external network, e.g.:
+  #
+  #   broker:
+  #     image: ghcr.io/damien-robotsix/robotsix-broker:latest
+  #     ports:
+  #       - "9090:8443"
+  #     environment:
+  #       ROBOTSIX_BROKER_PORT: "9090"
+  #       ROBOTSIX_BROKER_TLS_CERT: /certs/server.pem
+  #       ROBOTSIX_BROKER_TLS_KEY: /certs/server.key
+  #     volumes:
+  #       - ./certs:/certs:ro
+  broker:
+    image: ghcr.io/damien-robotsix/robotsix-broker:latest
+    restart: unless-stopped
+    ports:
+      - "9090:8443"
+    environment:
+      ROBOTSIX_BROKER_PORT: "9090"
+      ROBOTSIX_BROKER_TLS_CERT: /certs/server.pem
+      ROBOTSIX_BROKER_TLS_KEY: /certs/server.key
+    volumes:
+      - ./certs:/certs:ro
