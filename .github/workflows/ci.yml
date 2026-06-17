@@ -24,12 +24,16 @@ jobs:
 
   dependency-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv audit --frozen
-        retry: 3
-        retry-max-seconds: 120
+      - run: |
+          for i in 1 2 3; do
+            uv audit --frozen && exit 0
+            sleep 40
+          done
+          exit 1
 
   ci:
     strategy:
