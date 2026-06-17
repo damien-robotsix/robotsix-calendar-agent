@@ -13,6 +13,7 @@ from .caldav_client import CalDavClient, CalendarEvent, Contact, OperationError
 from .intent_parser import (
     CalendarOperation,
     ContactOperation,
+    IntentParseError,
     IntentParser,
     ParsedIntent,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "CalendarOperation",
     "Contact",
     "ContactOperation",
+    "IntentParseError",
     "IntentParser",
     "OperationError",
     "ParsedIntent",
