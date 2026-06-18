@@ -1,0 +1,17 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-docs.yml@main
+    with:
+      docs-install-args: "--extra docs"
+    secrets: inherit
