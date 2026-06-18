@@ -140,18 +140,14 @@ class CalDavClient:
 
         def _parse(s: str) -> Any:
             s = s.strip()
-            # Try datetime first, then date
-            for fmt in (
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M",
-                "%Y-%m-%d",
-            ):
-                try:
-                    return datetime.datetime.strptime(s, fmt)
-                except ValueError:
-                    continue
-            # If no format matches, return the string as-is (caldav may handle it)
-            return s
+            try:
+                return datetime.datetime.fromisoformat(s)
+            except (ValueError, TypeError):
+                pass
+            try:
+                return datetime.date.fromisoformat(s)
+            except (ValueError, TypeError):
+                return s
 
         return _parse(start), _parse(end)
 
