@@ -352,6 +352,28 @@ class TestIsoDateRange:
         start, _ = CalDavClient._iso_date_range("2026-06-15", "2026-06-16")
         assert isinstance(start, datetime.datetime)
 
+    def test_datetime_with_utc_z_suffix(self) -> None:
+        import datetime
+
+        start, end = CalDavClient._iso_date_range(
+            "2026-03-01T10:00:00Z", "2026-03-01T11:00:00Z"
+        )
+        assert isinstance(start, datetime.datetime)
+        assert isinstance(end, datetime.datetime)
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
+
+    def test_datetime_with_timezone_offset(self) -> None:
+        import datetime
+
+        start, end = CalDavClient._iso_date_range(
+            "2026-01-15T14:30:00+01:00", "2026-01-15T15:30:00+01:00"
+        )
+        assert isinstance(start, datetime.datetime)
+        assert isinstance(end, datetime.datetime)
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
+
 
 class TestToCalendarEvent:
     def test_formats_datetime_and_date_values(self) -> None:
