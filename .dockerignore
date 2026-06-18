@@ -1,0 +1,8 @@
+.git/
+.robotsix-mill/
+docs/
+tests/
+.env.example
+.secrets.baseline
+vulture_whitelist.py
+*.md

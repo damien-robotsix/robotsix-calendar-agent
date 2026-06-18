@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm@sha256:88fcf3024d2744b4af3698b5c60ca9e506f376c5e94c3c1ab4a6a423706545ed
 
 # Install uv from the official image.
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
 WORKDIR /app
 
