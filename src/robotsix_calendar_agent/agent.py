@@ -7,6 +7,7 @@ agent-comm messaging layer into a single runnable agent.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 try:
@@ -252,6 +253,31 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
     }
 
 
+def _entity_op(
+    client: CalDavClient,
+    params: dict[str, Any],
+    *,
+    builder: Callable[[dict[str, Any]], Any],
+    serializer: Callable[[Any], dict[str, Any]],
+    create_fn: Callable[..., Any],
+    update_fn: Callable[..., Any],
+    id_key: str,
+) -> dict[str, Any]:
+    """Generic helper for create/update handlers.
+
+    Captures the common 3-step pattern:
+    1. Build domain object from params.
+    2. Call client CRUD method (create if no uid, else update).
+    3. Serialize result via serializer.
+    """
+    entity = builder(params)
+    op = update_fn if "uid" in params else create_fn
+    uid = params.get("uid", "")
+    kwargs = {id_key: params.get(id_key, "")}
+    result = op(uid, entity, **kwargs) if op is update_fn else op(entity, **kwargs)
+    return serializer(result)
+
+
 def _handle_list_events(
     client: CalDavClient, params: dict[str, Any]
 ) -> list[dict[str, Any]]:
@@ -268,22 +294,28 @@ def _handle_list_events(
 def _handle_create_event(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
-    event = _build_event(params)
-    return _event_to_dict(
-        client.create_event(event, calendar_id=params.get("calendar_id", ""))
+    return _entity_op(
+        client,
+        params,
+        builder=_build_event,
+        serializer=_event_to_dict,
+        create_fn=client.create_event,
+        update_fn=client.update_event,
+        id_key="calendar_id",
     )
 
 
 def _handle_update_event(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
-    event = _build_event(params)
-    return _event_to_dict(
-        client.update_event(
-            uid=params.get("uid", ""),
-            event=event,
-            calendar_id=params.get("calendar_id", ""),
-        )
+    return _entity_op(
+        client,
+        params,
+        builder=_build_event,
+        serializer=_event_to_dict,
+        create_fn=client.create_event,
+        update_fn=client.update_event,
+        id_key="calendar_id",
     )
 
 
@@ -309,22 +341,28 @@ def _handle_list_contacts(
 def _handle_create_contact(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
-    contact = _build_contact(params)
-    return _contact_to_dict(
-        client.create_contact(contact, addressbook_id=params.get("addressbook_id", ""))
+    return _entity_op(
+        client,
+        params,
+        builder=_build_contact,
+        serializer=_contact_to_dict,
+        create_fn=client.create_contact,
+        update_fn=client.update_contact,
+        id_key="addressbook_id",
     )
 
 
 def _handle_update_contact(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
-    contact = _build_contact(params)
-    return _contact_to_dict(
-        client.update_contact(
-            uid=params.get("uid", ""),
-            contact=contact,
-            addressbook_id=params.get("addressbook_id", ""),
-        )
+    return _entity_op(
+        client,
+        params,
+        builder=_build_contact,
+        serializer=_contact_to_dict,
+        create_fn=client.create_contact,
+        update_fn=client.update_contact,
+        id_key="addressbook_id",
     )
 
 
