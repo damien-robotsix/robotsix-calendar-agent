@@ -147,16 +147,16 @@ Given a natural-language instruction, classify it into exactly one of these
 operations and extract structured parameters:
 
 Calendar operations:
-- list_events: params = {start, end}  (ISO 8601 dates)
-- create_event: params = {summary, dtstart, dtend, description?, location?}
-- update_event: params = {uid, ...fields to update}
-- delete_event: params = {uid}
+- list_events: params = {start, end, calendar_id?}  (ISO 8601 dates)
+- create_event: params = {summary, dtstart, dtend, description?, location?,calendar_id?}
+- update_event: params = {uid, ...fields to update, calendar_id?}
+- delete_event: params = {uid, calendar_id?}
 
 Contacts operations:
-- list_contacts: params = {}
-- create_contact: params = {full_name, email?, phone?, address?}
-- update_contact: params = {uid, ...fields to update}
-- delete_contact: params = {uid}
+- list_contacts: params = {addressbook_id?}
+- create_contact: params = {full_name, email?, phone?, address?, addressbook_id?}
+- update_contact: params = {uid, ...fields to update, addressbook_id?}
+- delete_contact: params = {uid, addressbook_id?}
 
 Rules:
 - For date expressions like "next Tuesday at 3pm", compute ISO 8601 datetimes
