@@ -1,54 +1,42 @@
+# Production deployment for the calendar agent.
+#
+# The agent connects to the already-deployed agent-comm broker over its
+# public TLS endpoint (system trust + bearer token — no CA file or client
+# cert) and registers in mailbox/pull mode as `robotsix-calendar`. It talks
+# to a Radicale CalDAV server that runs as a host service (not a container),
+# reached via the docker host gateway.
+#
+# Required env (e.g. via a local .env file next to this compose):
+#   BROKER_AGENT_TOKEN  - this agent's bearer token, provisioned on the broker
+#   RADICALE_URL        - e.g. http://host.docker.internal:5232
+#   RADICALE_USERNAME / RADICALE_PASSWORD
+# Optional: BROKER_HOST (default ai-broker.robotsix.net), BROKER_PORT (443),
+#   BROKER_SCHEME (https).
 services:
   calendar-agent:
+    image: ghcr.io/damien-robotsix/robotsix-calendar-agent:main
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      - broker
     environment:
-      # Transport
+      # Transport — mailbox/pull mode against the secured broker.
       CALENDAR_AGENT_TRANSPORT: brokered
-      # Broker connection
-      BROKER_HOST: broker
-      BROKER_PORT: "9090"
-      BROKER_TLS_CA: /certs/ca.pem
-      BROKER_CLIENT_CERT: /certs/client.pem
-      BROKER_CLIENT_KEY: /certs/client.key
+      CALENDAR_AGENT_ID: robotsix-calendar
+      # Broker connection (public TLS endpoint; system trust + token).
+      BROKER_HOST: ${BROKER_HOST:-ai-broker.robotsix.net}
+      BROKER_PORT: ${BROKER_PORT:-443}
+      BROKER_SCHEME: ${BROKER_SCHEME:-https}
       BROKER_AGENT_TOKEN: ${BROKER_AGENT_TOKEN:?set BROKER_AGENT_TOKEN}
-      # Radicale backend
-      RADICALE_URL: ${RADICALE_URL:?set RADICALE_URL}
+      # Radicale backend (host service reached via the docker host gateway).
+      RADICALE_URL: ${RADICALE_URL:-http://host.docker.internal:5232}
       RADICALE_USERNAME: ${RADICALE_USERNAME:?set RADICALE_USERNAME}
       RADICALE_PASSWORD: ${RADICALE_PASSWORD:?set RADICALE_PASSWORD}
-    volumes:
-      # Mount TLS material read-only.
-      - ./certs/ca.pem:/certs/ca.pem:ro
-      - ./certs/client.pem:/certs/client.pem:ro
-      - ./certs/client.key:/certs/client.key:ro
-
-  # The broker service itself is defined in the robotsix-agent-comm repo.
-  # Reference deployment (see that repo's docker-compose.yml for the real
-  # definition) — replace this stub with the actual broker service or
-  # connect both via a shared external network, e.g.:
-  #
-  #   broker:
-  #     image: ghcr.io/damien-robotsix/robotsix-broker:latest
-  #     ports:
-  #       - "9090:8443"
-  #     environment:
-  #       ROBOTSIX_BROKER_PORT: "9090"
-  #       ROBOTSIX_BROKER_TLS_CERT: /certs/server.pem
-  #       ROBOTSIX_BROKER_TLS_KEY: /certs/server.key
-  #     volumes:
-  #       - ./certs:/certs:ro
-  broker:
-    image: ghcr.io/damien-robotsix/robotsix-broker:latest
-    restart: unless-stopped
-    ports:
-      - "9090:8443"
-    environment:
-      ROBOTSIX_BROKER_PORT: "9090"
-      ROBOTSIX_BROKER_TLS_CERT: /certs/server.pem
-      ROBOTSIX_BROKER_TLS_KEY: /certs/server.key
-    volumes:
-      - ./certs:/certs:ro
+    extra_hosts:
+      # Lets RADICALE_URL=http://host.docker.internal:5232 reach the host's
+      # Radicale service from inside the container.
+      - "host.docker.internal:host-gateway"
+    labels:
+      # Opt this container into Watchtower's continuous deploy of the
+      # moving `:main` tag.
+      com.centurylinklabs.watchtower.enable: "true"

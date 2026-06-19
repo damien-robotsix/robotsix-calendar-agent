@@ -8,9 +8,9 @@ Transport modes:
 
 - ``inprocess`` (or unset) — the agent constructs its own in-process
   :class:`robotsix_agent_comm.transport.Registry`.
-- ``brokered`` — connect to a secured broker over TLS using the
-  ``BROKER_*`` environment variables and pass the resulting transport
-  client to the agent.
+- ``brokered`` — connect to a secured broker over HTTPS using the
+  ``BROKER_*`` environment variables and run the agent in mailbox/pull
+  mode (NAT-safe, outbound-only) registered as ``robotsix-calendar``.
 """
 
 from __future__ import annotations
@@ -27,35 +27,33 @@ logger = logging.getLogger(__name__)
 
 __all__ = ["main"]
 
+#: Agent id the calendar agent registers under on the broker. auto-mail
+#: addresses calendar requests to this exact id.
+_DEFAULT_AGENT_ID = "robotsix-calendar"
 
-def _build_brokered_transport() -> Any:
-    """Build the brokered transport client from the ``BROKER_*`` env vars.
 
-    The brokered client class (``BrokerClient``) is resolved dynamically
-    from :mod:`robotsix_agent_comm.transport` so that this module imports
-    cleanly even on an agent-comm revision that predates the secured
-    broker client. Bumping the ``robotsix-agent-comm`` pin (``uv lock``)
-    to a revision that ships the brokered client is what enables this
-    path at runtime.
+def _build_brokered_transport() -> tuple[Any, Any]:
+    """Build the ``(registry, transport)`` pair from the ``BROKER_*`` env vars.
+
+    Uses the shipping :func:`robotsix_agent_comm.transport.create_transport_pair`
+    factory (resolved dynamically so this module imports cleanly even against an
+    agent-comm revision that predates it). The deployed broker is fronted by a
+    publicly-trusted TLS endpoint, so by default no CA file or client cert is
+    needed — system trust + a bearer token. ``BROKER_TLS_CA`` may point at a
+    custom CA PEM for a privately-signed broker certificate.
 
     Raises:
         ValueError: If a required brokered env var is missing.
-        RuntimeError: If the installed agent-comm has no brokered client.
     """
     import importlib
 
     transport_mod = importlib.import_module("robotsix_agent_comm.transport")
+    create_transport_pair = transport_mod.create_transport_pair
 
     host = os.environ.get("BROKER_HOST", "")
     if not host:
         raise ValueError(
             "BROKER_HOST is required when CALENDAR_AGENT_TRANSPORT=brokered."
-        )
-
-    tls_ca = os.environ.get("BROKER_TLS_CA", "")
-    if not tls_ca:
-        raise ValueError(
-            "BROKER_TLS_CA is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
 
     token = os.environ.get("BROKER_AGENT_TOKEN", "")
@@ -64,43 +62,43 @@ def _build_brokered_transport() -> Any:
             "BROKER_AGENT_TOKEN is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
 
-    broker_client_cls = getattr(transport_mod, "BrokerClient", None)
-    if broker_client_cls is None:  # pragma: no cover - requires newer agent-comm
-        raise RuntimeError(
-            "The installed robotsix-agent-comm provides no brokered transport "
-            "client (robotsix_agent_comm.transport.BrokerClient). Update the "
-            "robotsix-agent-comm pin (run `uv lock`) to a revision that ships "
-            "the secured broker client."
-        )
+    port = int(os.environ.get("BROKER_PORT", "443"))
+    scheme = os.environ.get("BROKER_SCHEME", "https")
 
-    port = int(os.environ.get("BROKER_PORT", "9090"))
-    client_cert = os.environ.get("BROKER_CLIENT_CERT") or None
-    client_key = os.environ.get("BROKER_CLIENT_KEY") or None
+    # Custom CA only needed for a privately-signed broker cert; otherwise rely
+    # on the system trust store (matching the working board-agent client).
+    tls_ca = os.environ.get("BROKER_TLS_CA", "")
+    ssl_context = None
+    if tls_ca:
+        import ssl
+
+        ssl_context = ssl.create_default_context(cafile=tls_ca)
 
     logger.info(
-        "Connecting to broker at %s:%d (TLS CA=%s, mTLS=%s)",
+        "Connecting to broker at %s://%s:%d (custom CA=%s)",
+        scheme,
         host,
         port,
-        tls_ca,
-        "yes" if client_cert and client_key else "no",
+        "yes" if tls_ca else "no (system trust)",
     )
 
-    return broker_client_cls(
-        host=host,
-        port=port,
-        tls_ca=tls_ca,
-        client_cert=client_cert,
-        client_key=client_key,
-        token=token,
+    registry, transport = create_transport_pair(
+        "brokered",
+        broker_host=host,
+        broker_port=port,
+        broker_scheme=scheme,
+        broker_ssl_context=ssl_context,
+        broker_token=token,
     )
+    return registry, transport
 
 
-def _build_transport() -> Any | None:
+def _build_transport() -> tuple[Any, Any] | None:
     """Return the transport selected by ``CALENDAR_AGENT_TRANSPORT``.
 
     Returns ``None`` for the in-process path (so :class:`CalendarAgent`
-    builds its own :class:`Registry`), or a brokered transport client
-    when ``brokered`` is selected.
+    builds its own :class:`Registry`), or a ``(registry, transport)`` pair
+    for the brokered path.
 
     Raises:
         ValueError: If the env var holds an unrecognised value, or a
@@ -128,8 +126,15 @@ def main() -> None:
     ``SIGTERM``/``SIGINT`` is received, at which point the agent is
     stopped and the process exits cleanly.
     """
-    transport = _build_transport()
-    agent = CalendarAgent(transport=transport)
+    pair = _build_transport()
+    if pair is None:
+        agent = CalendarAgent()
+    else:
+        registry, transport = pair
+        agent_id = os.environ.get("CALENDAR_AGENT_ID", _DEFAULT_AGENT_ID)
+        agent = CalendarAgent(
+            agent_id, registry=registry, transport=transport, pull=True
+        )
 
     stop_event = threading.Event()
 

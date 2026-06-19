@@ -58,11 +58,16 @@ class CalendarAgent:
             ``RADICALE_PASSWORD``).
         llm_model_config: Forwarded to :class:`IntentParser` for llmio
             model selection.
-        transport: Optional transport object to wire the agent-comm
-            :class:`Agent` to. When ``None`` (the default), an
-            in-process :class:`Registry` is created — full backward
-            compatibility. When provided (e.g. a brokered transport
-            client), it is used in place of the in-process registry.
+        registry: Agent-comm registry the :class:`Agent` registers with.
+            When ``None`` (the default), an in-process
+            :class:`robotsix_agent_comm.transport.Registry` is created —
+            full backward compatibility. The brokered service passes a
+            ``BrokeredRegistry`` here (see ``brokered_entrypoint``).
+        transport: Optional transport client (e.g. a
+            ``NetworkedBrokerTransport``) the :class:`Agent` sends/receives
+            through. ``None`` keeps the SDK's default in-process transport.
+        pull: When ``True``, the agent runs in mailbox/pull mode
+            (NAT-safe long-polling) — required for the brokered deployment.
 
     Raises:
         ValueError: If Radicale credentials are missing after
@@ -77,7 +82,9 @@ class CalendarAgent:
         radicale_username: str | None = None,
         radicale_password: str | None = None,
         llm_model_config: dict[str, Any] | None = None,
+        registry: Any | None = None,
         transport: Any | None = None,
+        pull: bool = False,
     ) -> None:
         import os
 
@@ -101,16 +108,14 @@ class CalendarAgent:
         self._caldav = CalDavClient(url, username, password)
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
-        if transport is None:
+        if registry is None:
             from robotsix_agent_comm.transport import (
                 Registry,
             )
 
-            self._transport: Any = Registry()
-        else:
-            self._transport = transport
+            registry = Registry()
 
-        self._agent = AgentCommAgent(agent_id, self._transport)
+        self._agent = AgentCommAgent(agent_id, registry, transport=transport, pull=pull)
 
         self._agent.on_request(self._handle_request)
 
@@ -134,7 +139,10 @@ class CalendarAgent:
 
         if "add_to_calendar" in body:
             return handle_add_to_calendar(
-                self._caldav, request, body["add_to_calendar"]
+                self._caldav,
+                request,
+                body["add_to_calendar"],
+                intent_parser=self._intent_parser,
             )
 
         instruction: str | None = body.get("instruction")
