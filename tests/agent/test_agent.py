@@ -146,22 +146,24 @@ class TestHandleRequest:
 
             CalendarAgent(agent_id="calendar")
 
+            # In-process default: builds an Agent over a fresh Registry.
             _mock_agent_comm_sdk.Agent.assert_called_with(
                 "calendar",
                 _mock_agent_comm_transport.Registry.return_value,
-                transport=None,
-                pull=False,
             )
 
-    def test_brokered_registry_and_transport_wired_in_pull_mode(self) -> None:
+    def test_provided_agent_is_used_and_handler_wired(self) -> None:
+        # The brokered service passes a pre-built agent (a BrokeredAgent); the
+        # CalendarAgent wires its request handler onto it instead of building
+        # its own Agent.
         setup_mocks()
 
         os.environ["RADICALE_URL"] = "https://x.com"
         os.environ["RADICALE_USERNAME"] = "u"
         os.environ["RADICALE_PASSWORD"] = "p"
 
-        registry = MagicMock(name="brokered_registry")
-        transport = MagicMock(name="networked_transport")
+        provided = MagicMock(name="brokered_agent")
+        _mock_agent_comm_sdk.Agent.reset_mock()
 
         with (
             patch("robotsix_calendar_agent.agent.CalDavClient"),
@@ -169,19 +171,10 @@ class TestHandleRequest:
         ):
             from robotsix_calendar_agent.agent import CalendarAgent
 
-            CalendarAgent(
-                "robotsix-calendar",
-                registry=registry,
-                transport=transport,
-                pull=True,
-            )
+            cal = CalendarAgent("robotsix-calendar", agent=provided)
 
-            _mock_agent_comm_sdk.Agent.assert_called_with(
-                "robotsix-calendar",
-                registry,
-                transport=transport,
-                pull=True,
-            )
+            _mock_agent_comm_sdk.Agent.assert_not_called()
+            provided.on_request.assert_called_once_with(cal._handle_request)
 
     def test_unexpected_exception_returns_internal_error(
         self, calendar_agent: MagicMock

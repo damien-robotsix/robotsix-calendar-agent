@@ -58,16 +58,13 @@ class CalendarAgent:
             ``RADICALE_PASSWORD``).
         llm_model_config: Forwarded to :class:`IntentParser` for llmio
             model selection.
-        registry: Agent-comm registry the :class:`Agent` registers with.
-            When ``None`` (the default), an in-process
-            :class:`robotsix_agent_comm.transport.Registry` is created —
-            full backward compatibility. The brokered service passes a
-            ``BrokeredRegistry`` here (see ``brokered_entrypoint``).
-        transport: Optional transport client (e.g. a
-            ``NetworkedBrokerTransport``) the :class:`Agent` sends/receives
-            through. ``None`` keeps the SDK's default in-process transport.
-        pull: When ``True``, the agent runs in mailbox/pull mode
-            (NAT-safe long-polling) — required for the brokered deployment.
+        agent: The agent-comm client to wire the request handler onto and
+            drive via :meth:`start`/:meth:`stop` — a
+            :class:`robotsix_agent_comm.sdk.BrokeredAgent` for the brokered
+            service (see ``brokered_entrypoint``), or any object exposing
+            ``on_request``/``start``/``stop``. When ``None`` (the default), an
+            in-process :class:`robotsix_agent_comm.sdk.Agent` is created for
+            back-compat (tests / single-process use).
 
     Raises:
         ValueError: If Radicale credentials are missing after
@@ -82,15 +79,9 @@ class CalendarAgent:
         radicale_username: str | None = None,
         radicale_password: str | None = None,
         llm_model_config: dict[str, Any] | None = None,
-        registry: Any | None = None,
-        transport: Any | None = None,
-        pull: bool = False,
+        agent: Any | None = None,
     ) -> None:
         import os
-
-        from robotsix_agent_comm.sdk import (
-            Agent as AgentCommAgent,
-        )
 
         self._agent_id = agent_id
 
@@ -108,15 +99,13 @@ class CalendarAgent:
         self._caldav = CalDavClient(url, username, password)
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
-        if registry is None:
-            from robotsix_agent_comm.transport import (
-                Registry,
-            )
+        if agent is None:
+            from robotsix_agent_comm.sdk import Agent as AgentCommAgent
+            from robotsix_agent_comm.transport import Registry
 
-            registry = Registry()
+            agent = AgentCommAgent(agent_id, Registry())
 
-        self._agent = AgentCommAgent(agent_id, registry, transport=transport, pull=pull)
-
+        self._agent = agent
         self._agent.on_request(self._handle_request)
 
     # ------------------------------------------------------------------
