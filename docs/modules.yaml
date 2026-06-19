@@ -10,6 +10,8 @@ modules:
 
   - name: agent
     path: src/robotsix_calendar_agent/agent.py
+    test_paths:
+      - tests/test_agent.py
     depends_on:
       - caldav_client
       - intent_parser
