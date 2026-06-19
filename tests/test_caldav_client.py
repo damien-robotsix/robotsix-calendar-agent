@@ -440,6 +440,56 @@ class TestToContact:
         assert contact.full_name == ""
 
 
+class TestEscapeText:
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            ("", ""),
+            ("plain text", "plain text"),
+            (r"back\slash", "back\\\\slash"),
+            ("semi;colon", "semi\\;colon"),
+            ("comma,text", "comma\\,text"),
+            ("line\nbreak", "line\\nbreak"),
+            # mixed characters
+            ("a\\b;c,d\ne", "a\\\\b\\;c\\,d\\ne"),
+            # already-escaped sequences are re-escaped
+            (r"already\\escaped", "already\\\\\\\\escaped"),
+            ("already\\;escaped", "already\\\\\\;escaped"),
+        ],
+    )
+    def test_escape_text(self, client: CalDavClient, value: str, expected: str) -> None:
+        assert client._escape_text(value) == expected
+
+
+class TestIcalSerialization:
+    def test_basic_event(self, client: CalDavClient) -> None:
+        event = CalendarEvent(
+            uid="evt-1",
+            summary="Team Meeting",
+            description="Discuss Q3 goals",
+            location="Room 101",
+            dtstart="20260101T090000Z",
+            dtend="20260101T100000Z",
+        )
+        ical = client._event_to_ical(event)
+        assert "SUMMARY:Team Meeting" in ical
+        assert "DESCRIPTION:Discuss Q3 goals" in ical
+        assert "LOCATION:Room 101" in ical
+
+    def test_escapes_special_characters(self, client: CalDavClient) -> None:
+        event = CalendarEvent(
+            summary="a\\b;c,d\ne",
+            description="desc\\with;special,chars\nhere",
+            location="Room; A, B\\C\nDownstairs",
+            dtstart="20260101T090000Z",
+            dtend="20260101T100000Z",
+        )
+        ical = client._event_to_ical(event)
+        assert "SUMMARY:a\\\\b\\;c\\,d\\ne" in ical
+        assert "DESCRIPTION:desc\\\\with\\;special\\,chars\\nhere" in ical
+        assert "LOCATION:Room\\; A\\, B\\\\C\\nDownstairs" in ical
+
+
 class TestVcardSerialization:
     def test_includes_optional_fields(self, client: CalDavClient) -> None:
         contact = Contact(
@@ -452,6 +502,19 @@ class TestVcardSerialization:
         assert "EMAIL:jane@example.com" in vcard
         assert "TEL:555-1234" in vcard
         assert "ADR:;;123 Main St;;;" in vcard
+
+    def test_escapes_special_characters(self, client: CalDavClient) -> None:
+        contact = Contact(
+            full_name="Smith\\, Jane; Jr.\n",
+            email="jane+test\\;@example.com",
+            phone="555;1234,ext\n9",
+            address="123 Main St; Apt 4\\B\nNY, NY",
+        )
+        vcard = client._contact_to_vcard(contact)
+        assert "FN:Smith\\\\\\, Jane\\; Jr.\\n" in vcard
+        assert "EMAIL:jane+test\\\\\\;@example.com" in vcard
+        assert "TEL:555\\;1234\\,ext\\n9" in vcard
+        assert "ADR:;;123 Main St\\; Apt 4\\\\B\\nNY\\, NY;;;" in vcard
 
 
 # ---------------------------------------------------------------------------
