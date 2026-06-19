@@ -27,7 +27,13 @@ from .add_to_calendar_handler import (
     handle_add_to_calendar,
 )
 from .caldav_client import CalDavClient, CalendarEvent, Contact, OperationError
-from .intent_parser import IntentParseError, IntentParser, ParsedIntent
+from .intent_parser import (
+    CalendarOperation,
+    ContactOperation,
+    IntentParseError,
+    IntentParser,
+    ParsedIntent,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -386,3 +392,12 @@ _DISPATCH = {
     "update_contact": _handle_update_contact,
     "delete_contact": _handle_delete_contact,
 }
+
+_DISPATCH_KEYS = set(_DISPATCH)
+_ENUM_VALUES = {m.value for m in CalendarOperation} | {
+    m.value for m in ContactOperation
+}
+assert _DISPATCH_KEYS == _ENUM_VALUES, (
+    f"Mismatch: extra in dict={_DISPATCH_KEYS - _ENUM_VALUES}, "
+    f"missing={_ENUM_VALUES - _DISPATCH_KEYS}"
+)
