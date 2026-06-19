@@ -6,3 +6,5 @@ tests/
 .secrets.baseline
 vulture_whitelist.py
 *.md
+# README.md is required by the hatchling build backend (project readme).
+!README.md
