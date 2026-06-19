@@ -78,6 +78,11 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 python_version = "3.12"
 strict = true
 
+[tool.deptry.per_rule_ignores]
+# vobject is a runtime requirement of caldav 2.0 (read back via
+# obj.vobject_instance); it is never imported directly in our code.
+DEP002 = ["vobject"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = [
