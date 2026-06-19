@@ -16,6 +16,10 @@ dependencies = [
     # the provider extra must be installed or get_provider() raises ImportError.
     "robotsix-llmio[openrouter-deepseek]",
     "caldav",
+    # caldav 2.0 dropped vobject as an official dependency, but the client
+    # wrapper reads results via ``obj.vobject_instance``; install it explicitly
+    # so event/contact read-back works (otherwise vobject_instance is None).
+    "vobject",
     "pydantic",
 ]
 classifiers = [
