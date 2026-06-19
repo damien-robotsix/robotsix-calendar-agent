@@ -242,17 +242,34 @@ class CalDavClient:
             )
         return addressbooks[0]
 
+    @staticmethod
+    def _escape_text(value: str) -> str:
+        r"""Escape special characters for iCalendar/vCard text values.
+
+        Per RFC 5545 §3.3.11 and RFC 6350 §3.4, the following characters
+        must be escaped with a backslash in text property values:
+        ``\`` → ``\\``, ``;`` → ``\;``, ``,`` → ``\,``, newline → ``\n``.
+        """
+        if not value:
+            return value
+        result = value.replace("\\", "\\\\")
+        result = result.replace(";", "\\;")
+        result = result.replace(",", "\\,")
+        result = result.replace("\n", "\\n")
+        return result
+
     def _event_to_ical(self, event: CalendarEvent) -> str:
         """Build an iCalendar string from a :class:`CalendarEvent`."""
+        e = self._escape_text
         return (
             "BEGIN:VCALENDAR\n"
             "VERSION:2.0\n"
             "PRODID:-//robotsix-calendar-agent//EN\n"
             "BEGIN:VEVENT\n"
             f"UID:{event.uid or ''}\n"
-            f"SUMMARY:{event.summary}\n"
-            f"DESCRIPTION:{event.description}\n"
-            f"LOCATION:{event.location}\n"
+            f"SUMMARY:{e(event.summary)}\n"
+            f"DESCRIPTION:{e(event.description)}\n"
+            f"LOCATION:{e(event.location)}\n"
             f"DTSTART:{event.dtstart}\n"
             f"DTEND:{event.dtend}\n"
             "END:VEVENT\n"
@@ -261,18 +278,19 @@ class CalDavClient:
 
     def _contact_to_vcard(self, contact: Contact) -> str:
         """Build a vCard string from a :class:`Contact`."""
+        e = self._escape_text
         lines = [
             "BEGIN:VCARD",
             "VERSION:3.0",
             f"UID:{contact.uid or ''}",
-            f"FN:{contact.full_name}",
+            f"FN:{e(contact.full_name)}",
         ]
         if contact.email:
-            lines.append(f"EMAIL:{contact.email}")
+            lines.append(f"EMAIL:{e(contact.email)}")
         if contact.phone:
-            lines.append(f"TEL:{contact.phone}")
+            lines.append(f"TEL:{e(contact.phone)}")
         if contact.address:
-            lines.append(f"ADR:;;{contact.address};;;")
+            lines.append(f"ADR:;;{e(contact.address)};;;")
         lines.append("END:VCARD")
         return "\n".join(lines) + "\n"
 
