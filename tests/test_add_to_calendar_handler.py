@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import MagicMock
 
 from robotsix_calendar_agent.add_to_calendar_handler import (
@@ -20,9 +21,9 @@ from tests.conftest import _mock_agent_comm_protocol
 # ---------------------------------------------------------------------------
 
 
-def _make_payload(**overrides: object) -> dict:
+def _make_payload(**overrides: object) -> dict[str, Any]:
     """Build a valid add_to_calendar payload dict with overridable fields."""
-    defaults: dict = {
+    defaults: dict[str, Any] = {
         "subject": "Test Subject",
         "body_text": "Some body",
         "suggested_dtstart": "2026-03-15T09:00:00",
@@ -35,7 +36,9 @@ def _make_payload(**overrides: object) -> dict:
     return defaults
 
 
-def _assert_response_body(call_args: tuple, expected_body: dict) -> None:
+def _assert_response_body(
+    call_args: tuple[Any, ...], expected_body: dict[str, Any]
+) -> None:
     """Assert that Response.to was called with the given body fields."""
     _, kwargs = call_args
     body = kwargs["body"]
@@ -166,7 +169,7 @@ class TestHandleAddToCalendar:
         caldav_client = MagicMock()
         request = MagicMock()
 
-        handle_add_to_calendar(caldav_client, request, ["not", "a", "dict"])
+        handle_add_to_calendar(caldav_client, request, ["not", "a", "dict"])  # type: ignore[arg-type]
 
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         body = call_args[1]["body"]
@@ -225,7 +228,7 @@ class TestHandleAddToCalendar:
     def test_subject_not_a_string_returns_error(self) -> None:
         caldav_client = MagicMock()
         request = MagicMock()
-        payload = _make_payload(subject=12345, correlation_id="corr-ns")  # type: ignore[arg-type]
+        payload = _make_payload(subject=12345, correlation_id="corr-ns")
 
         handle_add_to_calendar(caldav_client, request, payload)
 
@@ -279,8 +282,8 @@ class TestHandleAddToCalendar:
         caldav_client = MagicMock()
         request = MagicMock()
         payload = _make_payload(
-            suggested_dtstart=20260315,  # type: ignore[arg-type]
-            suggested_dtend=20260316,  # type: ignore[arg-type]
+            suggested_dtstart=20260315,
+            suggested_dtend=20260316,
             correlation_id="corr-ns2",
         )
 

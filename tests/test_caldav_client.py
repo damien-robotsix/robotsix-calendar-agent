@@ -67,7 +67,7 @@ def _make_event(**overrides: str) -> CalendarEvent:
         "calendar_id": "",
     }
     defaults.update(overrides)
-    return CalendarEvent(**defaults)  # type: ignore[arg-type]
+    return CalendarEvent(**defaults)
 
 
 def _mock_vevent(**overrides: str) -> MagicMock:
