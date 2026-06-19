@@ -16,6 +16,10 @@ dependencies = [
     # the provider extra must be installed or get_provider() raises ImportError.
     "robotsix-llmio[openrouter-deepseek]",
     "caldav",
+    # caldav 2.0 dropped vobject as an official dependency, but the client
+    # wrapper reads results via ``obj.vobject_instance``; install it explicitly
+    # so event/contact read-back works (otherwise vobject_instance is None).
+    "vobject",
     "pydantic",
 ]
 classifiers = [
@@ -73,6 +77,11 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[tool.deptry.per_rule_ignores]
+# vobject is a runtime requirement of caldav 2.0 (read back via
+# obj.vobject_instance); it is never imported directly in our code.
+DEP002 = ["vobject"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
