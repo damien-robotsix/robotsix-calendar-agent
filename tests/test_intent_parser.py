@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -30,7 +31,9 @@ from robotsix_calendar_agent.intent_parser import (  # noqa: E402
 # ---------------------------------------------------------------------------
 
 
-def _mock_run_agent(operation: str, params: dict | None = None) -> _IntentOutput:
+def _mock_run_agent(
+    operation: str, params: dict[str, Any] | None = None
+) -> _IntentOutput:
     """Return a mock intent output."""
     return _IntentOutput(operation=operation, params=params or {})
 
@@ -115,7 +118,7 @@ class TestParse:
         self,
         instruction: str,
         expected_op: CalendarOperation | ContactOperation,
-        expected_params: dict,
+        expected_params: dict[str, Any],
     ) -> None:
         """Verify all 8 operation types are classified correctly."""
         _mock_llmio_core.reset_mock(return_value=True, side_effect=True)
