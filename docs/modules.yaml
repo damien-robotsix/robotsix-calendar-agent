@@ -21,6 +21,7 @@ modules:
     test_paths:
       - tests/agent/test_agent.py
     depends_on:
+      - add_to_calendar_handler
       - caldav_client
       - intent_parser
 
@@ -29,6 +30,13 @@ modules:
     depends_on: []
     test_paths:
       - tests/caldav_client/test_caldav_client.py
+
+  - name: add_to_calendar_handler
+    paths:
+      - src/robotsix_calendar_agent/add_to_calendar_handler.py
+      - tests/test_add_to_calendar_handler.py
+    depends_on:
+      - caldav_client
 
   - name: intent_parser
     paths:
