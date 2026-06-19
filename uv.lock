@@ -1452,7 +1452,7 @@ wheels = [
 [[package]]
 name = "robotsix-agent-comm"
 version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=bf5ad0dc5bd63556439c1366b4c85637d47e6288#bf5ad0dc5bd63556439c1366b4c85637d47e6288" }
+source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=e65da0eafc49ec6dcfb895e5de431ce8f1b171bc#e65da0eafc49ec6dcfb895e5de431ce8f1b171bc" }
 
 [[package]]
 name = "robotsix-calendar-agent"
@@ -1485,7 +1485,7 @@ docs = [
 requires-dist = [
     { name = "caldav" },
     { name = "pydantic" },
-    { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=bf5ad0dc5bd63556439c1366b4c85637d47e6288" },
+    { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=e65da0eafc49ec6dcfb895e5de431ce8f1b171bc" },
     { name = "robotsix-llmio", git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=6d068118191a3c504ebf3f513c6e69208f759e15" },
 ]
 

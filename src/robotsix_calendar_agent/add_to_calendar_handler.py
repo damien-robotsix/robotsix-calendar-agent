@@ -1,7 +1,10 @@
-"""Structured add-to-calendar handler — no LLM intent parsing.
+"""Structured add-to-calendar handler.
 
 Handles ``add_to_calendar`` request payloads from auto-mail, validating
-and creating calendar events directly via the CalDAV client.
+and creating calendar events via the CalDAV client. Concrete start/end
+datetimes are taken from explicit ``suggested_dt*`` fields when present,
+otherwise resolved from the forwarded email context via the LLM intent
+parser.
 """
 
 from __future__ import annotations
@@ -46,6 +49,81 @@ def _event_to_dict(event: CalendarEvent) -> dict[str, Any]:
     }
 
 
+def _build_resolution_instruction(
+    subject: str,
+    body_text: str,
+    email_date: str,
+    extracted_dates: list[str],
+) -> str:
+    """Build a natural-language instruction for the intent parser.
+
+    auto-mail forwards the raw email context (subject, body, regex-extracted
+    date strings) rather than concrete start/end datetimes. This phrases that
+    context as a ``create_event`` instruction so the LLM intent parser can
+    resolve ISO 8601 ``dtstart``/``dtend`` values.
+    """
+    lines = [
+        "Create a calendar event for the following email.",
+        f"Email subject: {subject}",
+    ]
+    if email_date:
+        lines.append(f"Email date: {email_date}")
+    if extracted_dates:
+        lines.append("Date/time references found: " + ", ".join(extracted_dates))
+    if body_text:
+        lines.append("Email body:")
+        lines.append(body_text)
+    lines.append(
+        "Resolve a concrete start and end datetime in ISO 8601. If no end "
+        "time is stated, default the end to one hour after the start."
+    )
+    return "\n".join(lines)
+
+
+def _explicit_dates(payload: dict[str, Any]) -> tuple[str, str] | None:
+    """Return ``(dtstart, dtend)`` when the payload carries both as non-empty
+    ISO strings, else ``None`` (so the caller falls back to LLM resolution)."""
+    ds = payload.get("suggested_dtstart")
+    de = payload.get("suggested_dtend")
+    if isinstance(ds, str) and ds and isinstance(de, str) and de:
+        return ds, de
+    return None
+
+
+def _resolve_dates_via_llm(
+    intent_parser: Any,
+    payload: dict[str, Any],
+) -> tuple[str, str] | None:
+    """Resolve ``(dtstart, dtend)`` from the email context via *intent_parser*.
+
+    Returns ``None`` when the parser is unavailable, errors, or cannot produce
+    a ``create_event`` intent carrying non-empty ISO date strings — the caller
+    then surfaces ``ERROR_MISSING_DATES``.
+    """
+    if intent_parser is None:
+        return None
+    instruction = _build_resolution_instruction(
+        str(payload.get("subject", "")),
+        str(payload.get("body_text", "") or ""),
+        str(payload.get("email_date", "") or ""),
+        list(payload.get("extracted_dates") or []),
+    )
+    try:
+        parsed = intent_parser.parse(instruction)
+    except Exception:  # noqa: BLE001 — any parse failure degrades to missing_dates
+        logger.exception("LLM date resolution failed")
+        return None
+
+    if str(getattr(parsed, "operation", "")) != "create_event":
+        return None
+    params = getattr(parsed, "params", None) or {}
+    dtstart = params.get("dtstart")
+    dtend = params.get("dtend")
+    if isinstance(dtstart, str) and dtstart and isinstance(dtend, str) and dtend:
+        return dtstart, dtend
+    return None
+
+
 # ---------------------------------------------------------------------------
 # handler
 # ---------------------------------------------------------------------------
@@ -55,6 +133,8 @@ def handle_add_to_calendar(
     caldav_client: Any,
     request: Any,
     payload: dict[str, Any],
+    *,
+    intent_parser: Any | None = None,
 ) -> Any:
     """Handle a structured add-to-calendar request from auto-mail.
 
@@ -62,6 +142,12 @@ def handle_add_to_calendar(
     :meth:`CalDavClient.create_event`, and returns a correlated
     :class:`Response` — always carrying the ``correlation_id``
     from the request, whether successful or not.
+
+    When the payload carries explicit ``suggested_dtstart``/``suggested_dtend``
+    ISO strings, they are used directly (LLM-free path). Otherwise — auto-mail's
+    usual case, which forwards only the raw email context — *intent_parser*
+    (when provided) resolves concrete start/end datetimes from the subject,
+    body, and extracted date references.
     """
     import datetime
 
@@ -78,9 +164,6 @@ def handle_add_to_calendar(
         )
 
     subject = payload.get("subject")
-    _ = payload.get("body_text")  # extracted per spec, unused in LLM-free path
-    suggested_dtstart = payload.get("suggested_dtstart")
-    suggested_dtend = payload.get("suggested_dtend")
     description = payload.get("description")
     location = payload.get("location")
     correlation_id: str = payload.get("correlation_id", "")
@@ -97,25 +180,25 @@ def handle_add_to_calendar(
             ),
         )
 
-    if (
-        not suggested_dtstart
-        or not suggested_dtend
-        or not isinstance(suggested_dtstart, str)
-        or not isinstance(suggested_dtend, str)
-    ):
+    # Use explicit suggested dates when provided; otherwise let the LLM intent
+    # parser resolve them from the email context auto-mail forwarded.
+    dates = _explicit_dates(payload) or _resolve_dates_via_llm(intent_parser, payload)
+    if dates is None:
         return Response.to(
             request,
             body=_build_error_body(
                 ERROR_MISSING_DATES,
-                "Both suggested_dtstart and suggested_dtend are required "
-                "and must be non-empty strings.",
+                "Could not determine event start/end times: provide "
+                "suggested_dtstart and suggested_dtend, or email content "
+                "the calendar agent can resolve a date from.",
                 correlation_id,
             ),
         )
+    dtstart_str, dtend_str = dates
 
     try:
-        dtstart = datetime.datetime.fromisoformat(suggested_dtstart)
-        dtend = datetime.datetime.fromisoformat(suggested_dtend)
+        dtstart = datetime.datetime.fromisoformat(dtstart_str)
+        dtend = datetime.datetime.fromisoformat(dtend_str)
     except (ValueError, TypeError):
         return Response.to(
             request,
@@ -142,8 +225,8 @@ def handle_add_to_calendar(
         summary=subject.strip(),
         description=description or "",
         location=location or "",
-        dtstart=suggested_dtstart,
-        dtend=suggested_dtend,
+        dtstart=dtstart_str,
+        dtend=dtend_str,
     )
 
     try:

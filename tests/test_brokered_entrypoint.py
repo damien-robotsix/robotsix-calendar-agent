@@ -22,15 +22,16 @@ def clean_broker_env() -> Any:
     """Remove transport/broker env vars so tests don't leak state."""
     keys = (
         "CALENDAR_AGENT_TRANSPORT",
+        "CALENDAR_AGENT_ID",
         "BROKER_HOST",
         "BROKER_PORT",
+        "BROKER_SCHEME",
         "BROKER_TLS_CA",
-        "BROKER_CLIENT_CERT",
-        "BROKER_CLIENT_KEY",
         "BROKER_AGENT_TOKEN",
     )
     for key in keys:
         os.environ.pop(key, None)
+    _mock_agent_comm_transport.create_transport_pair.reset_mock(return_value=True)
     yield
     for key in keys:
         os.environ.pop(key, None)
@@ -39,8 +40,18 @@ def clean_broker_env() -> Any:
 def _set_brokered_env() -> None:
     os.environ["CALENDAR_AGENT_TRANSPORT"] = "brokered"
     os.environ["BROKER_HOST"] = "broker.example.com"
-    os.environ["BROKER_TLS_CA"] = "/certs/ca.pem"
     os.environ["BROKER_AGENT_TOKEN"] = "secret-token"
+
+
+def _stub_transport_pair() -> tuple[MagicMock, MagicMock]:
+    """Make ``create_transport_pair`` return a ``(registry, transport)`` pair."""
+    registry = MagicMock(name="registry")
+    transport = MagicMock(name="transport")
+    _mock_agent_comm_transport.create_transport_pair.return_value = (
+        registry,
+        transport,
+    )
+    return registry, transport
 
 
 # ---------------------------------------------------------------------------
@@ -60,22 +71,38 @@ class TestTransportSelection:
         os.environ["CALENDAR_AGENT_TRANSPORT"] = "inprocess"
         assert brokered_entrypoint._build_transport() is None
 
-    def test_brokered_value_builds_broker_client(self) -> None:
+    def test_brokered_value_builds_transport_pair(self) -> None:
         from robotsix_calendar_agent import brokered_entrypoint
 
         _set_brokered_env()
-        sentinel = MagicMock(name="broker_client")
-        _mock_agent_comm_transport.BrokerClient.return_value = sentinel
+        registry, transport = _stub_transport_pair()
 
-        transport = brokered_entrypoint._build_transport()
+        result = brokered_entrypoint._build_transport()
 
-        assert transport is sentinel
-        _mock_agent_comm_transport.BrokerClient.assert_called_once()
-        _, kwargs = _mock_agent_comm_transport.BrokerClient.call_args
-        assert kwargs["host"] == "broker.example.com"
-        assert kwargs["port"] == 9090
-        assert kwargs["tls_ca"] == "/certs/ca.pem"
-        assert kwargs["token"] == "secret-token"
+        assert result == (registry, transport)
+        _mock_agent_comm_transport.create_transport_pair.assert_called_once()
+        args, kwargs = _mock_agent_comm_transport.create_transport_pair.call_args
+        assert args == ("brokered",)
+        assert kwargs["broker_host"] == "broker.example.com"
+        assert kwargs["broker_port"] == 443  # default
+        assert kwargs["broker_scheme"] == "https"  # default
+        assert kwargs["broker_token"] == "secret-token"
+        # System trust by default — no custom CA context.
+        assert kwargs["broker_ssl_context"] is None
+
+    def test_brokered_honours_port_and_scheme_overrides(self) -> None:
+        from robotsix_calendar_agent import brokered_entrypoint
+
+        _set_brokered_env()
+        os.environ["BROKER_PORT"] = "9090"
+        os.environ["BROKER_SCHEME"] = "http"
+        _stub_transport_pair()
+
+        brokered_entrypoint._build_transport()
+
+        _, kwargs = _mock_agent_comm_transport.create_transport_pair.call_args
+        assert kwargs["broker_port"] == 9090
+        assert kwargs["broker_scheme"] == "http"
 
     def test_invalid_value_raises(self) -> None:
         from robotsix_calendar_agent import brokered_entrypoint
@@ -84,7 +111,7 @@ class TestTransportSelection:
         with pytest.raises(ValueError, match="CALENDAR_AGENT_TRANSPORT"):
             brokered_entrypoint._build_transport()
 
-    def test_main_passes_inprocess_transport_to_agent(self) -> None:
+    def test_main_inprocess_builds_default_agent(self) -> None:
         from robotsix_calendar_agent import brokered_entrypoint
 
         with (
@@ -99,15 +126,16 @@ class TestTransportSelection:
             mock_event_cls.return_value.wait.return_value = None
             brokered_entrypoint.main()
 
-        _, kwargs = mock_agent_cls.call_args
-        assert kwargs["transport"] is None
+        # In-process path: no registry/transport/pull wiring.
+        args, kwargs = mock_agent_cls.call_args
+        assert args == ()
+        assert kwargs == {}
 
-    def test_main_passes_brokered_transport_to_agent(self) -> None:
+    def test_main_brokered_wires_pull_agent(self) -> None:
         from robotsix_calendar_agent import brokered_entrypoint
 
         _set_brokered_env()
-        sentinel = MagicMock(name="broker_client")
-        _mock_agent_comm_transport.BrokerClient.return_value = sentinel
+        registry, transport = _stub_transport_pair()
 
         with (
             patch(
@@ -121,8 +149,33 @@ class TestTransportSelection:
             mock_event_cls.return_value.wait.return_value = None
             brokered_entrypoint.main()
 
-        _, kwargs = mock_agent_cls.call_args
-        assert kwargs["transport"] is sentinel
+        args, kwargs = mock_agent_cls.call_args
+        assert args == ("robotsix-calendar",)  # default agent id
+        assert kwargs["registry"] is registry
+        assert kwargs["transport"] is transport
+        assert kwargs["pull"] is True
+
+    def test_main_brokered_honours_agent_id_override(self) -> None:
+        from robotsix_calendar_agent import brokered_entrypoint
+
+        _set_brokered_env()
+        os.environ["CALENDAR_AGENT_ID"] = "calendar-staging"
+        _stub_transport_pair()
+
+        with (
+            patch(
+                "robotsix_calendar_agent.brokered_entrypoint.CalendarAgent"
+            ) as mock_agent_cls,
+            patch(
+                "robotsix_calendar_agent.brokered_entrypoint.threading.Event"
+            ) as mock_event_cls,
+            patch("robotsix_calendar_agent.brokered_entrypoint.signal.signal"),
+        ):
+            mock_event_cls.return_value.wait.return_value = None
+            brokered_entrypoint.main()
+
+        args, _ = mock_agent_cls.call_args
+        assert args == ("calendar-staging",)
 
 
 # ---------------------------------------------------------------------------
@@ -135,18 +188,8 @@ class TestEnvValidation:
         from robotsix_calendar_agent import brokered_entrypoint
 
         os.environ["CALENDAR_AGENT_TRANSPORT"] = "brokered"
-        os.environ["BROKER_TLS_CA"] = "/certs/ca.pem"
         os.environ["BROKER_AGENT_TOKEN"] = "secret-token"
         with pytest.raises(ValueError, match="BROKER_HOST"):
-            brokered_entrypoint._build_transport()
-
-    def test_missing_tls_ca_raises(self) -> None:
-        from robotsix_calendar_agent import brokered_entrypoint
-
-        os.environ["CALENDAR_AGENT_TRANSPORT"] = "brokered"
-        os.environ["BROKER_HOST"] = "broker.example.com"
-        os.environ["BROKER_AGENT_TOKEN"] = "secret-token"
-        with pytest.raises(ValueError, match="BROKER_TLS_CA"):
             brokered_entrypoint._build_transport()
 
     def test_missing_token_raises(self) -> None:
@@ -154,7 +197,6 @@ class TestEnvValidation:
 
         os.environ["CALENDAR_AGENT_TRANSPORT"] = "brokered"
         os.environ["BROKER_HOST"] = "broker.example.com"
-        os.environ["BROKER_TLS_CA"] = "/certs/ca.pem"
         with pytest.raises(ValueError, match="BROKER_AGENT_TOKEN"):
             brokered_entrypoint._build_transport()
 
