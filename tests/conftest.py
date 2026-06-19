@@ -9,6 +9,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+# Re-export the session-scoped integration fixture so it is explicitly
+# available to all test modules.
+from tests.caldav_test_server import caldav_client  # noqa: F401
+
 # ---------------------------------------------------------------------------
 # Mock robotsix_agent_comm in sys.modules before anything imports it
 # ---------------------------------------------------------------------------
