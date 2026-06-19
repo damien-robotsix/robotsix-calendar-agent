@@ -1,0 +1,15 @@
+name: Weekly lockfile bump
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    uses: damien-robotsix/robotsix-mill/.github/workflows/deps-bump.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main
+    secrets:
+      DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}
