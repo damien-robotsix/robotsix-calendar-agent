@@ -3,21 +3,25 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
 
-# Ensure caldav is mockable before any imports
-_mock_caldav = MagicMock()
-_mock_caldav.error.AuthorizationError = type("AuthorizationError", (Exception,), {})
-sys.modules["caldav"] = _mock_caldav
-
-from robotsix_calendar_agent.caldav_client import (  # noqa: E402
+from robotsix_calendar_agent.caldav_client import (
     CalDavClient,
     CalendarEvent,
     Contact,
     OperationError,
 )
+
+# Mock object prepared at module level but NOT yet injected into
+# sys.modules.  The reset_mock_caldav fixture (autouse) temporarily
+# swaps it in for each test so that session-scoped integration
+# fixtures (like caldav_client in tests/caldav_test_server.py) can
+# import the real caldav library without interference.
+_mock_caldav = MagicMock()
+_mock_caldav.error.AuthorizationError = type("AuthorizationError", (Exception,), {})
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -25,8 +29,15 @@ from robotsix_calendar_agent.caldav_client import (  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
-def reset_mock_caldav() -> MagicMock:
-    """Reset the mock caldav module between tests."""
+def reset_mock_caldav() -> Generator[MagicMock, None, None]:
+    """Replace caldav in sys.modules with mock, reset between tests.
+
+    Saves and restores the real caldav module so that integration
+    tests (which use the same session) can import the real library
+    outside of mocked test cases.
+    """
+    original = sys.modules.get("caldav")
+    sys.modules["caldav"] = _mock_caldav
     _mock_caldav.reset_mock(return_value=True, side_effect=True)
     # Re-establish default mock structure
     mock_client = MagicMock()
@@ -42,7 +53,13 @@ def reset_mock_caldav() -> MagicMock:
     mock_ab.name = "default-ab"
     mock_principal.addressbooks.return_value = [mock_ab]
 
-    return _mock_caldav
+    yield _mock_caldav
+
+    # Restore the real caldav module (or remove if it wasn't there)
+    if original is not None:
+        sys.modules["caldav"] = original
+    else:
+        sys.modules.pop("caldav", None)
 
 
 @pytest.fixture
