@@ -32,6 +32,6 @@ modules:
   - name: intent_parser
     paths:
       - src/robotsix_calendar_agent/intent_parser.py
-      - tests/test_intent_parser.py
+      - tests/intent_parser/test_intent_parser.py
     depends_on:
       - robotsix-llmio
