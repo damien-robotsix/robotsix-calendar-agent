@@ -36,3 +36,10 @@ modules:
       - tests/test_intent_parser.py
     depends_on:
       - robotsix-llmio
+
+  - name: brokered_entrypoint
+    paths:
+      - src/robotsix_calendar_agent/brokered_entrypoint.py
+      - tests/test_brokered_entrypoint.py
+    depends_on:
+      - agent
