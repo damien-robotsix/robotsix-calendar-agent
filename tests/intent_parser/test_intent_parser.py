@@ -144,15 +144,15 @@ class TestParseError:
         with pytest.raises(IntentParseError, match="Intent parsing failed"):
             parser.parse("list events")
 
-    def test_runs_inner_callback_and_returns_data(self) -> None:
-        """run_agent invokes the _run callback, exercising handle.agent.run_sync."""
+    def test_runs_inner_callback_and_returns_output(self) -> None:
+        """run_agent invokes the _run callback, exercising handle.run_sync."""
         _mock_llmio_core.reset_mock(return_value=True, side_effect=True)
         mock_handle = _setup_llmio_mock(_mock_run_agent("list_events", {}))
 
-        # Make run_sync return an object with a .data attribute.
+        # Make run_sync return an object with a .output attribute (pydantic-ai >=1).
         run_result = MagicMock()
-        run_result.data = _IntentOutput(operation="list_events", params={})
-        mock_handle.agent.run_sync.return_value = run_result
+        run_result.output = _IntentOutput(operation="list_events", params={})
+        mock_handle.run_sync.return_value = run_result
 
         # Make run_agent actually call the supplied _run callback.
         def _call_run(handle: object, run: object, **kwargs: object) -> object:
@@ -163,7 +163,7 @@ class TestParseError:
         parser = IntentParser()
         result = parser.parse("list events this week")
 
-        mock_handle.agent.run_sync.assert_called_once_with("list events this week")
+        mock_handle.run_sync.assert_called_once_with("list events this week")
         assert result.operation == CalendarOperation.LIST_EVENTS
 
     def test_raises_on_unexpected_output_type(self) -> None:
