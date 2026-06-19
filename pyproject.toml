@@ -74,7 +74,10 @@ strict = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:importlib",
+]
 markers = ["integration: Slower tests requiring a live Radicale server"]
 
 [tool.coverage.run]
