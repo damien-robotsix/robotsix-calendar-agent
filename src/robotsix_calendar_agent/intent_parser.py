@@ -79,14 +79,22 @@ class IntentParser:
 
             provider = get_provider(**self._model_config)
 
+            # level=1 is the cheap tier with reasoning DISABLED. DeepSeek's
+            # thinking mode rejects the tool_choice pydantic-ai uses for
+            # structured output ("Thinking mode does not support this
+            # tool_choice"), so a non-reasoning tier is required here.
             handle = provider.build_agent(
+                level=1,
                 system_prompt=_INTENT_SYSTEM_PROMPT,
                 output_type=_IntentOutput,
             )
 
             def _run() -> _IntentOutput:
-                result = handle.agent.run_sync(text)
-                return result.data  # type: ignore[no-any-return]
+                # AgentHandle delegates attribute access to the wrapped
+                # pydantic-ai Agent, so call run_sync on the handle directly.
+                # pydantic-ai >=1.0 exposes the result on ``.output``.
+                result = handle.run_sync(text)
+                return result.output  # type: ignore[no-any-return]
 
             output = run_agent(
                 handle,
