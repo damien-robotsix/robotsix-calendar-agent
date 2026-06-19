@@ -566,3 +566,28 @@ class TestLifecycle:
             assert ctx is calendar_agent
         calendar_agent._mock_agent_comm.start.assert_called_once()
         calendar_agent._mock_agent_comm.stop.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Dispatch–enum consistency
+# ---------------------------------------------------------------------------
+
+
+class TestDispatchEnumSync:
+    """Verify _DISPATCH keys stay in sync with CalendarOperation/ContactOperation."""
+
+    def test_dispatch_keys_match_enum_values(self) -> None:
+        from robotsix_calendar_agent.agent import _DISPATCH
+        from robotsix_calendar_agent.intent_parser import (
+            CalendarOperation,
+            ContactOperation,
+        )
+
+        dispatch_keys = set(_DISPATCH)
+        enum_values = {m.value for m in CalendarOperation} | {
+            m.value for m in ContactOperation
+        }
+        assert dispatch_keys == enum_values, (
+            f"Mismatch: extra in dict={dispatch_keys - enum_values}, "
+            f"missing={enum_values - dispatch_keys}"
+        )
