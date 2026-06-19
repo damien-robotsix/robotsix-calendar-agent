@@ -493,6 +493,45 @@ class TestIcalSerialization:
         assert "DESCRIPTION:Discuss Q3 goals" in ical
         assert "LOCATION:Room 101" in ical
 
+    def test_iso_extended_dates_converted_to_ical_basic(
+        self, client: CalDavClient
+    ) -> None:
+        # auto-mail / the LLM produce ISO-extended datetimes; Radicale rejects
+        # the extended form (colons/dashes) with 400 — they must be normalised.
+        event = CalendarEvent(
+            uid="evt-iso",
+            summary="ISO",
+            dtstart="2026-06-25T15:00:00",
+            dtend="2026-06-25T16:00:00",
+        )
+        ical = client._event_to_ical(event)
+        assert "DTSTART:20260625T150000" in ical
+        assert "DTEND:20260625T160000" in ical
+        assert "DTSTART:2026-06-25T15:00:00" not in ical
+        assert "DTSTAMP:" in ical
+
+    def test_basic_and_utc_dates_preserved(self, client: CalDavClient) -> None:
+        event = CalendarEvent(
+            uid="evt-utc",
+            summary="UTC",
+            dtstart="20260101T090000Z",
+            dtend="20260101T100000Z",
+        )
+        ical = client._event_to_ical(event)
+        assert "DTSTART:20260101T090000Z" in ical
+        assert "DTEND:20260101T100000Z" in ical
+
+    def test_date_only_uses_value_date(self, client: CalDavClient) -> None:
+        event = CalendarEvent(
+            uid="evt-day",
+            summary="All day",
+            dtstart="2026-06-25",
+            dtend="2026-06-26",
+        )
+        ical = client._event_to_ical(event)
+        assert "DTSTART;VALUE=DATE:20260625" in ical
+        assert "DTEND;VALUE=DATE:20260626" in ical
+
     def test_escapes_special_characters(self, client: CalDavClient) -> None:
         event = CalendarEvent(
             summary="a\\b;c,d\ne",

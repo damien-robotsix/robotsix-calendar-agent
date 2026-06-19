@@ -258,20 +258,56 @@ class CalDavClient:
         result = result.replace("\n", "\\n")
         return result
 
+    @staticmethod
+    def _ical_dt(name: str, value: str) -> str:
+        """Format a date/datetime as an RFC 5545 iCalendar property line.
+
+        Accepts ISO-8601 (extended ``2026-06-25T15:00:00`` or basic
+        ``20260625T150000``) and emits valid iCalendar basic format:
+        ``DTSTART:20260625T150000`` (floating), ``...Z`` (UTC), or
+        ``DTSTART;VALUE=DATE:20260625`` (date-only). Radicale rejects the
+        extended ISO form (colons/dashes) with ``400 Bad Request``.
+        """
+        import datetime
+
+        s = (value or "").strip()
+        if "T" in s:
+            try:
+                dt = datetime.datetime.fromisoformat(s)
+            except (ValueError, TypeError):
+                dt = None
+            if dt is not None:
+                if dt.tzinfo is not None:
+                    dt = dt.astimezone(datetime.UTC)
+                    return f"{name}:{dt.strftime('%Y%m%dT%H%M%SZ')}"
+                return f"{name}:{dt.strftime('%Y%m%dT%H%M%S')}"
+        else:
+            try:
+                d = datetime.date.fromisoformat(s)
+                return f"{name};VALUE=DATE:{d.strftime('%Y%m%d')}"
+            except (ValueError, TypeError):
+                pass
+        # Unparseable — pass through (server will reject if truly invalid).
+        return f"{name}:{s}"
+
     def _event_to_ical(self, event: CalendarEvent) -> str:
         """Build an iCalendar string from a :class:`CalendarEvent`."""
+        import datetime
+
         e = self._escape_text
+        dtstamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
         return (
             "BEGIN:VCALENDAR\n"
             "VERSION:2.0\n"
             "PRODID:-//robotsix-calendar-agent//EN\n"
             "BEGIN:VEVENT\n"
             f"UID:{event.uid or ''}\n"
+            f"DTSTAMP:{dtstamp}\n"
             f"SUMMARY:{e(event.summary)}\n"
             f"DESCRIPTION:{e(event.description)}\n"
             f"LOCATION:{e(event.location)}\n"
-            f"DTSTART:{event.dtstart}\n"
-            f"DTEND:{event.dtend}\n"
+            f"{self._ical_dt('DTSTART', event.dtstart)}\n"
+            f"{self._ical_dt('DTEND', event.dtend)}\n"
             "END:VEVENT\n"
             "END:VCALENDAR\n"
         )

@@ -12,7 +12,9 @@ license = { text = "MIT" }
 authors = [{ name = "Damien Robotsix", email = "damien.robotsix@gmail.com" }]
 dependencies = [
     "robotsix-agent-comm",
-    "robotsix-llmio",
+    # The intent parser uses llmio's default provider (openrouter-deepseek);
+    # the provider extra must be installed or get_provider() raises ImportError.
+    "robotsix-llmio[openrouter-deepseek]",
     "caldav",
     "pydantic",
 ]
