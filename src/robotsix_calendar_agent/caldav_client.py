@@ -456,19 +456,15 @@ class CalDavClient:
 
     @_wrap_caldav_op("delete event")
     def delete_event(self, uid: str, calendar_id: str = "") -> None:
-        """Delete the event identified by *uid*. Idempotent on already-deleted.
+        """Delete the event identified by *uid*. Idempotent.
 
-        Raises:
-            OperationError: If the event is not found (code ``"not_found"``).
+        Returns ``None`` when the UID does not exist (already deleted).
         """
         logger.debug("delete_event uid=%r calendar_id=%r", uid, calendar_id)
         cal = self._get_calendar(calendar_id)
         event_obj = cal.event(uid=uid)
         if event_obj is None:
-            raise OperationError(
-                code="not_found",
-                message=f"Event with UID {uid!r} not found.",
-            )
+            return None
         event_obj.delete()
 
     # ------------------------------------------------------------------

@@ -179,12 +179,12 @@ class TestDeleteEvent:
 
         mock_event.delete.assert_called_once()
 
-    def test_raises_not_found_for_unknown_uid(self, client: CalDavClient) -> None:
+    def test_returns_none_for_unknown_uid(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.event.return_value = None
 
-        with pytest.raises(OperationError, match="not found"):
-            client.delete_event("unknown")
+        result = client.delete_event("unknown")
+        assert result is None
 
 
 # ---------------------------------------------------------------------------
@@ -625,6 +625,12 @@ class TestOperationErrorPropagation:
         with pytest.raises(OperationError) as exc_info:
             client.delete_event("evt-1")
         assert exc_info.value.code == "caldav_error"
+
+    def test_delete_event_idempotent_on_not_found(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.event.return_value = None
+        result = client.delete_event("nonexistent-uid")
+        assert result is None
 
     def test_list_contacts_wraps_exception(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
