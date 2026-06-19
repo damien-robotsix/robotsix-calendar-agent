@@ -587,6 +587,12 @@ class TestOperationErrorPropagation:
             client.delete_event("evt-1")
         assert exc_info.value.code == "caldav_error"
 
+    def test_delete_event_idempotent_on_not_found(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.event.return_value = None
+        result = client.delete_event("nonexistent-uid")
+        assert result is None
+
     def test_list_contacts_wraps_exception(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
         ab.search.side_effect = Exception("boom")
