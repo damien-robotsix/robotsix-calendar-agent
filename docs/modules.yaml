@@ -11,6 +11,7 @@ modules:
     test_paths:
       - tests/test_smoke.py
       - tests/__init__.py
+      - tests/conftest.py
     doc_paths:
       - docs/index.md
       - docs/tutorials/index.md
