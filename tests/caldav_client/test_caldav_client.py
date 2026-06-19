@@ -179,12 +179,12 @@ class TestDeleteEvent:
 
         mock_event.delete.assert_called_once()
 
-    def test_raises_not_found_for_unknown_uid(self, client: CalDavClient) -> None:
+    def test_returns_none_for_unknown_uid(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.event.return_value = None
 
-        with pytest.raises(OperationError, match="not found"):
-            client.delete_event("unknown")
+        result = client.delete_event("unknown")
+        assert result is None
 
 
 # ---------------------------------------------------------------------------
