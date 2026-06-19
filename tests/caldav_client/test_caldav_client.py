@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Generator
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -87,35 +88,46 @@ def _make_event(**overrides: str) -> CalendarEvent:
     return CalendarEvent(**defaults)
 
 
-def _mock_vevent(**overrides: str) -> MagicMock:
-    """Build a mock vobject-style event."""
-    vevent = MagicMock()
-    vevent.uid.value = overrides.get("uid", "evt-1")
-    vevent.summary.value = overrides.get("summary", "Test Event")
-    vevent.description.value = overrides.get("description", "")
-    vevent.location.value = overrides.get("location", "")
-    vevent.dtstart.value = overrides.get("dtstart", "20260615T090000")
-    vevent.dtend.value = overrides.get("dtend", "20260615T100000")
+def _mock_vevent(**overrides: Any) -> MagicMock:
+    """Build a mock caldav object exposing ``icalendar_component`` (caldav 2.0)."""
+    import datetime
+
+    values: dict[str, Any] = {
+        "UID": overrides.get("uid", "evt-1"),
+        "SUMMARY": overrides.get("summary", "Test Event"),
+        "DESCRIPTION": overrides.get("description", ""),
+        "LOCATION": overrides.get("location", ""),
+        "DTSTART": MagicMock(
+            dt=overrides.get("dtstart", datetime.datetime(2026, 6, 15, 9, 0, 0))
+        ),
+        "DTEND": MagicMock(
+            dt=overrides.get("dtend", datetime.datetime(2026, 6, 15, 10, 0, 0))
+        ),
+    }
+    comp = MagicMock()
+    comp.get.side_effect = lambda name, default=None: values.get(name, default)
     obj = MagicMock()
-    obj.vobject_instance.vevent = vevent
+    obj.icalendar_component = comp
     return obj
 
 
 def _mock_vcard(**overrides: str) -> MagicMock:
-    """Build a mock vobject-style vcard."""
-    vcard = MagicMock()
-    vcard.uid = MagicMock()
-    vcard.uid.value = overrides.get("uid", "cnt-1")
-    vcard.fn = MagicMock()
-    vcard.fn.value = overrides.get("full_name", "John Doe")
-    vcard.email = MagicMock()
-    vcard.email.value = overrides.get("email", "")
-    vcard.tel = MagicMock()
-    vcard.tel.value = overrides.get("phone", "")
-    vcard.adr = MagicMock()
-    vcard.adr.value = overrides.get("address", "")
+    """Build a mock caldav object exposing raw vCard ``data`` (caldav 2.0)."""
+    lines = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        f"UID:{overrides.get('uid', 'cnt-1')}",
+        f"FN:{overrides.get('full_name', 'John Doe')}",
+    ]
+    if overrides.get("email"):
+        lines.append(f"EMAIL:{overrides['email']}")
+    if overrides.get("phone"):
+        lines.append(f"TEL:{overrides['phone']}")
+    if overrides.get("address"):
+        lines.append(f"ADR:;;{overrides['address']};;;")
+    lines.append("END:VCARD")
     obj = MagicMock()
-    obj.vobject_instance = vcard
+    obj.data = "\n".join(lines) + "\n"
     return obj
 
 
@@ -396,31 +408,57 @@ class TestToCalendarEvent:
     def test_formats_datetime_and_date_values(self) -> None:
         import datetime
 
-        obj = MagicMock()
-        ve = obj.vobject_instance.vevent
-        ve.uid.value = "evt-x"
-        ve.summary.value = "Sum"
-        ve.description.value = "Desc"
-        ve.location.value = "Loc"
-        ve.dtstart.value = datetime.datetime(2026, 6, 15, 9, 0, 0)
-        ve.dtend.value = datetime.date(2026, 6, 15)
+        obj = _mock_vevent(
+            uid="evt-x",
+            summary="Sum",
+            description="Desc",
+            location="Loc",
+            dtstart=datetime.datetime(2026, 6, 15, 9, 0, 0),
+            dtend=datetime.date(2026, 6, 15),
+        )
 
         event = CalDavClient._to_calendar_event(obj, calendar_id="cal")
 
+        assert event.uid == "evt-x"
         assert event.dtstart == "2026-06-15T09:00:00"
         assert event.dtend == "2026-06-15"
         assert event.calendar_id == "cal"
 
+    def test_missing_fields_yield_empty(self) -> None:
+        comp = MagicMock()
+        comp.get.side_effect = lambda name, default=None: default
+        obj = MagicMock()
+        obj.icalendar_component = comp
+
+        event = CalDavClient._to_calendar_event(obj)
+
+        assert event.uid == ""
+        assert event.summary == ""
+        assert event.dtstart == ""
+        assert event.dtend == ""
+
 
 class TestToContact:
+    def test_all_fields_parsed_from_vcard(self) -> None:
+        obj = _mock_vcard(
+            uid="cnt-1",
+            full_name="John Doe",
+            email="j@example.com",
+            phone="555-1234",
+            address="123 Main St",
+        )
+
+        contact = CalDavClient._to_contact(obj, addressbook_id="ab")
+
+        assert contact.uid == "cnt-1"
+        assert contact.full_name == "John Doe"
+        assert contact.email == "j@example.com"
+        assert contact.phone == "555-1234"
+        assert contact.address == "123 Main St"
+        assert contact.addressbook_id == "ab"
+
     def test_missing_optional_fields_yield_empty(self) -> None:
-        vcard = MagicMock(spec=["uid", "fn"])
-        vcard.uid = MagicMock()
-        vcard.uid.value = "cnt-9"
-        vcard.fn = MagicMock()
-        vcard.fn.value = "Only Name"
-        obj = MagicMock()
-        obj.vobject_instance = vcard
+        obj = _mock_vcard(uid="cnt-9", full_name="Only Name")
 
         contact = CalDavClient._to_contact(obj, addressbook_id="ab")
 
@@ -430,26 +468,9 @@ class TestToContact:
         assert contact.phone == ""
         assert contact.address == ""
 
-    def test_empty_optional_values_yield_empty(self) -> None:
-        vcard = MagicMock()
-        vcard.uid.value = "cnt-10"
-        vcard.fn.value = "Name"
-        vcard.email.value = ""
-        vcard.tel.value = ""
-        vcard.adr.value = ""
-        obj = MagicMock()
-        obj.vobject_instance = vcard
-
-        contact = CalDavClient._to_contact(obj)
-
-        assert contact.email == ""
-        assert contact.phone == ""
-        assert contact.address == ""
-
     def test_no_uid_or_fn_yield_empty(self) -> None:
-        vcard = MagicMock(spec=[])
         obj = MagicMock()
-        obj.vobject_instance = vcard
+        obj.data = "BEGIN:VCARD\nVERSION:3.0\nEND:VCARD\n"
 
         contact = CalDavClient._to_contact(obj)
 

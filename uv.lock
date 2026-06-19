@@ -1664,7 +1664,6 @@ dependencies = [
     { name = "pydantic" },
     { name = "robotsix-agent-comm" },
     { name = "robotsix-llmio", extra = ["openrouter-deepseek", "tracing"] },
-    { name = "vobject" },
 ]
 
 [package.dev-dependencies]
@@ -1689,7 +1688,6 @@ requires-dist = [
     { name = "pydantic" },
     { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=e65da0eafc49ec6dcfb895e5de431ce8f1b171bc" },
     { name = "robotsix-llmio", extras = ["openrouter-deepseek", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=b23b8297a19726a57e94dd652c4e1e5ee4f0fb14" },
-    { name = "vobject" },
 ]
 
 [package.metadata.requires-dev]

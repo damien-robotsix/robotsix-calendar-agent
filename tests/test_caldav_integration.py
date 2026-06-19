@@ -50,9 +50,9 @@ END:VCALENDAR"""
     )
 
     assert len(results) == 1
-    vobj = results[0].vobject_instance
-    assert vobj.vevent.summary.value == "Integration Test Meeting"
-    assert vobj.vevent.uid.value == "test-search-1"
+    comp = results[0].icalendar_component
+    assert str(comp.get("SUMMARY")) == "Integration Test Meeting"
+    assert str(comp.get("UID")) == "test-search-1"
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ END:VCALENDAR"""
         event=True,
     )
     assert len(results) == 1
-    assert results[0].vobject_instance.vevent.uid.value == "test-delete-1"
+    assert str(results[0].icalendar_component.get("UID")) == "test-delete-1"
 
     # Delete it
     results[0].delete()

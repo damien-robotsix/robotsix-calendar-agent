@@ -153,56 +153,69 @@ class CalDavClient:
 
     @staticmethod
     def _to_calendar_event(obj: Any, calendar_id: str = "") -> CalendarEvent:
-        """Convert a caldav event object to our :class:`CalendarEvent`."""
+        """Convert a caldav event object to our :class:`CalendarEvent`.
+
+        Reads via caldav 2.0's ``icalendar_component`` (the ``icalendar`` lib),
+        replacing the deprecated ``vobject_instance``.
+        """
         import datetime
 
-        vevent = obj.vobject_instance.vevent
-        uid_val: str = getattr(vevent.uid, "value", "")
-        summary_val: str = getattr(vevent.summary, "value", "")
-        description_val: str = getattr(vevent.description, "value", "")
-        location_val: str = getattr(vevent.location, "value", "")
+        comp = obj.icalendar_component
 
-        def _fmt_dt(dt: Any) -> str:
-            if isinstance(dt, datetime.datetime):
-                return dt.isoformat()
-            if isinstance(dt, datetime.date):
-                return dt.isoformat()
-            return str(dt)
+        def _text(name: str) -> str:
+            value = comp.get(name)
+            return str(value) if value is not None else ""
+
+        def _dt(name: str) -> str:
+            value = comp.get(name)
+            if value is None:
+                return ""
+            moment = getattr(value, "dt", value)
+            # datetime is a subclass of date — both serialise via isoformat().
+            if isinstance(moment, datetime.date):
+                return moment.isoformat()
+            return str(moment)
 
         return CalendarEvent(
-            uid=uid_val,
-            summary=summary_val,
-            description=description_val,
-            location=location_val,
-            dtstart=_fmt_dt(getattr(vevent.dtstart, "value", "")),
-            dtend=_fmt_dt(getattr(vevent.dtend, "value", "")),
+            uid=_text("UID"),
+            summary=_text("SUMMARY"),
+            description=_text("DESCRIPTION"),
+            location=_text("LOCATION"),
+            dtstart=_dt("DTSTART"),
+            dtend=_dt("DTEND"),
             calendar_id=calendar_id,
         )
 
     @staticmethod
     def _to_contact(obj: Any, addressbook_id: str = "") -> Contact:
-        """Convert a caldav vcard object to our :class:`Contact`."""
-        vcard = obj.vobject_instance
-        uid_raw: Any = getattr(vcard, "uid", None)
-        uid_val: str = uid_raw.value if uid_raw else ""
-        fn_raw: Any = getattr(vcard, "fn", None)
-        fn_val: str = fn_raw.value if fn_raw else ""
-        email_val: str = ""
-        if hasattr(vcard, "email"):
-            email_val = str(vcard.email.value) if vcard.email.value else ""
-        phone_val: str = ""
-        if hasattr(vcard, "tel"):
-            phone_val = str(vcard.tel.value) if vcard.tel.value else ""
-        address_val: str = ""
-        if hasattr(vcard, "adr"):
-            address_val = str(vcard.adr.value) if vcard.adr.value else ""
+        """Convert a caldav vCard object to our :class:`Contact`.
+
+        ``icalendar`` parses iCalendar only (not vCard), so this reads the raw
+        vCard text (``obj.data``) directly instead of the deprecated
+        ``vobject_instance``.
+        """
+        fields: dict[str, str] = {}
+        for line in (obj.data or "").splitlines():
+            name, sep, value = line.partition(":")
+            if not sep:
+                continue
+            # Property name without parameters (e.g. "TEL;TYPE=cell" -> "TEL").
+            key = name.split(";", 1)[0].strip().upper()
+            fields.setdefault(key, value.strip())  # first occurrence wins
+
+        address = ""
+        adr = fields.get("ADR", "")
+        if adr:
+            # vCard ADR is structured (PO;ext;street;city;region;postal;country);
+            # join the non-empty components.
+            address = ", ".join(part for part in adr.split(";") if part)
 
         return Contact(
-            uid=uid_val,
-            full_name=fn_val,
-            email=email_val,
-            phone=phone_val,
-            address=address_val,
+            uid=fields.get("UID", ""),
+            full_name=fields.get("FN", ""),
+            email=fields.get("EMAIL", ""),
+            phone=fields.get("TEL", ""),
+            address=address,
             addressbook_id=addressbook_id,
         )
 
