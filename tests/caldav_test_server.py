@@ -26,6 +26,18 @@ def radicale_app(storage_dir: Path) -> Any:
     Returns:
         A Radicale WSGI application (``radicale.app.Application``).
     """
+    import warnings
+
+    # radicale.httputils accesses importlib.abc.Traversable which is
+    # deprecated in Python 3.12+; suppress the warning so the "error"
+    # filter configured in pyproject.toml does not turn it into an
+    # exception.
+    warnings.filterwarnings(
+        "ignore",
+        category=DeprecationWarning,
+        message=r".*importlib\.abc\.Traversable.*",
+    )
+
     import radicale.app
     import radicale.config
 
