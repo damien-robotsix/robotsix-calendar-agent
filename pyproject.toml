@@ -12,9 +12,11 @@ license = { text = "MIT" }
 authors = [{ name = "Damien Robotsix", email = "damien.robotsix@gmail.com" }]
 dependencies = [
     "robotsix-agent-comm",
-    # The intent parser uses llmio's default provider (openrouter-deepseek);
-    # the provider extra must be installed or get_provider() raises ImportError.
-    "robotsix-llmio[openrouter-deepseek]",
+    # The intent parser uses llmio's default provider (openrouter-deepseek); the
+    # provider extra must be installed or get_provider() raises ImportError. The
+    # tracing extra pulls the OpenTelemetry/OTLP deps setup_langfuse_tracing()
+    # needs to export intent-parse traces to Langfuse.
+    "robotsix-llmio[openrouter-deepseek,tracing]",
     "caldav",
     # caldav 2.0 dropped vobject as an official dependency, but the client
     # wrapper reads results via ``obj.vobject_instance``; install it explicitly
