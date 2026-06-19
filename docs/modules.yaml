@@ -1,12 +1,19 @@
 modules:
   - name: init
     path: src/robotsix_calendar_agent/__init__.py
+    paths:
+      - src/robotsix_calendar_agent/__init__.py
+      - src/robotsix_calendar_agent/py.typed
     depends_on:
       - agent
       - caldav_client
       - intent_parser
     test_paths:
       - tests/test_smoke.py
+      - tests/__init__.py
+    doc_paths:
+      - docs/index.md
+      - docs/tutorials/index.md
 
   - name: agent
     path: src/robotsix_calendar_agent/agent.py
