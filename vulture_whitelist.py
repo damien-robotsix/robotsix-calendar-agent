@@ -1,9 +1,6 @@
 # vulture whitelist — symbols listed here are excluded from dead-code detection.
 # Add false-positive names one per line (bare names, not strings).
 
-# Public API alias for stop()
-close
-
 # Set in __init__ and used via self._url
 _url
 

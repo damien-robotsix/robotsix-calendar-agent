@@ -557,10 +557,6 @@ class TestLifecycle:
         calendar_agent.stop()
         calendar_agent._mock_agent_comm.stop.assert_called_once()
 
-    def test_close_aliases_stop(self, calendar_agent: MagicMock) -> None:
-        calendar_agent.close()
-        calendar_agent._mock_agent_comm.stop.assert_called_once()
-
     def test_context_manager(self, calendar_agent: MagicMock) -> None:
         with calendar_agent as ctx:
             assert ctx is calendar_agent

@@ -208,10 +208,6 @@ class CalendarAgent:
         logger.info("Stopping CalendarAgent (agent_id=%r)", self._agent_id)
         self._agent.stop()
 
-    def close(self) -> None:
-        """Alias for :meth:`stop`."""
-        self.stop()
-
     def __enter__(self) -> CalendarAgent:
         self.start()
         return self
