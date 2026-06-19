@@ -43,6 +43,7 @@ dev = [
     "pytest-cov",
     "pre-commit",
     "vulture",
+    "radicale",
 ]
 docs = [
     "mkdocs",
@@ -74,6 +75,7 @@ strict = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["error"]
+markers = ["integration: Slower tests requiring a live Radicale server"]
 
 [tool.coverage.run]
 source = ["robotsix_calendar_agent"]

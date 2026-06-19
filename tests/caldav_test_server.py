@@ -65,7 +65,7 @@ def caldav_client(tmp_path_factory: pytest.TempPathFactory) -> Any:
     t.start()
 
     url = f"http://127.0.0.1:{port}"
-    client = caldav.DAVClient(url=url, username="x", password="x")
+    client = caldav.DAVClient(url=url, username="x", password="x")  # type: ignore[operator]
 
     # Ensure the principal has a default calendar so test code can
     # immediately call ``principal.calendars()`` and get a non-empty
