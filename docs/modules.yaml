@@ -30,6 +30,9 @@ modules:
     depends_on: []
     test_paths:
       - tests/caldav_client/test_caldav_client.py
+      - tests/caldav_client/__init__.py
+      - tests/caldav_test_server.py
+      - tests/test_caldav_integration.py
 
   - name: add_to_calendar_handler
     paths:
