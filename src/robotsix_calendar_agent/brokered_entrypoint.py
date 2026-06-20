@@ -59,14 +59,17 @@ def _build_brokered_agent() -> Any:
     port = int(os.environ.get("BROKER_PORT", "443"))
     scheme = os.environ.get("BROKER_SCHEME", "https")
     tls_ca = os.environ.get("BROKER_TLS_CA", "") or None
+    client_cert = os.environ.get("BROKER_CLIENT_CERT", "") or None
+    client_key = os.environ.get("BROKER_CLIENT_KEY", "") or None
     agent_id = os.environ.get("CALENDAR_AGENT_ID", _DEFAULT_AGENT_ID)
 
     logger.info(
-        "Connecting to broker at %s://%s:%d (custom CA=%s) as %s",
+        "Connecting to broker at %s://%s:%d (custom CA=%s, mTLS=%s) as %s",
         scheme,
         host,
         port,
         "yes" if tls_ca else "no (system trust)",
+        "yes" if (client_cert and client_key) else "no",
         agent_id,
     )
 
@@ -77,6 +80,8 @@ def _build_brokered_agent() -> Any:
         broker_scheme=scheme,
         broker_token=token,
         tls_ca=tls_ca,
+        client_cert=client_cert,
+        client_key=client_key,
     )
 
 
