@@ -309,8 +309,14 @@ def handle_add_to_calendar(
     # -- event creation -----------------------------------------------
 
     created, error_resp = _create_calendar_event(
-        caldav_client, request, subject, description, location,
-        dtstart_str, dtend_str, correlation_id,
+        caldav_client,
+        request,
+        subject,
+        description,
+        location,
+        dtstart_str,
+        dtend_str,
+        correlation_id,
     )
     if error_resp is not None:
         return error_resp
