@@ -1,28 +1,51 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-slim-bookworm
+
+# Builder stage: installs build dependencies and creates the virtualenv.
+FROM python:3.12-slim-bookworm AS builder
 
 # Install uv from the official image.
 COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
 # git is required: robotsix-agent-comm and robotsix-llmio are git dependencies
 # that uv fetches at build time.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends git
 
 WORKDIR /app
 
-# Copy dependency manifests and source, then install (no dev deps).
-# README.md is required by the hatchling build backend (project readme).
-COPY pyproject.toml uv.lock README.md ./
-COPY src/ ./src/
+# Optimize uv for Docker builds.
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
+# First layer: install only dependencies (cached unless pyproject.toml/uv.lock change).
+COPY pyproject.toml uv.lock README.md ./
+RUN uv sync --frozen --no-install-project --no-dev
+
+# Second layer: copy source and install the project itself.
+COPY . .
 RUN uv sync --frozen --no-dev
 
-# Run brokered by default; the Compose file can override this.
-ENV CALENDAR_AGENT_TRANSPORT=brokered
 
-# Make the installed console-script available on PATH.
+# Runtime stage: minimal image with only the virtualenv and source.
+FROM python:3.12-slim-bookworm AS runtime
+
+# Create a dedicated non-root user.
+RUN groupadd -g 1001 app && useradd -u 1001 -g app -m -d /app -s /bin/false app
+
+WORKDIR /app
+
+# Copy the virtualenv and source from the builder.
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/src /app/src
+
+# Fix ownership for the non-root user.
+RUN chown -R app:app /app
+
+# Runtime configuration.
+ENV CALENDAR_AGENT_TRANSPORT=brokered
 ENV PATH="/app/.venv/bin:${PATH}"
+
+USER app
 
 CMD ["calendar-agent"]
