@@ -125,6 +125,111 @@ def _resolve_dates_via_llm(
 
 
 # ---------------------------------------------------------------------------
+# handler helpers
+# ---------------------------------------------------------------------------
+
+
+def _validate_add_to_calendar_payload(
+    payload: dict[str, Any],
+    request: Any,
+) -> tuple[str, str, str, str] | Any:
+    """Validate the add-to-calendar payload and extract core fields.
+
+    Returns ``(subject, description, location, correlation_id)`` on success,
+    or a :class:`~robotsix_agent_comm.protocol.Response` on validation
+    failure.
+    """
+    from robotsix_agent_comm.protocol import Response
+
+    if not isinstance(payload, dict):
+        return Response.to(
+            request,
+            body=_build_error_body(
+                "internal_error",
+                "add_to_calendar payload must be a dictionary.",
+                "",
+            ),
+        )
+
+    subject = payload.get("subject")
+    description = payload.get("description")
+    location = payload.get("location")
+    correlation_id: str = payload.get("correlation_id", "")
+
+    if not subject or not isinstance(subject, str) or not subject.strip():
+        return Response.to(
+            request,
+            body=_build_error_body(
+                ERROR_MISSING_SUBJECT,
+                "Subject is required and must be a non-empty string.",
+                correlation_id,
+            ),
+        )
+
+    return subject.strip(), description or "", location or "", correlation_id
+
+
+def _resolve_event_dates(
+    payload: dict[str, Any],
+    intent_parser: Any,
+) -> tuple[str, str] | None:
+    """Resolve event start/end datetimes from the payload.
+
+    Prefers explicit ``suggested_dtstart``/``suggested_dtend`` fields;
+    falls back to LLM-based resolution via *intent_parser*.  Returns
+    ``None`` when dates cannot be determined.
+    """
+    return _explicit_dates(payload) or _resolve_dates_via_llm(intent_parser, payload)
+
+
+def _create_calendar_event(
+    caldav_client: Any,
+    request: Any,
+    subject: str,
+    description: str,
+    location: str,
+    dtstart_str: str,
+    dtend_str: str,
+    correlation_id: str,
+) -> tuple[Any, Any | None]:
+    """Create a calendar event via the CalDAV client.
+
+    Returns ``(created_event, None)`` on success, or
+    ``(None, error_response)`` when creation fails.
+    """
+    from robotsix_agent_comm.protocol import Response
+
+    event = CalendarEvent(
+        summary=subject,
+        description=description,
+        location=location,
+        dtstart=dtstart_str,
+        dtend=dtend_str,
+    )
+
+    try:
+        created = caldav_client.create_event(event)
+    except OperationError as exc:
+        logger.error("CalDAV error creating event '%s': %s", subject, exc)
+        return None, Response.to(
+            request,
+            body=_build_error_body(exc.code, exc.message, correlation_id),
+        )
+    except Exception as exc:
+        logger.error("Internal error creating event '%s': %s", subject, exc)
+        return None, Response.to(
+            request,
+            body=_build_error_body(
+                "internal_error",
+                f"Unexpected error: {exc}",
+                correlation_id,
+            ),
+        )
+
+    return created, None
+
+
+# ---------------------------------------------------------------------------
 # handler
 # ---------------------------------------------------------------------------
 
@@ -153,36 +258,16 @@ def handle_add_to_calendar(
 
     from robotsix_agent_comm.protocol import Response
 
-    if not isinstance(payload, dict):
-        return Response.to(
-            request,
-            body=_build_error_body(
-                "internal_error",
-                "add_to_calendar payload must be a dictionary.",
-                "",
-            ),
-        )
-
-    subject = payload.get("subject")
-    description = payload.get("description")
-    location = payload.get("location")
-    correlation_id: str = payload.get("correlation_id", "")
-
     # -- validation ---------------------------------------------------
 
-    if not subject or not isinstance(subject, str) or not subject.strip():
-        return Response.to(
-            request,
-            body=_build_error_body(
-                ERROR_MISSING_SUBJECT,
-                "Subject is required and must be a non-empty string.",
-                correlation_id,
-            ),
-        )
+    result = _validate_add_to_calendar_payload(payload, request)
+    if not isinstance(result, tuple):
+        return result  # error Response
+    subject, description, location, correlation_id = result
 
-    # Use explicit suggested dates when provided; otherwise let the LLM intent
-    # parser resolve them from the email context auto-mail forwarded.
-    dates = _explicit_dates(payload) or _resolve_dates_via_llm(intent_parser, payload)
+    # -- date resolution ----------------------------------------------
+
+    dates = _resolve_event_dates(payload, intent_parser)
     if dates is None:
         return Response.to(
             request,
@@ -195,6 +280,8 @@ def handle_add_to_calendar(
             ),
         )
     dtstart_str, dtend_str = dates
+
+    # -- ISO 8601 parsing + time-ordering -----------------------------
 
     try:
         dtstart = datetime.datetime.fromisoformat(dtstart_str)
@@ -221,32 +308,12 @@ def handle_add_to_calendar(
 
     # -- event creation -----------------------------------------------
 
-    event = CalendarEvent(
-        summary=subject.strip(),
-        description=description or "",
-        location=location or "",
-        dtstart=dtstart_str,
-        dtend=dtend_str,
+    created, error_resp = _create_calendar_event(
+        caldav_client, request, subject, description, location,
+        dtstart_str, dtend_str, correlation_id,
     )
-
-    try:
-        created = caldav_client.create_event(event)
-    except OperationError as exc:
-        logger.error("CalDAV error creating event '%s': %s", subject, exc)
-        return Response.to(
-            request,
-            body=_build_error_body(exc.code, exc.message, correlation_id),
-        )
-    except Exception as exc:
-        logger.error("Internal error creating event '%s': %s", subject, exc)
-        return Response.to(
-            request,
-            body=_build_error_body(
-                "internal_error",
-                f"Unexpected error: {exc}",
-                correlation_id,
-            ),
-        )
+    if error_resp is not None:
+        return error_resp
 
     # -- success response ---------------------------------------------
 
