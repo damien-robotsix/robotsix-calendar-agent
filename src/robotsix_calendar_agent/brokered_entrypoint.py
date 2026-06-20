@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 import os
 import signal
+import ssl
 import threading
 from typing import Any
 
@@ -39,6 +40,11 @@ def _build_brokered_agent() -> Any:
     The deployed broker is fronted by a publicly-trusted TLS endpoint, so by
     default no CA file is needed — system trust + a bearer token. ``BROKER_TLS_CA``
     may point at a custom CA PEM for a privately-signed broker certificate.
+
+    Mutual TLS (mTLS) is configured via ``BROKER_CLIENT_CERT`` and
+    ``BROKER_CLIENT_KEY``.  When either is set, an :class:`ssl.SSLContext`
+    is built with the client certificate chain and passed via
+    ``ssl_context``, which takes precedence over ``tls_ca``.
 
     Raises:
         ValueError: If a required brokered env var is missing.
@@ -63,13 +69,22 @@ def _build_brokered_agent() -> Any:
     client_key = os.environ.get("BROKER_CLIENT_KEY", "") or None
     agent_id = os.environ.get("CALENDAR_AGENT_ID", _DEFAULT_AGENT_ID)
 
+    # Build an explicit SSLContext when mTLS is configured, since
+    # BrokeredAgent does not accept client_cert / client_key directly.
+    ssl_context: ssl.SSLContext | None = None
+    if client_cert and client_key:
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        if tls_ca:
+            ssl_context.load_verify_locations(cafile=tls_ca)
+        ssl_context.load_cert_chain(certfile=client_cert, keyfile=client_key)
+
     logger.info(
         "Connecting to broker at %s://%s:%d (custom CA=%s, mTLS=%s) as %s",
         scheme,
         host,
         port,
         "yes" if tls_ca else "no (system trust)",
-        "yes" if (client_cert and client_key) else "no",
+        "yes" if ssl_context else "no",
         agent_id,
     )
 
@@ -79,9 +94,8 @@ def _build_brokered_agent() -> Any:
         broker_port=port,
         broker_scheme=scheme,
         broker_token=token,
-        tls_ca=tls_ca,
-        client_cert=client_cert,
-        client_key=client_key,
+        tls_ca=tls_ca if ssl_context is None else None,
+        ssl_context=ssl_context,
     )
 
 
