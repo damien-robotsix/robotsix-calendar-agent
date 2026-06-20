@@ -380,7 +380,7 @@ class CalDavClient:
     ) -> list[CalendarEvent]:
         """Return events in the ISO 8601 date range.
 
-        If *calendar_id* is empty, search all calendars.
+        If *calendar_id* is empty, use the default calendar.
         """
         logger.debug(
             "list_events start=%r end=%r calendar_id=%r",
@@ -488,7 +488,7 @@ class CalDavClient:
     def list_contacts(self, addressbook_id: str = "") -> list[Contact]:
         """Return all contacts.
 
-        If *addressbook_id* is empty, search all address books.
+        If *addressbook_id* is empty, use the default address book.
         """
         logger.debug("list_contacts addressbook_id=%r", addressbook_id)
         ab = self._get_addressbook(addressbook_id)
