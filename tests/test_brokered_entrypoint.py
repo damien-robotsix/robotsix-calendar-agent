@@ -29,6 +29,8 @@ def clean_broker_env() -> Any:
         "BROKER_SCHEME",
         "BROKER_TLS_CA",
         "BROKER_AGENT_TOKEN",
+        "BROKER_CLIENT_CERT",
+        "BROKER_CLIENT_KEY",
     )
     for key in keys:
         os.environ.pop(key, None)
@@ -73,6 +75,7 @@ class TestBuildBrokeredAgent:
         assert kwargs["broker_scheme"] == "https"
         assert kwargs["broker_token"] == "secret-token"
         assert kwargs["tls_ca"] is None
+        assert kwargs["ssl_context"] is None
 
     def test_honours_overrides(self) -> None:
         from robotsix_calendar_agent import brokered_entrypoint
@@ -82,15 +85,21 @@ class TestBuildBrokeredAgent:
         os.environ["BROKER_SCHEME"] = "http"
         os.environ["CALENDAR_AGENT_ID"] = "calendar-staging"
         os.environ["BROKER_TLS_CA"] = "/certs/ca.pem"
+        os.environ["BROKER_CLIENT_CERT"] = "/certs/client.pem"
+        os.environ["BROKER_CLIENT_KEY"] = "/certs/client.key"
         _stub_brokered_agent()
 
-        brokered_entrypoint._build_brokered_agent()
+        with patch(
+            "robotsix_calendar_agent.brokered_entrypoint.ssl.SSLContext"
+        ) as mock_ssl_ctx_cls:
+            brokered_entrypoint._build_brokered_agent()
 
         args, kwargs = _mock_agent_comm_sdk.BrokeredAgent.call_args
         assert args[0] == "calendar-staging"
         assert kwargs["broker_port"] == 9090
         assert kwargs["broker_scheme"] == "http"
-        assert kwargs["tls_ca"] == "/certs/ca.pem"
+        assert kwargs["tls_ca"] is None  # ssl_context takes precedence
+        assert kwargs["ssl_context"] is mock_ssl_ctx_cls.return_value
 
 
 class TestEnvValidation:
