@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -132,12 +132,16 @@ class IntentParser:
 class _IntentOutput(BaseModel):
     """Structured output from the llmio model — not part of the public API."""
 
-    operation: str = Field(
-        description=(
-            "One of: list_events, create_event, update_event, delete_event, "
-            "list_contacts, create_contact, update_contact, delete_contact"
-        ),
-    )
+    operation: Literal[
+        "list_events",
+        "create_event",
+        "update_event",
+        "delete_event",
+        "list_contacts",
+        "create_contact",
+        "update_contact",
+        "delete_contact",
+    ]
     params: dict[str, Any] = Field(
         default_factory=dict,
         description="Operation-specific parameters as key-value pairs.",
