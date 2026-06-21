@@ -62,7 +62,7 @@ def _build_brokered_agent() -> Any:
             "BROKER_AGENT_TOKEN is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
 
-    port = int(os.environ.get("BROKER_PORT", "443"))
+    port = int(os.environ.get("BROKER_PORT", "9090"))
     scheme = os.environ.get("BROKER_SCHEME", "https")
     tls_ca = os.environ.get("BROKER_TLS_CA", "") or None
     client_cert = os.environ.get("BROKER_CLIENT_CERT", "") or None

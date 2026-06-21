@@ -154,7 +154,7 @@ docker compose up calendar-agent
 | `CALENDAR_AGENT_TRANSPORT` | No | `inprocess` | Transport mode: `inprocess` (in-memory `Registry`) or `brokered` |
 | `CALENDAR_AGENT_ID` | No | `robotsix-calendar` | Agent identity registered on the broker |
 | `BROKER_HOST` | When brokered | — | Broker hostname/IP |
-| `BROKER_PORT` | When brokered | `9090` | Broker port |
+| `BROKER_PORT` | No | `9090` | Broker port |
 | `BROKER_SCHEME` | When brokered | `https` | Broker URL scheme (`http` or `https`) |
 | `BROKER_TLS_CA` | When brokered | — | Path to CA certificate PEM for verifying the broker |
 | `BROKER_CLIENT_CERT` | No | — | Path to client certificate PEM (mTLS, optional) |

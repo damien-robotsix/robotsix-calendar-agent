@@ -71,7 +71,7 @@ class TestBuildBrokeredAgent:
         args, kwargs = _mock_agent_comm_sdk.BrokeredAgent.call_args
         assert args[0] == "robotsix-calendar"  # default agent id
         assert kwargs["broker_host"] == "broker.example.com"
-        assert kwargs["broker_port"] == 443
+        assert kwargs["broker_port"] == 9090
         assert kwargs["broker_scheme"] == "https"
         assert kwargs["broker_token"] == "secret-token"
         assert kwargs["tls_ca"] is None
