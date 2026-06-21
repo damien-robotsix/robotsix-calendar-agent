@@ -152,6 +152,7 @@ docker compose up calendar-agent
 | `RADICALE_USERNAME` | Yes | — | Radicale username |
 | `RADICALE_PASSWORD` | Yes | — | Radicale password |
 | `CALENDAR_AGENT_TRANSPORT` | No | `inprocess` | Transport mode: `inprocess` (in-memory `Registry`) or `brokered` |
+| `CALENDAR_AGENT_ID` | No | `robotsix-calendar` | Agent identity registered on the broker |
 | `BROKER_HOST` | When brokered | — | Broker hostname/IP |
 | `BROKER_PORT` | When brokered | `9090` | Broker port |
 | `BROKER_SCHEME` | When brokered | `https` | Broker URL scheme (`http` or `https`) |
