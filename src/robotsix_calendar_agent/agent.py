@@ -81,13 +81,15 @@ class CalendarAgent:
         llm_model_config: dict[str, Any] | None = None,
         agent: Any | None = None,
     ) -> None:
-        import os
+        from .settings import Settings
+
+        settings = Settings()
 
         self._agent_id = agent_id
 
-        url = radicale_url or os.environ.get("RADICALE_URL", "")
-        username = radicale_username or os.environ.get("RADICALE_USERNAME", "")
-        password = radicale_password or os.environ.get("RADICALE_PASSWORD", "")
+        url = radicale_url or settings.RADICALE_URL
+        username = radicale_username or settings.RADICALE_USERNAME
+        password = radicale_password or settings.RADICALE_PASSWORD.get_secret_value()
 
         if not url or not username or not password:
             raise ValueError(

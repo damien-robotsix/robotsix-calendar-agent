@@ -17,7 +17,6 @@ Transport modes:
 from __future__ import annotations
 
 import logging
-import os
 import signal
 import ssl
 import threading
@@ -51,23 +50,27 @@ def _build_brokered_agent() -> Any:
     """
     from robotsix_agent_comm.sdk import BrokeredAgent
 
-    host = os.environ.get("BROKER_HOST", "")
+    from .settings import Settings
+
+    settings = Settings()
+
+    host = settings.BROKER_HOST
     if not host:
         raise ValueError(
             "BROKER_HOST is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
-    token = os.environ.get("BROKER_AGENT_TOKEN", "")
+    token = settings.BROKER_AGENT_TOKEN.get_secret_value()
     if not token:
         raise ValueError(
             "BROKER_AGENT_TOKEN is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
 
-    port = int(os.environ.get("BROKER_PORT", "9090"))
-    scheme = os.environ.get("BROKER_SCHEME", "https")
-    tls_ca = os.environ.get("BROKER_TLS_CA", "") or None
-    client_cert = os.environ.get("BROKER_CLIENT_CERT", "") or None
-    client_key = os.environ.get("BROKER_CLIENT_KEY", "") or None
-    agent_id = os.environ.get("CALENDAR_AGENT_ID", _DEFAULT_AGENT_ID)
+    port = settings.BROKER_PORT
+    scheme = settings.BROKER_SCHEME
+    tls_ca = settings.BROKER_TLS_CA
+    client_cert = settings.BROKER_CLIENT_CERT
+    client_key = settings.BROKER_CLIENT_KEY
+    agent_id = settings.CALENDAR_AGENT_ID
 
     # Build an explicit SSLContext when mTLS is configured, since
     # BrokeredAgent does not accept client_cert / client_key directly.
@@ -126,7 +129,10 @@ def main() -> None:
         ValueError: If ``CALENDAR_AGENT_TRANSPORT`` holds an unrecognised value
             or a required brokered env var is missing.
     """
-    mode = os.environ.get("CALENDAR_AGENT_TRANSPORT", "inprocess").strip().lower()
+    from .settings import Settings
+
+    settings = Settings()
+    mode = settings.CALENDAR_AGENT_TRANSPORT
 
     if mode == "brokered":
         brokered = _build_brokered_agent()
