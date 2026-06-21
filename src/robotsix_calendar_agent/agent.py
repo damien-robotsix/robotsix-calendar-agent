@@ -290,21 +290,7 @@ def _handle_list_events(
     ]
 
 
-def _handle_create_event(
-    client: CalDavClient, params: dict[str, Any]
-) -> dict[str, Any]:
-    return _entity_op(
-        client,
-        params,
-        builder=_build_event,
-        serializer=_event_to_dict,
-        create_fn=client.create_event,
-        update_fn=client.update_event,
-        id_key="calendar_id",
-    )
-
-
-def _handle_update_event(
+def _handle_create_or_update_event(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
     return _entity_op(
@@ -337,21 +323,7 @@ def _handle_list_contacts(
     ]
 
 
-def _handle_create_contact(
-    client: CalDavClient, params: dict[str, Any]
-) -> dict[str, Any]:
-    return _entity_op(
-        client,
-        params,
-        builder=_build_contact,
-        serializer=_contact_to_dict,
-        create_fn=client.create_contact,
-        update_fn=client.update_contact,
-        id_key="addressbook_id",
-    )
-
-
-def _handle_update_contact(
+def _handle_create_or_update_contact(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
     return _entity_op(
@@ -377,12 +349,12 @@ def _handle_delete_contact(
 
 _DISPATCH = {
     "list_events": _handle_list_events,
-    "create_event": _handle_create_event,
-    "update_event": _handle_update_event,
+    "create_event": _handle_create_or_update_event,
+    "update_event": _handle_create_or_update_event,
     "delete_event": _handle_delete_event,
     "list_contacts": _handle_list_contacts,
-    "create_contact": _handle_create_contact,
-    "update_contact": _handle_update_contact,
+    "create_contact": _handle_create_or_update_contact,
+    "update_contact": _handle_create_or_update_contact,
     "delete_contact": _handle_delete_contact,
 }
 
