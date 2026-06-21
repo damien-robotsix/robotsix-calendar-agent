@@ -49,8 +49,12 @@ modules:
       - robotsix-llmio
 
   - name: brokered_entrypoint
+    path: src/robotsix_calendar_agent/brokered_entrypoint.py
     paths:
       - src/robotsix_calendar_agent/brokered_entrypoint.py
-      - tests/test_brokered_entrypoint.py
+    test_paths:
+      - tests/brokered_entrypoint/test_brokered_entrypoint.py
+    doc_paths:
+      - docs/reference/brokered_entrypoint.md
     depends_on:
       - agent
