@@ -19,6 +19,7 @@ dependencies = [
     "robotsix-llmio[openrouter-deepseek,tracing]",
     "caldav",
     "pydantic",
+    "pydantic-settings",
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",

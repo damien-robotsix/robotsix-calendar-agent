@@ -16,3 +16,9 @@ DELETE_CONTACT
 
 # Dataclass field with default
 original_text
+
+# Pydantic field-validator methods — invoked by the framework, not dead code
+_normalize_transport
+_validate_port
+_empty_str_to_none
+cls
