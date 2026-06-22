@@ -272,10 +272,18 @@ def _entity_op(
     3. Serialize result via serializer.
     """
     entity = builder(params)
-    op = update_fn if "uid" in params else create_fn
-    uid = params.get("uid", "")
-    kwargs = {id_key: params.get(id_key, "")}
-    result = op(uid, entity, **kwargs) if op is update_fn else op(entity, **kwargs)
+    if "uid" in params:
+        uid = params["uid"]
+        if not uid:
+            raise OperationError(
+                code="missing_uid",
+                message="A UID is required to update, but none was provided.",
+            )
+        kwargs = {id_key: params.get(id_key, "")}
+        result = update_fn(uid, entity, **kwargs)
+    else:
+        kwargs = {id_key: params.get(id_key, "")}
+        result = create_fn(entity, **kwargs)
     return serializer(result)
 
 
@@ -308,8 +316,14 @@ def _handle_create_or_update_event(
 def _handle_delete_event(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, bool]:
+    uid = params.get("uid", "")
+    if not uid:
+        raise OperationError(
+            code="missing_uid",
+            message="A UID is required to delete an event, but none was provided.",
+        )
     client.delete_event(
-        uid=params.get("uid", ""),
+        uid=uid,
         calendar_id=params.get("calendar_id", ""),
     )
     return {"deleted": True}
@@ -340,8 +354,14 @@ def _handle_create_or_update_contact(
 def _handle_delete_contact(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, bool]:
+    uid = params.get("uid", "")
+    if not uid:
+        raise OperationError(
+            code="missing_uid",
+            message="A UID is required to delete a contact, but none was provided.",
+        )
     client.delete_contact(
-        uid=params.get("uid", ""),
+        uid=uid,
         addressbook_id=params.get("addressbook_id", ""),
     )
     return {"deleted": True}
