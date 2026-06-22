@@ -144,6 +144,9 @@ docker compose up calendar-agent
 
 ## Configuration reference
 
+See [Configuration](configuration.md) for the canonical environment-variable
+reference.
+
 ### Environment variables
 
 | Variable | Required | Default | Description |
