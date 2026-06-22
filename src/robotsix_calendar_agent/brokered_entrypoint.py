@@ -56,14 +56,16 @@ def _build_brokered_agent() -> Any:
 
     host = settings.BROKER_HOST
     if not host:
-        raise ValueError(
+        _MISSING_HOST_MSG = (
             "BROKER_HOST is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
+        raise ValueError(_MISSING_HOST_MSG)
     token = settings.BROKER_AGENT_TOKEN.get_secret_value()
     if not token:
-        raise ValueError(
+        _MISSING_TOKEN_MSG = (
             "BROKER_AGENT_TOKEN is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
+        raise ValueError(_MISSING_TOKEN_MSG)
 
     port = settings.BROKER_PORT
     scheme = settings.BROKER_SCHEME
@@ -148,7 +150,8 @@ def main() -> None:
         _serve_blocking(CalendarAgent())
         return
 
-    raise ValueError(
+    _invalid_msg = (
         f"Invalid CALENDAR_AGENT_TRANSPORT={mode!r}; "
         "expected 'inprocess' or 'brokered'."
     )
+    raise ValueError(_invalid_msg)

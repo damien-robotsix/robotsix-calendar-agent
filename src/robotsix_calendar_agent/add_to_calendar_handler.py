@@ -210,13 +210,13 @@ def _create_calendar_event(
     try:
         created = caldav_client.create_event(event)
     except OperationError as exc:
-        logger.error("CalDAV error creating event '%s': %s", subject, exc)
+        logger.exception("CalDAV error creating event '%s': %s", subject, exc)
         return None, Response.to(
             request,
             body=_build_error_body(exc.code, exc.message, correlation_id),
         )
-    except Exception as exc:
-        logger.error("Internal error creating event '%s': %s", subject, exc)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Internal error creating event '%s': %s", subject, exc)
         return None, Response.to(
             request,
             body=_build_error_body(

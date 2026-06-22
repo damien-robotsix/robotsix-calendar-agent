@@ -117,13 +117,13 @@ class CalDavClient:
             self._principal = self._client.principal()
             logger.info("CalDavClient connected to %s as %s", url, username)
         except _caldav.error.AuthorizationError as exc:
-            logger.error("CalDAV auth failed for %s as %s: %s", url, username, exc)
+            logger.exception("CalDAV auth failed for %s as %s: %s", url, username, exc)
             raise OperationError(
                 code="auth_failed",
                 message=f"Authentication failed: {exc}",
             ) from exc
         except Exception as exc:
-            logger.error("Failed to connect to Radicale at %s: %s", url, exc)
+            logger.exception("Failed to connect to Radicale at %s: %s", url, exc)
             raise OperationError(
                 code="caldav_error",
                 message=f"Failed to connect to Radicale: {exc}",
@@ -360,7 +360,7 @@ class CalDavClient:
                 except OperationError:
                     raise
                 except Exception as exc:
-                    logger.error("%s failed: %s", func.__name__, exc)
+                    logger.exception("%s failed: %s", func.__name__, exc)
                     raise OperationError(
                         code="caldav_error",
                         message=f"Failed to {op_name}: {exc}",
