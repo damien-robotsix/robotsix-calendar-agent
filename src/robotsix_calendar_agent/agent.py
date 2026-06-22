@@ -255,7 +255,6 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
 
 
 def _entity_op(
-    client: CalDavClient,
     params: dict[str, Any],
     *,
     builder: Callable[[dict[str, Any]], Any],
@@ -296,7 +295,6 @@ def _handle_create_or_update_event(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
     return _entity_op(
-        client,
         params,
         builder=_build_event,
         serializer=_event_to_dict,
@@ -329,7 +327,6 @@ def _handle_create_or_update_contact(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, Any]:
     return _entity_op(
-        client,
         params,
         builder=_build_contact,
         serializer=_contact_to_dict,
