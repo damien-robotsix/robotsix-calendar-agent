@@ -63,3 +63,11 @@ modules:
       - docs/reference/brokered_entrypoint.md
     depends_on:
       - agent
+
+  - name: settings
+    path: src/robotsix_calendar_agent/settings.py
+    paths:
+      - src/robotsix_calendar_agent/settings.py
+    test_paths:
+      - tests/test_settings.py
+    depends_on: []
