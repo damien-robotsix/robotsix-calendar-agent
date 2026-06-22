@@ -62,17 +62,16 @@ class Settings(BaseSettings):
         Replaces the bare ``int(os.environ.get("BROKER_PORT", …))`` cast
         with a clear, field-specific message on failure.
         """
+        _PORT_MSG = "BROKER_PORT must be an integer between 1 and 65535"
         if isinstance(v, int):
             port = v
         else:
             try:
                 port = int(v)
             except (TypeError, ValueError):
-                raise ValueError(
-                    "BROKER_PORT must be an integer between 1 and 65535"
-                ) from None
+                raise ValueError(_PORT_MSG) from None
         if port < 1 or port > 65535:
-            raise ValueError("BROKER_PORT must be an integer between 1 and 65535")
+            raise ValueError(_PORT_MSG)
         return port
 
     @field_validator(

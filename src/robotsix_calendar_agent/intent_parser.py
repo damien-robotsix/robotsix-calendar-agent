@@ -103,9 +103,8 @@ class IntentParser:
                 what="intent parsing",
             )
             if not isinstance(output, _IntentOutput):
-                raise IntentParseError(
-                    f"Unexpected output type from llmio: {type(output)}"
-                )
+                _msg = f"Unexpected output type from llmio: {type(output)}"
+                raise IntentParseError(_msg)
 
             result = ParsedIntent(
                 operation=output.operation,  # type: ignore[arg-type]
@@ -115,13 +114,14 @@ class IntentParser:
             logger.info("Parsed intent: operation=%r text=%r", result.operation, text)
             return result
         except IntentParseError as exc:
-            logger.error("Intent parse error for '%s': %s", text, exc)
+            logger.exception("Intent parse error for '%s': %s", text, exc)
             raise
         except Exception as exc:
-            logger.error(
+            logger.exception(
                 "Unexpected error during intent parsing for '%s': %s", text, exc
             )
-            raise IntentParseError(f"Intent parsing failed: {exc}") from exc
+            _msg = f"Intent parsing failed: {exc}"
+            raise IntentParseError(_msg) from exc
 
 
 # ---------------------------------------------------------------------------

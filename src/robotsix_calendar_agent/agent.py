@@ -92,11 +92,12 @@ class CalendarAgent:
         password = radicale_password or settings.RADICALE_PASSWORD.get_secret_value()
 
         if not url or not username or not password:
-            raise ValueError(
+            _MISSING_CREDENTIALS_MSG = (
                 "Radicale credentials are required. "
                 "Set RADICALE_URL, RADICALE_USERNAME, RADICALE_PASSWORD "
                 "environment variables or pass them as constructor arguments."
             )
+            raise ValueError(_MISSING_CREDENTIALS_MSG)
 
         self._caldav = CalDavClient(url, username, password)
         self._intent_parser = IntentParser(model_config=llm_model_config)
@@ -150,22 +151,22 @@ class CalendarAgent:
         try:
             parsed: ParsedIntent = self._intent_parser.parse(instruction)
         except IntentParseError as exc:
-            logger.error("Intent parse error for '%s': %s", instruction, exc)
+            logger.exception("Intent parse error for '%s': %s", instruction, exc)
             return Error.to(request, code="parse_error", message=str(exc))
 
         try:
             result = self._dispatch(parsed)
             return Response.to(request, body={"result": result})
         except OperationError as exc:
-            logger.error(
+            logger.exception(
                 "Operation error for '%s' (op=%s): %s",
                 instruction,
                 parsed.operation,
                 exc,
             )
             return Error.to(request, code=exc.code, message=exc.message)
-        except Exception as exc:
-            logger.error(
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
                 "Internal error for '%s' (op=%s): %s",
                 instruction,
                 parsed.operation,
