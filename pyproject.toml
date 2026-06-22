@@ -20,6 +20,7 @@ dependencies = [
     "caldav",
     "pydantic",
     "pydantic-settings",
+    "tenacity>=9.0,<10",
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
