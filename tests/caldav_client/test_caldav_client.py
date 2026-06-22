@@ -295,6 +295,23 @@ class TestTransportFailure:
             client.list_events("2026-01-01", "2026-01-31")
         assert exc_info.value.code == "caldav_error"
 
+    def test_retries_transient_failures_then_succeeds(
+        self, client: CalDavClient
+    ) -> None:
+        """Verify retry actually kicks in: fail twice, succeed on third attempt."""
+        cal = client._principal.calendars.return_value[0]
+        cal.search.side_effect = [
+            Exception("connection refused"),
+            Exception("connection reset"),
+            [_mock_vevent(uid="evt-1")],
+        ]
+
+        result = client.list_events("2026-01-01", "2026-01-31")
+
+        assert len(result) == 1
+        assert result[0].uid == "evt-1"
+        assert cal.search.call_count == 3
+
 
 class TestConnectFailure:
     def test_raises_caldav_error_on_generic_connect_exception(self) -> None:

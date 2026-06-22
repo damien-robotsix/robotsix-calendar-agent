@@ -389,7 +389,7 @@ class CalDavClient:
         """
 
         def decorator(func: _F) -> _F:
-            @tenacity.retry(
+            retrying_func = tenacity.retry(
                 stop=stop_after_attempt(4),  # initial + 3 retries
                 wait=wait_exponential(multiplier=1, min=1, max=30),
                 retry=(
@@ -398,11 +398,12 @@ class CalDavClient:
                     | retry_if_exception(_is_transient_exception)
                 ),
                 reraise=True,
-            )
+            )(func)
+
             @functools.wraps(func)
             def wrapper(self: CalDavClient, *args: Any, **kwargs: Any) -> Any:
                 try:
-                    return func(self, *args, **kwargs)
+                    return retrying_func(self, *args, **kwargs)
                 except OperationError:
                     raise
                 except Exception as exc:
