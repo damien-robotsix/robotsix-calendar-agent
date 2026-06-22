@@ -16,6 +16,7 @@ modules:
       - docs/index.md
       - docs/configuration.md
       - docs/tutorials/index.md
+      - docs/reference/index.md
 
   - name: agent
     path: src/robotsix_calendar_agent/agent.py
