@@ -12,6 +12,14 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
+import tenacity
+from tenacity import (
+    retry_if_exception,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
 if TYPE_CHECKING:
     pass
 
@@ -84,6 +92,30 @@ class Contact:
     phone: str = ""
     address: str = ""
     addressbook_id: str = ""
+
+
+def _is_transient_exception(exc: BaseException) -> bool:
+    """Return True for exceptions that may succeed on retry."""
+    msg = str(exc).lower()
+    # Connection-level / timeout errors from requests/httpx
+    if isinstance(exc, (ConnectionError, TimeoutError)):
+        return True
+    # Socket-level errors wrapped in generic Exception by caldav
+    return any(
+        word in msg
+        for word in (
+            "connection refused",
+            "connection reset",
+            "timeout",
+            "timed out",
+            "name or service not known",
+            "temporary failure",
+            "econnrefused",
+            "econnreset",
+            "eof",
+            "broken pipe",
+        )
+    )
 
 
 class CalDavClient:
@@ -345,7 +377,11 @@ class CalDavClient:
 
     @staticmethod
     def _wrap_caldav_op(op_name: str) -> Callable[[_F], _F]:
-        """Wrap a method with standard CalDAV error handling.
+        """Wrap a method with retry logic and standard CalDAV error handling.
+
+        Transient network errors (connection refused, timeout, DNS
+        failures) are retried up to 3 times with exponential backoff
+        before being converted to an ``OperationError``.
 
         ``OperationError`` exceptions are re-raised as-is.
         All other exceptions are logged and wrapped in an
@@ -353,6 +389,16 @@ class CalDavClient:
         """
 
         def decorator(func: _F) -> _F:
+            @tenacity.retry(
+                stop=stop_after_attempt(4),  # initial + 3 retries
+                wait=wait_exponential(multiplier=1, min=1, max=30),
+                retry=(
+                    retry_if_exception_type(ConnectionError)
+                    | retry_if_exception_type(TimeoutError)
+                    | retry_if_exception(_is_transient_exception)
+                ),
+                reraise=True,
+            )
             @functools.wraps(func)
             def wrapper(self: CalDavClient, *args: Any, **kwargs: Any) -> Any:
                 try:
