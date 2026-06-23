@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Initial scaffold: calendar/contacts agent with agent-comm + llmio.
+- Pre-commit CI workflow (`pre-commit-ci.yml`) to enforce hooks in CI.
 
 ### Fixed
 

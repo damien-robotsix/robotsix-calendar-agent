@@ -414,8 +414,7 @@ _DISPATCH_KEYS = set(_DISPATCH)
 _ENUM_VALUES = {m.value for m in CalendarOperation} | {
     m.value for m in ContactOperation
 }
-if _DISPATCH_KEYS != _ENUM_VALUES:
-    raise RuntimeError(
-        f"Mismatch: extra in dict={_DISPATCH_KEYS - _ENUM_VALUES}, "
-        f"missing={_ENUM_VALUES - _DISPATCH_KEYS}"
-    )
+assert _DISPATCH_KEYS == _ENUM_VALUES, (  # nosec B101 — import-time invariant check
+    f"Mismatch: extra in dict={_DISPATCH_KEYS - _ENUM_VALUES}, "
+    f"missing={_ENUM_VALUES - _DISPATCH_KEYS}"
+)
