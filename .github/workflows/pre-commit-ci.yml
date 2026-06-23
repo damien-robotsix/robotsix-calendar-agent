@@ -19,6 +19,4 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --group dev
       - run: echo "$(pwd)/.venv/bin" >> "$GITHUB_PATH"
-      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # v3.0.1
-        with:
-          extra_args: --all-files --show-diff-on-failure
+      - run: pre-commit run --all-files --show-diff-on-failure
