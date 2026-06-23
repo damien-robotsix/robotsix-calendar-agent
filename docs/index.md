@@ -29,7 +29,7 @@ Set the environment variables pointing to your Radicale server:
 ```bash
 export RADICALE_URL="https://radicale.example.com"
 export RADICALE_USERNAME="your-username"
-export RADICALE_PASSWORD="your-password"
+export RADICALE_PASSWORD="your-password"  # pragma: allowlist secret
 ```
 
 Alternatively, pass these values as constructor arguments to `CalendarAgent`.

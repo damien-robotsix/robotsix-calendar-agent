@@ -12,7 +12,7 @@ from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class Settings(BaseSettings):  # type: ignore[misc]
     """Application settings loaded from environment variables.
 
     All RADICALE_* and BROKER_HOST/BROKER_AGENT_TOKEN fields have empty
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     # -- Validators ----------------------------------------------------------
 
-    @field_validator("CALENDAR_AGENT_TRANSPORT")
+    @field_validator("CALENDAR_AGENT_TRANSPORT")  # type: ignore[untyped-decorator]
     @classmethod
     def _normalize_transport(cls, v: str) -> str:
         """Strip and lower-case the transport mode name.
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         """
         return v.strip().lower()
 
-    @field_validator("BROKER_PORT", mode="before")
+    @field_validator("BROKER_PORT", mode="before")  # type: ignore[untyped-decorator]
     @classmethod
     def _validate_port(cls, v: Any) -> int:
         """Validate that *v* is an integer in the range 1–65535.
@@ -74,7 +74,7 @@ class Settings(BaseSettings):
             raise ValueError(_PORT_MSG)
         return port
 
-    @field_validator(
+    @field_validator(  # type: ignore[untyped-decorator]
         "BROKER_TLS_CA",
         "BROKER_CLIENT_CERT",
         "BROKER_CLIENT_KEY",

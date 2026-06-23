@@ -179,7 +179,7 @@ class TestSettingsConstruction:
             {
                 "RADICALE_URL": "https://radicale.example.com",
                 "RADICALE_USERNAME": "user",
-                "RADICALE_PASSWORD": "secret",
+                "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
             },
             clear=True,
         ):

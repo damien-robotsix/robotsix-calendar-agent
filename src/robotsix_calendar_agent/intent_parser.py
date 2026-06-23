@@ -129,7 +129,7 @@ class IntentParser:
 # ---------------------------------------------------------------------------
 
 
-class _IntentOutput(BaseModel):
+class _IntentOutput(BaseModel):  # type: ignore[misc]
     """Structured output from the llmio model — not part of the public API."""
 
     operation: Literal[
