@@ -13,5 +13,5 @@ jobs:
       contents: write
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-docs.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main
     with:
-      docs-install-args: "--extra docs"
+      docs-install-args: "--group docs"
     secrets: inherit
