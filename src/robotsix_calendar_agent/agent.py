@@ -287,6 +287,30 @@ def _entity_op(
     return serializer(result)
 
 
+def _delete_entity_op(
+    params: dict[str, Any],
+    *,
+    delete_fn: Callable[..., None],
+    id_key: str,
+) -> dict[str, bool]:
+    """Generic helper for delete handlers.
+
+    Captures the common pattern:
+    1. Validate uid is present and non-empty.
+    2. Call client delete method.
+    3. Return confirmation dict.
+    """
+    uid = params.get("uid", "")
+    if not uid:
+        raise OperationError(
+            code="missing_uid",
+            message="A UID is required to delete, but none was provided.",
+        )
+    kwargs: dict[str, Any] = {id_key: params.get(id_key, "")}
+    delete_fn(uid=uid, **kwargs)
+    return {"deleted": True}
+
+
 def _handle_list_events(
     client: CalDavClient, params: dict[str, Any]
 ) -> list[dict[str, Any]]:
@@ -316,17 +340,9 @@ def _handle_create_or_update_event(
 def _handle_delete_event(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, bool]:
-    uid = params.get("uid", "")
-    if not uid:
-        raise OperationError(
-            code="missing_uid",
-            message="A UID is required to delete an event, but none was provided.",
-        )
-    client.delete_event(
-        uid=uid,
-        calendar_id=params.get("calendar_id", ""),
+    return _delete_entity_op(
+        params, delete_fn=client.delete_event, id_key="calendar_id"
     )
-    return {"deleted": True}
 
 
 def _handle_list_contacts(
@@ -354,17 +370,9 @@ def _handle_create_or_update_contact(
 def _handle_delete_contact(
     client: CalDavClient, params: dict[str, Any]
 ) -> dict[str, bool]:
-    uid = params.get("uid", "")
-    if not uid:
-        raise OperationError(
-            code="missing_uid",
-            message="A UID is required to delete a contact, but none was provided.",
-        )
-    client.delete_contact(
-        uid=uid,
-        addressbook_id=params.get("addressbook_id", ""),
+    return _delete_entity_op(
+        params, delete_fn=client.delete_contact, id_key="addressbook_id"
     )
-    return {"deleted": True}
 
 
 _DISPATCH = {
