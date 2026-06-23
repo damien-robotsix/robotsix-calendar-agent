@@ -6,6 +6,7 @@ agent-comm messaging layer into a single runnable agent.
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
@@ -156,7 +157,13 @@ class CalendarAgent:
 
         try:
             result = self._dispatch(parsed)
-            return Response.to(request, body={"result": result})
+            return Response.to(
+                request,
+                body={
+                    "result": result,
+                    "reply": _render_reply(parsed.operation, result),
+                },
+            )
         except OperationError as exc:
             logger.exception(
                 "Operation error for '%s' (op=%s): %s",
@@ -409,6 +416,57 @@ _DISPATCH = {
     "update_contact": _handle_create_or_update_contact,
     "delete_contact": _handle_delete_contact,
 }
+
+
+def _summarize_item(item: dict[str, Any]) -> str:
+    """One-line human summary of an event or contact dict."""
+    if "summary" in item or "dtstart" in item:  # event
+        parts = [str(item.get("summary") or "(untitled)")]
+        if item.get("dtstart"):
+            parts.append(f"at {item['dtstart']}")
+        if item.get("location"):
+            parts.append(f"({item['location']})")
+        line = " ".join(parts)
+        return f"{line} [uid={item['uid']}]" if item.get("uid") else line
+    if "full_name" in item or "email" in item:  # contact
+        name = str(item.get("full_name") or "(no name)")
+        return f"{name} <{item['email']}>" if item.get("email") else name
+    return json.dumps(item, default=str)
+
+
+def _render_reply(operation: str, result: Any) -> str:
+    """Render a human-readable reply string from a dispatch *result*.
+
+    Generic agent-comm consumers (e.g. robotsix-chat) read the reply via
+    ``reply_text``, which looks for the ``"reply"`` key; the structured
+    ``"result"`` is retained for programmatic consumers. Without this, those
+    consumers see an empty reply and fall back to their default message.
+    """
+    if isinstance(result, dict) and result.get("deleted") is True:
+        return "Done — the item was deleted."
+    if isinstance(result, list):
+        if not result:
+            noun = (
+                "events"
+                if "event" in operation
+                else "contacts"
+                if "contact" in operation
+                else "items"
+            )
+            return f"No {noun} found."
+        lines = "\n".join(f"- {_summarize_item(i)}" for i in result)
+        return f"Found {len(result)}:\n{lines}"
+    if isinstance(result, dict):
+        verb = (
+            "Updated"
+            if operation.startswith("update")
+            else "Created"
+            if operation.startswith("create")
+            else "Result"
+        )
+        return f"{verb}: {_summarize_item(result)}"
+    return str(result)
+
 
 _DISPATCH_KEYS = set(_DISPATCH)
 _ENUM_VALUES = {m.value for m in CalendarOperation} | {
