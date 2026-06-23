@@ -62,10 +62,9 @@ def _build_brokered_agent() -> Any:
         raise ValueError(_MISSING_HOST_MSG)
     token = settings.BROKER_AGENT_TOKEN.get_secret_value()
     if not token:
-        _MISSING_TOKEN_MSG = (
+        raise ValueError(
             "BROKER_AGENT_TOKEN is required when CALENDAR_AGENT_TRANSPORT=brokered."
         )
-        raise ValueError(_MISSING_TOKEN_MSG)
 
     port = settings.BROKER_PORT
     scheme = settings.BROKER_SCHEME

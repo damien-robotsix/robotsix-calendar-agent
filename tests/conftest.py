@@ -118,7 +118,7 @@ def calendar_agent() -> Any:
 
         os.environ["RADICALE_URL"] = "https://radicale.example.com"
         os.environ["RADICALE_USERNAME"] = "user"
-        os.environ["RADICALE_PASSWORD"] = "pass"
+        os.environ["RADICALE_PASSWORD"] = "pass"  # pragma: allowlist secret
 
         from robotsix_calendar_agent.agent import CalendarAgent
 
