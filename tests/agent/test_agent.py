@@ -88,6 +88,14 @@ class TestHandleRequest:
 
         assert result is not None
         _mock_agent_comm_protocol.Response.to.assert_called()
+        # The response must carry a human-readable ``reply`` (the agent-comm
+        # convention read by reply_text) alongside the structured ``result`` —
+        # without it, generic consumers like robotsix-chat see an empty reply.
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        assert kwargs["body"]["result"][0]["uid"] == "evt-1"
+        reply = kwargs["body"]["reply"]
+        assert isinstance(reply, str) and reply
+        assert "Found 1" in reply and "Test" in reply
 
     def test_missing_instruction_returns_error(self, calendar_agent: MagicMock) -> None:
         req = make_request({"not_instruction": "x"})
