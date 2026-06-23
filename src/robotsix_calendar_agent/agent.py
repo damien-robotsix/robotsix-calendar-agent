@@ -192,7 +192,7 @@ class CalendarAgent:
                 message=f"Unknown operation: {op}",
             )
 
-        return handler(self._caldav, params)
+        return handler(self._caldav, params, op)
 
     # ------------------------------------------------------------------
     # lifecycle
@@ -263,6 +263,7 @@ def _entity_op(
     create_fn: Callable[..., Any],
     update_fn: Callable[..., Any],
     id_key: str,
+    operation: str | None = None,
 ) -> dict[str, Any]:
     """Generic helper for create/update handlers.
 
@@ -272,7 +273,16 @@ def _entity_op(
     3. Serialize result via serializer.
     """
     entity = builder(params)
-    if "uid" in params:
+    if operation and operation.startswith("update"):
+        uid = params.get("uid", "")
+        if not uid:
+            raise OperationError(
+                code="missing_uid",
+                message="A UID is required to update, but none was provided.",
+            )
+        kwargs = {id_key: params.get(id_key, "")}
+        result = update_fn(uid, entity, **kwargs)
+    elif "uid" in params:
         uid = params["uid"]
         if not uid:
             raise OperationError(
@@ -312,7 +322,9 @@ def _delete_entity_op(
 
 
 def _handle_list_events(
-    client: CalDavClient, params: dict[str, Any]
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
 ) -> list[dict[str, Any]]:
     return [
         _event_to_dict(e)
@@ -325,7 +337,9 @@ def _handle_list_events(
 
 
 def _handle_create_or_update_event(
-    client: CalDavClient, params: dict[str, Any]
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
 ) -> dict[str, Any]:
     return _entity_op(
         params,
@@ -334,11 +348,14 @@ def _handle_create_or_update_event(
         create_fn=client.create_event,
         update_fn=client.update_event,
         id_key="calendar_id",
+        operation=operation,
     )
 
 
 def _handle_delete_event(
-    client: CalDavClient, params: dict[str, Any]
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
 ) -> dict[str, bool]:
     return _delete_entity_op(
         params, delete_fn=client.delete_event, id_key="calendar_id"
@@ -346,7 +363,9 @@ def _handle_delete_event(
 
 
 def _handle_list_contacts(
-    client: CalDavClient, params: dict[str, Any]
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
 ) -> list[dict[str, Any]]:
     return [
         _contact_to_dict(c)
@@ -355,7 +374,9 @@ def _handle_list_contacts(
 
 
 def _handle_create_or_update_contact(
-    client: CalDavClient, params: dict[str, Any]
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
 ) -> dict[str, Any]:
     return _entity_op(
         params,
@@ -364,11 +385,14 @@ def _handle_create_or_update_contact(
         create_fn=client.create_contact,
         update_fn=client.update_contact,
         id_key="addressbook_id",
+        operation=operation,
     )
 
 
 def _handle_delete_contact(
-    client: CalDavClient, params: dict[str, Any]
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
 ) -> dict[str, bool]:
     return _delete_entity_op(
         params, delete_fn=client.delete_contact, id_key="addressbook_id"
