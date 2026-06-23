@@ -21,4 +21,11 @@ plugins:
 nav:
   - Home: index.md
   - Tutorials: tutorials/index.md
-  - Code Reference: reference/
+  - Code Reference:
+      - reference/index.md
+      - reference/agent.md
+      - reference/intent_parser.md
+      - reference/caldav_client.md
+      - reference/settings.md
+      - reference/brokered_entrypoint.md
+      - reference/add_to_calendar_handler.md
