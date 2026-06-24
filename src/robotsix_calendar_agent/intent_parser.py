@@ -34,6 +34,12 @@ class ContactOperation(StrEnum):
     DELETE_CONTACT = "delete_contact"
 
 
+class TaskOperation(StrEnum):
+    """Tasks (CalDAV VTODO) operation types."""
+
+    LIST_TASKS = "list_tasks"
+
+
 @dataclass(kw_only=True)
 class ParsedIntent:
     """Result of parsing a user instruction.
@@ -44,7 +50,7 @@ class ParsedIntent:
         original_text: The raw instruction string, preserved for logging.
     """
 
-    operation: CalendarOperation | ContactOperation
+    operation: CalendarOperation | ContactOperation | TaskOperation
     params: dict[str, Any] = field(default_factory=dict)
     original_text: str = ""
 
@@ -136,6 +142,7 @@ class _IntentOutput(BaseModel):
         "create_event",
         "update_event",
         "delete_event",
+        "list_tasks",
         "list_contacts",
         "create_contact",
         "update_contact",
@@ -152,7 +159,7 @@ class _IntentOutput(BaseModel):
 # ---------------------------------------------------------------------------
 
 _INTENT_SYSTEM_PROMPT = """\
-You are an intent classifier for a calendar and contacts management agent.
+You are an intent classifier for a calendar, tasks, and contacts management agent.
 
 Given a natural-language instruction, classify it into exactly one of these
 operations and extract structured parameters:
@@ -162,6 +169,11 @@ Calendar operations:
 - create_event: params = {summary, dtstart, dtend, description?, location?,calendar_id?}
 - update_event: params = {uid, ...fields to update, calendar_id?}
 - delete_event: params = {uid, calendar_id?}
+
+Tasks operations:
+- list_tasks: params = {calendar_id?}
+  Use this for any instruction asking to list, show, or retrieve to-do items,
+  tasks, or VTODO entries. Do NOT use list_events for task requests.
 
 Contacts operations:
 - list_contacts: params = {addressbook_id?}

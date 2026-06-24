@@ -20,6 +20,7 @@ from tests.conftest import (
     _mock_agent_comm_transport,
     caldav_contact,
     caldav_event,
+    caldav_task,
     make_request,
     setup_mocks,
 )
@@ -348,6 +349,26 @@ class TestDispatch:
         calendar_agent._mock_caldav.delete_contact.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
         assert kwargs["body"]["result"] == {"deleted": True}
+
+    def test_list_tasks(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="list_tasks",
+            params={},
+        )
+        calendar_agent._mock_caldav.list_tasks.return_value = [
+            caldav_task("task-1"),
+            caldav_task("task-2"),
+        ]
+
+        calendar_agent._handle_request(make_request({"instruction": "show my tasks"}))
+
+        calendar_agent._mock_caldav.list_tasks.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        result = kwargs["body"]["result"]
+        assert len(result) == 2
+        assert result[0]["uid"] == "task-1"
+        assert result[0]["summary"] == "Buy milk"
+        assert result[0]["status"] == "NEEDS-ACTION"
 
     def test_unknown_operation_returns_error(self, calendar_agent: MagicMock) -> None:
         calendar_agent._mock_parser.parse.return_value = MagicMock(
@@ -708,19 +729,22 @@ class TestLifecycle:
 
 
 class TestDispatchEnumSync:
-    """Verify _DISPATCH keys stay in sync with CalendarOperation/ContactOperation."""
+    """Verify _DISPATCH keys stay in sync with all operation enums."""
 
     def test_dispatch_keys_match_enum_values(self) -> None:
         from robotsix_calendar_agent.agent import _DISPATCH
         from robotsix_calendar_agent.intent_parser import (
             CalendarOperation,
             ContactOperation,
+            TaskOperation,
         )
 
         dispatch_keys = set(_DISPATCH)
-        enum_values = {m.value for m in CalendarOperation} | {
-            m.value for m in ContactOperation
-        }
+        enum_values = (
+            {m.value for m in CalendarOperation}
+            | {m.value for m in ContactOperation}
+            | {m.value for m in TaskOperation}
+        )
         assert dispatch_keys == enum_values, (
             f"Mismatch: extra in dict={dispatch_keys - enum_values}, "
             f"missing={enum_values - dispatch_keys}"
