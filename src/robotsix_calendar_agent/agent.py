@@ -107,7 +107,10 @@ class CalendarAgent:
             )
             raise ValueError(_MISSING_CREDENTIALS_MSG)
 
-        self._caldav = CalDavClient(url, username, password)
+        default_calendar = settings.RADICALE_DEFAULT_CALENDAR
+        self._caldav = CalDavClient(
+            url, username, password, default_calendar=default_calendar
+        )
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
         if agent is None:
@@ -391,6 +394,15 @@ def _handle_create_or_update_event(
     )
 
 
+def _handle_list_calendars(
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
+) -> list[str]:
+    """Return the names of the user's available calendars."""
+    return client.list_calendars()
+
+
 def _handle_delete_event(
     client: CalDavClient,
     params: dict[str, Any],
@@ -440,6 +452,7 @@ def _handle_delete_contact(
 
 _DISPATCH = {
     "list_events": _handle_list_events,
+    "list_calendars": _handle_list_calendars,
     "create_event": _handle_create_or_update_event,
     "update_event": _handle_create_or_update_event,
     "delete_event": _handle_delete_event,
@@ -453,6 +466,8 @@ _DISPATCH = {
 
 def _summarize_item(item: dict[str, Any]) -> str:
     """One-line human summary of an event, task, or contact dict."""
+    if isinstance(item, str):
+        return item
     if "due" in item or "status" in item:  # task (VTODO)
         parts = [str(item.get("summary") or "(untitled)")]
         if item.get("due"):
@@ -490,6 +505,8 @@ def _render_reply(operation: str, result: Any) -> str:
             noun = (
                 "events"
                 if "event" in operation
+                else "calendars"
+                if "calendar" in operation
                 else "tasks"
                 if "task" in operation
                 else "contacts"

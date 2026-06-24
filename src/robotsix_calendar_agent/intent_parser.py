@@ -20,6 +20,7 @@ class CalendarOperation(StrEnum):
     """Calendar (CalDAV) operation types."""
 
     LIST_EVENTS = "list_events"
+    LIST_CALENDARS = "list_calendars"
     CREATE_EVENT = "create_event"
     UPDATE_EVENT = "update_event"
     DELETE_EVENT = "delete_event"
@@ -138,6 +139,7 @@ class _IntentOutput(BaseModel):
 
     operation: Literal[
         "list_events",
+        "list_calendars",
         "create_event",
         "update_event",
         "delete_event",
@@ -165,6 +167,8 @@ operations and extract structured parameters:
 
 Calendar operations:
 - list_events: params = {start, end, calendar_id?}  (ISO 8601 dates)
+- list_calendars: params = {}
+  List the names of the user's available calendars.
 - create_event: params = {summary, dtstart, dtend, description?, location?,calendar_id?}
 - update_event: params = {uid, ...fields to update, calendar_id?}
 - delete_event: params = {uid, calendar_id?}
@@ -188,5 +192,8 @@ Rules:
 - If a UID is not provided but needed (update/delete), omit the uid key
   entirely — the system will detect the missing UID and respond with a
   prompt for clarification.
+- When the user asks which calendars they have, use list_calendars.
+  Calendar names can be obtained via list_calendars — a calendar_id value
+  for other operations must be one of those names.
 - Return only the operation and params — no extra commentary.
 """

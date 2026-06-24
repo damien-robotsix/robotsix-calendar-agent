@@ -370,6 +370,30 @@ class TestDispatch:
         assert result[0]["summary"] == "Buy milk"
         assert result[0]["status"] == "NEEDS-ACTION"
 
+    def test_list_calendars(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="list_calendars",
+            params={},
+        )
+        calendar_agent._mock_caldav.list_calendars.return_value = [
+            "Robotsix",
+            "Birthdays",
+            "Damien",
+        ]
+
+        calendar_agent._handle_request(
+            make_request({"instruction": "what calendars do I have?"})
+        )
+
+        calendar_agent._mock_caldav.list_calendars.assert_called_once()
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
+        result = kwargs["body"]["result"]
+        assert result == ["Robotsix", "Birthdays", "Damien"]
+        reply = kwargs["body"]["reply"]
+        assert isinstance(reply, str) and reply
+        assert "Found 3" in reply
+        assert "Robotsix" in reply
+
     def test_unknown_operation_returns_error(self, calendar_agent: MagicMock) -> None:
         calendar_agent._mock_parser.parse.return_value = MagicMock(
             operation="frobnicate",

@@ -188,6 +188,25 @@ class TestSettingsConstruction:
             assert s.RADICALE_USERNAME == "user"
             assert s.RADICALE_PASSWORD.get_secret_value() == "secret"
 
+    def test_radicale_default_calendar_from_env(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "RADICALE_URL": "https://x.com",
+                "RADICALE_USERNAME": "u",
+                "RADICALE_PASSWORD": "p",  # pragma: allowlist secret
+                "RADICALE_DEFAULT_CALENDAR": "Damien",
+            },
+            clear=True,
+        ):
+            s = Settings()
+            assert s.RADICALE_DEFAULT_CALENDAR == "Damien"
+
+    def test_radicale_default_calendar_defaults_to_robotsix(self) -> None:
+        with patch.dict(os.environ, {}, clear=True):
+            s = Settings()
+            assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
+
     def test_broker_host_and_scheme_from_env(self) -> None:
         with patch.dict(
             os.environ,

@@ -6,6 +6,7 @@ _url
 
 # StrEnum members — used via the enum class, invisible to vulture
 LIST_EVENTS
+LIST_CALENDARS
 CREATE_EVENT
 UPDATE_EVENT
 DELETE_EVENT

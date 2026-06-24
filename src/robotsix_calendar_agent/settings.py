@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     RADICALE_URL: str = ""
     RADICALE_USERNAME: str = ""
     RADICALE_PASSWORD: SecretStr = SecretStr("")
+    RADICALE_DEFAULT_CALENDAR: str = "Robotsix"
 
     # -- Calendar agent identity / transport ---------------------------------
     CALENDAR_AGENT_TRANSPORT: str = "inprocess"
