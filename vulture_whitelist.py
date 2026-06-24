@@ -23,4 +23,8 @@ original_text
 _normalize_transport
 _validate_port
 _empty_str_to_none
+_token_required_when_enabled
 cls
+
+# Planned helper — kept for future use in config contract
+_read_value

@@ -44,6 +44,12 @@ def setup_mocks() -> tuple[MagicMock, MagicMock, MagicMock, MagicMock]:
     # Use MagicMock for Response.to and Error.to so we can inspect call_args
     mock_response_to = MagicMock(return_value=MagicMock())
     mock_error_to = MagicMock(return_value=MagicMock())
+    # Make the returned Error mock duck-type as an Error for telemetry
+    mock_error_to.return_value.type = MagicMock()
+    mock_error_to.return_value.type.name = "ERROR"
+    # Make the returned Response mock duck-type as a Response
+    mock_response_to.return_value.type = MagicMock()
+    mock_response_to.return_value.type.name = "RESPONSE"
     _mock_agent_comm_protocol.Response.to = mock_response_to
     _mock_agent_comm_protocol.Error.to = mock_error_to
 

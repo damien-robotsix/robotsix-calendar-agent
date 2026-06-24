@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   reasoning tiers, preventing "Thinking mode does not support this tool_choice"
 
 ### Fixed
+- Component-agent responder delegation in `_handle_request_impl` now catches
+  unexpected exceptions and returns an `Error` response instead of letting them
+  propagate unhandled.
 - Updated `_INTENT_SYSTEM_PROMPT` to instruct the LLM to omit the `uid` key
   (rather than leaving it empty) when a UID is needed but not provided — the
   handler already rejects empty UIDs, so the old prompt was misleading the model.
