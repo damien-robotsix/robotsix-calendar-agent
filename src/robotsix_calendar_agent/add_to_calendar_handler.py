@@ -110,7 +110,7 @@ def _resolve_dates_via_llm(
     )
     try:
         parsed = intent_parser.parse(instruction)
-    except Exception:  # noqa: BLE001 — any parse failure degrades to missing_dates
+    except Exception:
         logger.exception("LLM date resolution failed")
         return None
 
@@ -215,7 +215,7 @@ def _create_calendar_event(
             request,
             body=_build_error_body(exc.code, exc.message, correlation_id),
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("Internal error creating event '%s': %s", subject, exc)
         return None, Response.to(
             request,

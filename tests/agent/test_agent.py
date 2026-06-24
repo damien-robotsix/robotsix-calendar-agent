@@ -14,7 +14,7 @@ from robotsix_calendar_agent.add_to_calendar_handler import (
 )
 
 # Shared helpers and module-level mocks live in conftest.
-from tests.conftest import (  # noqa: E402
+from tests.conftest import (
     _mock_agent_comm_protocol,
     _mock_agent_comm_sdk,
     _mock_agent_comm_transport,
@@ -703,7 +703,7 @@ class TestLifecycle:
 
 
 # ---------------------------------------------------------------------------
-# Dispatch–enum consistency
+# Dispatch-enum consistency
 # ---------------------------------------------------------------------------
 
 
