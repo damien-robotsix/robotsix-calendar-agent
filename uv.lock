@@ -1713,7 +1713,7 @@ requires-dist = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" },
-    { name = "robotsix-llmio", extras = ["openrouter-deepseek", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=b23b8297a19726a57e94dd652c4e1e5ee4f0fb14" },
+    { name = "robotsix-llmio", extras = ["openrouter-deepseek", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992" },
     { name = "tenacity", specifier = ">=9.0,<10" },
 ]
 
@@ -1736,7 +1736,7 @@ docs = [
 [[package]]
 name = "robotsix-llmio"
 version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=b23b8297a19726a57e94dd652c4e1e5ee4f0fb14#b23b8297a19726a57e94dd652c4e1e5ee4f0fb14" }
+source = { git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992#555b633624775c5cb4727f265a6659c953a3e992" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-ai-slim" },
