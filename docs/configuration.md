@@ -11,6 +11,7 @@ All configuration is read from environment variables via
 | `RADICALE_URL` | `str` | `""` | Radicale server URL |
 | `RADICALE_USERNAME` | `str` | `""` | Radicale username |
 | `RADICALE_PASSWORD` | `SecretStr` | `SecretStr("")` | Radicale password |
+| `RADICALE_DEFAULT_CALENDAR` | `str` | `"Robotsix"` | Default calendar name for write operations when no `calendar_id` is provided |
 | `CALENDAR_AGENT_TRANSPORT` | `str` | `"inprocess"` | Transport mode: `inprocess` (in-memory `Registry`) or `brokered` |
 | `CALENDAR_AGENT_ID` | `str` | `"robotsix-calendar"` | Agent identity registered on the broker |
 | `BROKER_HOST` | `str` | `""` | Broker hostname or IP address |
