@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- Hardened Dockerfile: pinned base images to digest, added uv package cache
+  mount, cleaned apt lists in builder stage, and replaced `RUN chown` with
+  `COPY --chown` to eliminate an unnecessary layer.
 - Bumped `robotsix-llmio` to include the PromptedOutput auto-wrap fix for
   reasoning tiers, preventing "Thinking mode does not support this tool_choice"
   errors when using `level=2` with raw pydantic `output_type`.
