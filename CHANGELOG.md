@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Enable Ruff's `RUF` rule set and remove three stale `# noqa: BLE001` suppressions.
 
+- Expand `SECURITY.md` with supported versions table and disclosure policy.
+
 - Initial scaffold: calendar/contacts agent with agent-comm + llmio.
 - Pre-commit CI workflow (`pre-commit-ci.yml`) to enforce hooks in CI.
 
