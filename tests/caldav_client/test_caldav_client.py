@@ -14,6 +14,7 @@ from robotsix_calendar_agent.caldav_client import (
     CalendarEvent,
     Contact,
     OperationError,
+    Task,
 )
 
 # Mock object prepared at module level but NOT yet injected into
@@ -111,6 +112,27 @@ def _mock_vevent(**overrides: Any) -> MagicMock:
     return obj
 
 
+def _mock_vtodo(**overrides: Any) -> MagicMock:
+    """Build a mock caldav object for a VTODO exposing ``icalendar_component``."""
+    import datetime
+
+    values: dict[str, Any] = {
+        "UID": overrides.get("uid", "task-1"),
+        "SUMMARY": overrides.get("summary", "Test Task"),
+        "DESCRIPTION": overrides.get("description", ""),
+        "DTSTART": MagicMock(
+            dt=overrides.get("dtstart", datetime.datetime(2026, 6, 20, 8, 0, 0))
+        ),
+        "DUE": MagicMock(dt=overrides.get("due", datetime.date(2026, 6, 21))),
+        "STATUS": overrides.get("status", "NEEDS-ACTION"),
+    }
+    comp = MagicMock()
+    comp.get.side_effect = lambda name, default=None: values.get(name, default)
+    obj = MagicMock()
+    obj.icalendar_component = comp
+    return obj
+
+
 def _mock_vcard(**overrides: str) -> MagicMock:
     """Build a mock caldav object exposing raw vCard ``data`` (caldav 2.0)."""
     lines = [
@@ -147,6 +169,22 @@ class TestListEvents:
         assert isinstance(result[0], CalendarEvent)
         assert result[0].uid == "evt-1"
         assert result[1].uid == "evt-2"
+
+
+class TestListTasks:
+    def test_returns_list_of_tasks(self, client: CalDavClient) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.search.return_value = [
+            _mock_vtodo(uid="task-1"),
+            _mock_vtodo(uid="task-2", summary="Second task"),
+        ]
+
+        result = client.list_tasks()
+
+        assert len(result) == 2
+        assert isinstance(result[0], Task)
+        assert result[0].uid == "task-1"
+        assert result[1].uid == "task-2"
 
 
 class TestCreateEvent:
@@ -455,6 +493,51 @@ class TestToCalendarEvent:
         assert event.dtend == ""
 
 
+class TestToTask:
+    def test_all_fields_parsed_from_ical(self) -> None:
+        """VTODO fields map correctly via _to_task."""
+        import datetime
+
+        values: dict[str, Any] = {
+            "UID": "task-1",
+            "SUMMARY": "Buy milk",
+            "DESCRIPTION": "Get 2%",
+            "DTSTART": MagicMock(dt=datetime.datetime(2026, 6, 20, 8, 0, 0)),
+            "DUE": MagicMock(dt=datetime.date(2026, 6, 21)),
+            "STATUS": "NEEDS-ACTION",
+        }
+        comp = MagicMock()
+        comp.get.side_effect = lambda name, default=None: values.get(name, default)
+        obj = MagicMock()
+        obj.icalendar_component = comp
+
+        task = CalDavClient._to_task(obj, calendar_id="cal")
+
+        assert task.uid == "task-1"
+        assert task.summary == "Buy milk"
+        assert task.description == "Get 2%"
+        assert task.dtstart == "2026-06-20T08:00:00"
+        assert task.due == "2026-06-21"
+        assert task.status == "NEEDS-ACTION"
+        assert task.calendar_id == "cal"
+
+    def test_missing_fields_yield_empty(self) -> None:
+        comp = MagicMock()
+        comp.get.side_effect = lambda name, default=None: default
+        obj = MagicMock()
+        obj.icalendar_component = comp
+
+        task = CalDavClient._to_task(obj)
+
+        assert task.uid == ""
+        assert task.summary == ""
+        assert task.description == ""
+        assert task.dtstart == ""
+        assert task.due == ""
+        assert task.status == ""
+        assert task.calendar_id == ""
+
+
 class TestToContact:
     def test_all_fields_parsed_from_vcard(self) -> None:
         obj = _mock_vcard(
@@ -621,6 +704,12 @@ class TestOperationErrorPropagation:
         client._principal.calendars.return_value = []
         with pytest.raises(OperationError) as exc_info:
             client.list_events("2026-01-01", "2026-01-31")
+        assert exc_info.value.code == "not_found"
+
+    def test_list_tasks_reraises_operation_error(self, client: CalDavClient) -> None:
+        client._principal.calendars.return_value = []
+        with pytest.raises(OperationError) as exc_info:
+            client.list_tasks()
         assert exc_info.value.code == "not_found"
 
     def test_create_event_wraps_exception(self, client: CalDavClient) -> None:

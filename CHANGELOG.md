@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Added `list_tasks` operation: the calendar agent can now list VTODO tasks
+  from a CalDAV calendar via a new `Task` dataclass, `CalDavClient.list_tasks()`,
+  and `list_tasks` intent classifier support. Fixes broken `query_tasks` channel
+  that was incorrectly routing to the CardDAV contacts API.
+
 - Added `workflow-audit` CI job that runs zizmor to audit workflow files for security anti-patterns, with SARIF output uploaded to the Security tab.
 - Pinned `actions/checkout` and `actions/dependency-review-action` in the `dependency-review` job to immutable SHAs (fixes a pre-existing zizmor finding).
 

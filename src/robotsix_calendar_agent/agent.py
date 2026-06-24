@@ -27,13 +27,20 @@ from .add_to_calendar_handler import (
     _event_to_dict,
     handle_add_to_calendar,
 )
-from .caldav_client import CalDavClient, CalendarEvent, Contact, OperationError
+from .caldav_client import (
+    CalDavClient,
+    CalendarEvent,
+    Contact,
+    OperationError,
+    Task,
+)
 from .intent_parser import (
     CalendarOperation,
     ContactOperation,
     IntentParseError,
     IntentParser,
     ParsedIntent,
+    TaskOperation,
 )
 
 logger = logging.getLogger(__name__)
@@ -262,6 +269,18 @@ def _contact_to_dict(contact: Contact) -> dict[str, Any]:
     }
 
 
+def _task_to_dict(task: Task) -> dict[str, Any]:
+    return {
+        "uid": task.uid,
+        "summary": task.summary,
+        "description": task.description,
+        "dtstart": task.dtstart,
+        "due": task.due,
+        "status": task.status,
+        "calendar_id": task.calendar_id,
+    }
+
+
 def _entity_op(
     params: dict[str, Any],
     *,
@@ -343,6 +362,19 @@ def _handle_list_events(
     ]
 
 
+def _handle_list_tasks(
+    client: CalDavClient,
+    params: dict[str, Any],
+    operation: str = "",
+) -> list[dict[str, Any]]:
+    return [
+        _task_to_dict(t)
+        for t in client.list_tasks(
+            calendar_id=params.get("calendar_id", ""),
+        )
+    ]
+
+
 def _handle_create_or_update_event(
     client: CalDavClient,
     params: dict[str, Any],
@@ -411,6 +443,7 @@ _DISPATCH = {
     "create_event": _handle_create_or_update_event,
     "update_event": _handle_create_or_update_event,
     "delete_event": _handle_delete_event,
+    "list_tasks": _handle_list_tasks,
     "list_contacts": _handle_list_contacts,
     "create_contact": _handle_create_or_update_contact,
     "update_contact": _handle_create_or_update_contact,
@@ -419,7 +452,15 @@ _DISPATCH = {
 
 
 def _summarize_item(item: dict[str, Any]) -> str:
-    """One-line human summary of an event or contact dict."""
+    """One-line human summary of an event, task, or contact dict."""
+    if "due" in item or "status" in item:  # task (VTODO)
+        parts = [str(item.get("summary") or "(untitled)")]
+        if item.get("due"):
+            parts.append(f"due {item['due']}")
+        if item.get("status"):
+            parts.append(f"[{item['status']}]")
+        line = " ".join(parts)
+        return f"{line} [uid={item['uid']}]" if item.get("uid") else line
     if "summary" in item or "dtstart" in item:  # event
         parts = [str(item.get("summary") or "(untitled)")]
         if item.get("dtstart"):
@@ -449,6 +490,8 @@ def _render_reply(operation: str, result: Any) -> str:
             noun = (
                 "events"
                 if "event" in operation
+                else "tasks"
+                if "task" in operation
                 else "contacts"
                 if "contact" in operation
                 else "items"
@@ -469,9 +512,11 @@ def _render_reply(operation: str, result: Any) -> str:
 
 
 _DISPATCH_KEYS = set(_DISPATCH)
-_ENUM_VALUES = {m.value for m in CalendarOperation} | {
-    m.value for m in ContactOperation
-}
+_ENUM_VALUES = (
+    {m.value for m in CalendarOperation}
+    | {m.value for m in ContactOperation}
+    | {m.value for m in TaskOperation}
+)
 assert _DISPATCH_KEYS == _ENUM_VALUES, (  # nosec B101 — import-time invariant check
     f"Mismatch: extra in dict={_DISPATCH_KEYS - _ENUM_VALUES}, "
     f"missing={_ENUM_VALUES - _DISPATCH_KEYS}"

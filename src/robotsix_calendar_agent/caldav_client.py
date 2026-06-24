@@ -32,6 +32,7 @@ __all__ = [
     "CalendarEvent",
     "Contact",
     "OperationError",
+    "Task",
 ]
 
 
@@ -70,6 +71,30 @@ class CalendarEvent:
     location: str = ""
     dtstart: str  # ISO 8601
     dtend: str  # ISO 8601
+    calendar_id: str = ""
+
+
+@dataclass(kw_only=True)
+class Task:
+    """Represents a single VTODO task from a CalDAV calendar.
+
+    Attributes:
+        uid: Server-assigned unique identifier (empty for new tasks).
+        summary: Short summary / title.
+        description: Longer description (optional).
+        dtstart: When the task starts (optional, ISO 8601).
+        due: Task due date/time (VTODO DUE field, optional, ISO 8601).
+        status: Task status — e.g. NEEDS-ACTION, IN-PROCESS, COMPLETED,
+            CANCELLED.
+        calendar_id: Calendar name the task belongs to (optional).
+    """
+
+    uid: str = ""
+    summary: str
+    description: str = ""
+    dtstart: str = ""  # ISO 8601
+    due: str = ""  # ISO 8601 — VTODO DUE field
+    status: str = ""  # e.g. NEEDS-ACTION
     calendar_id: str = ""
 
 
@@ -215,6 +240,40 @@ class CalDavClient:
             location=_text("LOCATION"),
             dtstart=_dt("DTSTART"),
             dtend=_dt("DTEND"),
+            calendar_id=calendar_id,
+        )
+
+    @staticmethod
+    def _to_task(obj: Any, calendar_id: str = "") -> Task:
+        """Convert a caldav VTODO object to our :class:`Task`.
+
+        Reads via caldav 2.0's ``icalendar_component`` (the ``icalendar`` lib),
+        same pattern as ``_to_calendar_event`` but for VTODO fields.
+        """
+        import datetime
+
+        comp = obj.icalendar_component
+
+        def _text(name: str) -> str:
+            value = comp.get(name)
+            return str(value) if value is not None else ""
+
+        def _dt(name: str) -> str:
+            value = comp.get(name)
+            if value is None:
+                return ""
+            moment = getattr(value, "dt", value)
+            if isinstance(moment, datetime.date):
+                return moment.isoformat()
+            return str(moment)
+
+        return Task(
+            uid=_text("UID"),
+            summary=_text("SUMMARY"),
+            description=_text("DESCRIPTION"),
+            dtstart=_dt("DTSTART"),
+            due=_dt("DUE"),
+            status=_text("STATUS"),
             calendar_id=calendar_id,
         )
 
@@ -444,6 +503,17 @@ class CalDavClient:
             expand=False,
         )
         return [self._to_calendar_event(r, calendar_id=cal.name) for r in results]
+
+    @_wrap_caldav_op("list tasks")
+    def list_tasks(self, calendar_id: str = "") -> list[Task]:
+        """Return all VTODO tasks from a CalDAV calendar collection.
+
+        If *calendar_id* is empty, use the default calendar.
+        """
+        logger.debug("list_tasks calendar_id=%r", calendar_id)
+        cal = self._get_calendar(calendar_id)
+        results = cal.search(todo=True)
+        return [self._to_task(r, calendar_id=cal.name) for r in results]
 
     @_wrap_caldav_op("create event")
     def create_event(

@@ -9,13 +9,20 @@ against a Radicale server.
 from __future__ import annotations
 
 from .agent import CalendarAgent
-from .caldav_client import CalDavClient, CalendarEvent, Contact, OperationError
+from .caldav_client import (
+    CalDavClient,
+    CalendarEvent,
+    Contact,
+    OperationError,
+    Task,
+)
 from .intent_parser import (
     CalendarOperation,
     ContactOperation,
     IntentParseError,
     IntentParser,
     ParsedIntent,
+    TaskOperation,
 )
 
 __all__ = [
@@ -29,6 +36,8 @@ __all__ = [
     "IntentParser",
     "OperationError",
     "ParsedIntent",
+    "Task",
+    "TaskOperation",
     "__version__",
 ]
 

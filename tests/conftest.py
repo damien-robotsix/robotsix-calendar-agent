@@ -82,6 +82,19 @@ def caldav_contact(uid: str = "cnt-1") -> MagicMock:
     )
 
 
+def caldav_task(uid: str = "task-1") -> MagicMock:
+    """Create a mock Task with default fields."""
+    return MagicMock(
+        uid=uid,
+        summary="Buy milk",
+        description="Get 2%",
+        dtstart="2026-06-20T08:00:00",
+        due="2026-06-21",
+        status="NEEDS-ACTION",
+        calendar_id="cal",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

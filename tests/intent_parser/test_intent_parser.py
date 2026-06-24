@@ -23,6 +23,7 @@ from robotsix_calendar_agent.intent_parser import (  # noqa: E402
     IntentParseError,
     IntentParser,
     ParsedIntent,
+    TaskOperation,
     _IntentOutput,
 )
 
@@ -112,12 +113,17 @@ class TestParse:
                 ContactOperation.DELETE_CONTACT,
                 {"uid": ""},
             ),
+            (
+                "Show me my pending tasks",
+                TaskOperation.LIST_TASKS,
+                {},
+            ),
         ],
     )
     def test_classifies_operation(
         self,
         instruction: str,
-        expected_op: CalendarOperation | ContactOperation,
+        expected_op: CalendarOperation | ContactOperation | TaskOperation,
         expected_params: dict[str, Any],
     ) -> None:
         """Verify all 8 operation types are classified correctly."""
