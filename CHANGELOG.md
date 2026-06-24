@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   network failures on CalDAV/CardDAV operations.
 - `AGENT.md` with repo-specific agent conventions for mill workflows.
 - Unit tests for `settings.py` (`tests/test_settings.py`).
-- `deps-bump.yml` reusable workflow adoption for automated dependency bumps.
 - `env_doc_sync` periodic workflow enabled to enforce `settings.py` ↔
   `docs/configuration.md` consistency.
 
@@ -30,13 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `docker-publish.yml` migrated to consume mill's reusable `docker-release.yml`.
 - All GitHub Actions and reusable workflow references pinned to immutable
   SHA digests.
-- `docker-release.yml` reusable workflow reference pinned to SHA digest in
-  `docker-publish.yml`.
 - Decomposed 140-line `handle_add_to_calendar` function into smaller, focused
   phases: `_parse_email_payload`, `_extract_json_payload`,
   `_parse_and_validate_event`, `_apply_defaults`, and `_register_handlers`.
 - DRY duplicate delete handler functions via a single `_delete_entity_op`
   helper shared by `_handle_delete_event` and `_handle_delete_contact`.
+- `_IntentOutput.operation` changed from `str` to `Literal["create", "update",
+  "delete", "list"]` to strengthen structured-output enum constraints.
 - Collapsed identical create/update handler wrappers into single functions
   each (`_handle_create_or_update_event`, `_handle_create_or_update_contact`).
 - Refactored environment variable configuration with `pydantic-settings` for
@@ -47,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `robotsix-agent-comm`.
 - CalDAV read-back now uses `icalendar_instance`, dropping the `vobject`
   dependency.
+- `deps-bump.yml` reusable workflow adopted for automated dependency bumps.
+- Agent responses now emit a human-readable `reply` alongside the structured
+  `result`.
 
 ### Fixed
 
@@ -57,8 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Pre-commit CI failures: bandit B101 (assert), B105 (token variable name),
   mypy untyped-decorator on pydantic field validators, and detect-secrets false
   positives on workflow commit SHAs and test strings.
-- `_IntentOutput.operation` changed from `str` to `Literal["create", "update",
-  "delete", "list"]` to strengthen structured-output enum constraints.
 - `list_events` and `list_contacts` docstrings corrected: implementation
   searches only the first/default address book / calendar, not "all".
 - `delete_event` docstring corrected: implementation raises on not-found
@@ -72,11 +72,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Error-handling lint findings resolved across all six source modules.
 - Removed unused `client` parameter from `_entity_op` in `agent.py`.
 - `BROKER_PORT` default mismatch between docs and code fixed.
-- Agent responses now emit a human-readable `reply` alongside the structured
-  `result`.
 - Docker build: stale Python base-image digest pin fixed.
-- `vobject` installed so CalDAV read-back works correctly.
 - Intent parser corrected to use the llmio agent API with the non-reasoning
   tier.
-- CalDAV operations emit valid iCalendar datetimes; llmio provider extra
-  installed.
+- CalDAV operations now emit valid iCalendar datetimes for recurrence rules
+  and all-day events.
+- `llmio` provider extra installed so the intent-parser agent can resolve
+  its model provider at runtime.
