@@ -50,7 +50,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
-      - uses: actions/dependency-review-action@0fadc9e1106a654b9d1a0c00e55b71e0b9b8b9f8  # v5.0.0
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
         with:
           config-file: .github/dependency-review-config.yml
 
