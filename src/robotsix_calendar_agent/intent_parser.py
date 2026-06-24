@@ -186,6 +186,8 @@ Rules:
   relative to the current date.
 - For "this week", set start to Monday 00:00 and end to Sunday 23:59 of the
   current week.
-- If a UID is not provided but needed (update/delete), leave it empty.
+- If a UID is not provided but needed (update/delete), omit the uid key
+  entirely — the system will detect the missing UID and respond with a
+  prompt for clarification.
 - Return only the operation and params — no extra commentary.
 """
