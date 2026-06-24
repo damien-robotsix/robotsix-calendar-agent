@@ -193,7 +193,17 @@ class CalendarAgent:
         if self._component_responder is not None:
             kind = body.get("kind")
             if kind in ("monitor", "config-get", "config-set"):
-                return self._component_responder.on_request(request)
+                try:
+                    return self._component_responder.on_request(request)
+                except Exception as exc:
+                    logger.exception(
+                        "Component responder error for kind=%r: %s", kind, exc
+                    )
+                    return Error.to(
+                        request,
+                        code="internal_error",
+                        message=str(exc),
+                    )
 
         if "add_to_calendar" in body:
             return handle_add_to_calendar(
