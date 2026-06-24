@@ -54,6 +54,15 @@ jobs:
         with:
           config-file: .github/dependency-review-config.yml
 
+  workflow-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
+      - run: uv run --with zizmor zizmor .
+
   ci:
     strategy:
       fail-fast: false
