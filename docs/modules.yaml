@@ -76,7 +76,7 @@ modules:
     paths:
       - src/robotsix_calendar_agent/settings.py
     test_paths:
-      - tests/test_settings.py
+      - tests/settings/test_settings.py
     doc_paths:
       - docs/reference/settings.md
     depends_on: []
