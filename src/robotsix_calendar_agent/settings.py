@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     @field_validator("BROKER_PORT", mode="before")
     @classmethod
     def _validate_port(cls, v: Any) -> int:
-        """Validate that *v* is an integer in the range 1–65535.
+        """Validate that *v* is an integer in the range 1-65535.
 
         Replaces the bare ``int(os.environ.get("BROKER_PORT", …))`` cast
         with a clear, field-specific message on failure.
