@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `COPY --chown` to eliminate an unnecessary layer.
 - Bumped `robotsix-llmio` to include the PromptedOutput auto-wrap fix for
   reasoning tiers, preventing "Thinking mode does not support this tool_choice"
+
+### Fixed
+- Updated `_INTENT_SYSTEM_PROMPT` to instruct the LLM to omit the `uid` key
+  (rather than leaving it empty) when a UID is needed but not provided — the
+  handler already rejects empty UIDs, so the old prompt was misleading the model.
   errors when using `level=2` with raw pydantic `output_type`.
 
 ### Added
