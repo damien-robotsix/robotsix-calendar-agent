@@ -140,6 +140,37 @@ class TestParse:
         assert result.original_text == instruction
 
 
+class TestBuildAgentContract:
+    """Guard the build_agent call signature against regressions."""
+
+    def test_build_agent_called_with_level_2_and_raw_output_type(self) -> None:
+        """build_agent must receive level=2 and the raw _IntentOutput class.
+
+        The new robotsix-llmio wraps raw pydantic output_type in PromptedOutput
+        on reasoning tiers, avoiding the tool_choice/thinking conflict.  If
+        level regresses to 1 (Flash, no reasoning wrapping) or output_type is
+        pre-wrapped, this guard catches it.
+        """
+        _mock_llmio_core.reset_mock(return_value=True, side_effect=True)
+        _setup_llmio_mock(_mock_run_agent("list_events", {}))
+
+        parser = IntentParser()
+        parser.parse("list events")
+
+        mock_provider = _mock_llmio_core.get_provider.return_value
+        build_call = mock_provider.build_agent.call_args
+        assert build_call is not None, "build_agent was never called"
+        assert build_call.kwargs.get("level") == 2, (
+            "IntentParser must use level=2 (Pro/reasoning tier); got "
+            f"{build_call.kwargs.get('level')!r}"
+        )
+        assert build_call.kwargs.get("output_type") is _IntentOutput, (
+            "output_type must be the raw _IntentOutput pydantic class — "
+            "llmio auto-wraps it in PromptedOutput on reasoning tiers. "
+            f"Got: {build_call.kwargs.get('output_type')!r}"
+        )
+
+
 class TestParseError:
     def test_raises_intent_parse_error_on_llmio_failure(self) -> None:
         _mock_llmio_core.reset_mock(return_value=True, side_effect=True)

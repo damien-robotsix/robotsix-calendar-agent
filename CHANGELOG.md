@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Bumped `robotsix-llmio` to include the PromptedOutput auto-wrap fix for
+  reasoning tiers, preventing "Thinking mode does not support this tool_choice"
+  errors when using `level=2` with raw pydantic `output_type`.
+
 ### Added
 - Added `list_tasks` operation: the calendar agent can now list VTODO tasks
   from a CalDAV calendar via a new `Task` dataclass, `CalDavClient.list_tasks()`,
