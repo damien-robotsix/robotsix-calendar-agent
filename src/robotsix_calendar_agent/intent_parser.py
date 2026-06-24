@@ -79,12 +79,11 @@ class IntentParser:
 
             provider = get_provider(**self._model_config)
 
-            # level=1 is the cheap tier with reasoning DISABLED. DeepSeek's
-            # thinking mode rejects the tool_choice pydantic-ai uses for
-            # structured output ("Thinking mode does not support this
-            # tool_choice"), so a non-reasoning tier is required here.
+            # level=2 is the standard LLMIO default (DeepSeek V4 Pro).
+            # The implement agent already uses this tier successfully for
+            # tool calls and structured output via pydantic-ai.
             handle = provider.build_agent(
-                level=1,
+                level=2,
                 system_prompt=_INTENT_SYSTEM_PROMPT,
                 output_type=_IntentOutput,
             )
