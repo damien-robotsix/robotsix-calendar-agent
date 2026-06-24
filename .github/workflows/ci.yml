@@ -49,8 +49,8 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v5
+      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/dependency-review-action@0fadc9e1106a654b9d1a0c00e55b71e0b9b8b9f8  # v5.0.0
         with:
           config-file: .github/dependency-review-config.yml
 
@@ -61,7 +61,11 @@ jobs:
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-      - run: uv run --with zizmor zizmor .
+      - run: uv run --with zizmor zizmor . --format=sarif > zizmor.sarif
+      - uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e  # v4
+        if: ${{ always() }}
+        with:
+          sarif_file: zizmor.sarif
 
   ci:
     strategy:
