@@ -172,7 +172,7 @@ class CalendarAgent:
                 exc,
             )
             return Error.to(request, code=exc.code, message=exc.message)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception(
                 "Internal error for '%s' (op=%s): %s",
                 instruction,
