@@ -753,6 +753,28 @@ class CalDavClient:
         saved = ab.save_object(vcard)
         return self._to_contact(saved, addressbook_id=ab.name)
 
+    # ------------------------------------------------------------------
+    # Health probe
+    # ------------------------------------------------------------------
+
+    def health(self) -> dict[str, Any]:
+        """Perform a one-shot CalDAV reachability check.
+
+        Returns:
+            ``{"connected": True, "calendar_count": int}`` on success, or
+            ``{"connected": False, "error": str}`` when the probe fails.
+
+        This is called on-demand by ``monitor`` — it does **not** cache
+        stale state.
+        """
+        try:
+            calendars = self._principal.calendars()
+        except Exception as exc:
+            logger.warning("CalDAV health probe failed: %s", exc)
+            return {"connected": False, "error": str(exc)}
+        else:
+            return {"connected": True, "calendar_count": len(calendars)}
+
     @_wrap_caldav_op("delete contact")
     def delete_contact(self, uid: str, addressbook_id: str = "") -> None:
         """Delete the contact identified by *uid*. Idempotent.

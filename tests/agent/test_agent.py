@@ -773,3 +773,75 @@ class TestDispatchEnumSync:
             f"Mismatch: extra in dict={dispatch_keys - enum_values}, "
             f"missing={enum_values - dispatch_keys}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Telemetry counters
+# ---------------------------------------------------------------------------
+
+
+class TestTelemetry:
+    def test_counters_initialise_to_zero(self, calendar_agent: MagicMock) -> None:
+        assert calendar_agent._request_count == 0
+        assert calendar_agent._error_count == 0
+        assert calendar_agent._in_flight == 0
+        assert calendar_agent._started_at is not None
+        assert calendar_agent._last_request_ts is None
+
+    def test_request_increments_counter(self, calendar_agent: MagicMock) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="list_calendars",
+            params={},
+        )
+        calendar_agent._mock_caldav.list_calendars.return_value = ["Cal"]
+
+        req = make_request({"instruction": "list calendars"})
+        calendar_agent._handle_request(req)
+
+        assert calendar_agent._request_count == 1
+        assert calendar_agent._last_request_ts is not None
+        assert calendar_agent._in_flight == 0  # finally decremented
+
+    def test_error_increments_error_counter(self, calendar_agent: MagicMock) -> None:
+        # Error responses (caught exceptions converted to Error messages)
+        # should increment the error counter.
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="delete_event",
+            params={"uid": "evt-1"},
+        )
+        calendar_agent._mock_caldav.delete_event.side_effect = RuntimeError("boom")
+
+        req = make_request({"instruction": "delete event evt-1"})
+        calendar_agent._handle_request(req)
+
+        assert calendar_agent._error_count == 1
+        assert calendar_agent._request_count == 1
+        assert calendar_agent._in_flight == 0
+
+    def test_monitor_snapshot_contains_live_counters(
+        self, calendar_agent: MagicMock
+    ) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="list_calendars",
+            params={},
+        )
+        calendar_agent._mock_caldav.list_calendars.return_value = ["Cal"]
+        calendar_agent._mock_caldav.health.return_value = {
+            "connected": True,
+            "calendar_count": 1,
+        }
+        calendar_agent._mock_caldav._url = "https://rad.example.com"
+        calendar_agent._mock_caldav._default_calendar = "TestCal"
+
+        req = make_request({"instruction": "list calendars"})
+        calendar_agent._handle_request(req)
+
+        snap = calendar_agent.monitor_snapshot()
+        assert snap["agent_id"] == "calendar"
+        assert snap["request_count"] == 1
+        assert snap["error_count"] == 0
+        assert snap["in_flight"] == 0
+        assert isinstance(snap["uptime_seconds"], float)
+        assert snap["uptime_seconds"] >= 0
+        assert snap["caldav_health"]["connected"] is True
+        assert snap["caldav_health"]["calendar_count"] == 1

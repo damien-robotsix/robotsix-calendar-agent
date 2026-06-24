@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -88,12 +89,14 @@ class CalendarAgent:
         radicale_password: str | None = None,
         llm_model_config: dict[str, Any] | None = None,
         agent: Any | None = None,
+        component_responder: Any | None = None,
     ) -> None:
         from .settings import Settings
 
         settings = Settings()
 
         self._agent_id = agent_id
+        self._settings = settings
 
         url = radicale_url or settings.RADICALE_URL
         username = radicale_username or settings.RADICALE_USERNAME
@@ -122,6 +125,18 @@ class CalendarAgent:
         self._agent = agent
         self._agent.on_request(self._handle_request)
 
+        # -- telemetry -------------------------------------------------
+        self._started_at: float = time.monotonic()
+        self._request_count: int = 0
+        self._error_count: int = 0
+        self._last_request_ts: float | None = None
+        self._in_flight: int = 0
+
+        # -- optional component-agent responder ------------------------
+        self._component_responder = component_responder
+        if self._component_responder is not None:
+            self._component_responder.set_agent(self)
+
     # ------------------------------------------------------------------
     # request handler
     # ------------------------------------------------------------------
@@ -132,6 +147,10 @@ class CalendarAgent:
         Extracts the ``"instruction"`` from the request body, parses
         intent, dispatches to the CalDAV/CardDAV client, and returns
         a correlated response or error.
+
+        When a :class:`ComponentAgentResponder` is wired, management
+        kinds (``monitor``, ``config-get``, ``config-set``) are
+        delegated to it before instruction handling.
         """
         from robotsix_agent_comm.protocol import (
             Error,
@@ -139,6 +158,42 @@ class CalendarAgent:
         )
 
         body: dict[str, Any] = request.body or {}
+
+        # -- telemetry --------------------------------------------------
+        self._request_count += 1
+        self._last_request_ts = time.monotonic()
+        self._in_flight += 1
+        try:
+            result = self._handle_request_impl(request, body, Error, Response)
+            # Treat protocol-level Error responses as errors for telemetry.
+            # Use duck-typing: an Error has a ``type`` attr named ``ERROR``.
+            if (
+                hasattr(result, "type")
+                and hasattr(result.type, "name")
+                and result.type.name == "ERROR"
+            ):
+                self._error_count += 1
+            return result
+        except Exception:
+            self._error_count += 1
+            raise
+        finally:
+            self._in_flight = max(0, self._in_flight - 1)
+
+    def _handle_request_impl(
+        self,
+        request: Any,
+        body: dict[str, Any],
+        Error: Any,
+        Response: Any,
+    ) -> Any:
+        """Core request handling after telemetry bookkeeping."""
+
+        # -- component-agent dispatch ----------------------------------
+        if self._component_responder is not None:
+            kind = body.get("kind")
+            if kind in ("monitor", "config-get", "config-set"):
+                return self._component_responder.on_request(request)
 
         if "add_to_calendar" in body:
             return handle_add_to_calendar(
@@ -210,6 +265,31 @@ class CalendarAgent:
             )
 
         return handler(self._caldav, params, op)
+
+    # ------------------------------------------------------------------
+    # telemetry
+    # ------------------------------------------------------------------
+
+    def monitor_snapshot(self) -> dict[str, Any]:
+        """Return a real-time snapshot of agent telemetry.
+
+        Includes live counters, timestamps, calendar/runtime facts, and a
+        CalDAV health probe.  Called by the component-agent responder on
+        every ``monitor`` request — never cached.
+        """
+        uptime = time.monotonic() - self._started_at
+        health = self._caldav.health()
+        return {
+            "agent_id": self._agent_id,
+            "uptime_seconds": round(uptime, 3),
+            "request_count": self._request_count,
+            "error_count": self._error_count,
+            "in_flight": self._in_flight,
+            "last_request_ts": self._last_request_ts,
+            "caldav_url": self._caldav._url,
+            "default_calendar": self._caldav._default_calendar,
+            "caldav_health": health,
+        }
 
     # ------------------------------------------------------------------
     # lifecycle

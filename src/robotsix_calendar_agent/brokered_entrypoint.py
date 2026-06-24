@@ -12,10 +12,18 @@ Transport modes:
   environment variables, via the shared
   :class:`robotsix_agent_comm.sdk.BrokeredAgent` (mailbox/pull mode, NAT-safe,
   self-healing across broker restarts), registered as ``robotsix-calendar``.
+
+When the component-agent responder is enabled
+(``COMPONENT_AGENT_ENABLED=true``), the brokered branch composes a
+:class:`~robotsix_calendar_agent.component_agent.responder.ComponentAgentResponder`
+onto the same ``BrokeredAgent`` connection, so ``monitor`` /
+``config-get`` / ``config-set`` kinds are served under the existing
+``robotsix-calendar`` agent identity — no second broker connection.
 """
 
 from __future__ import annotations
 
+import importlib.util
 import logging
 import signal
 import ssl
@@ -136,10 +144,17 @@ def main() -> None:
     settings = Settings()
     mode = settings.CALENDAR_AGENT_TRANSPORT
 
+    # -- optional component-agent responder --------------------------------
+    component_responder = _build_component_responder(settings)
+
     if mode == "brokered":
         brokered = _build_brokered_agent()
         # CalendarAgent wires its request handler onto the shared client.
-        CalendarAgent(brokered.agent_id, agent=brokered)
+        CalendarAgent(
+            brokered.agent_id,
+            agent=brokered,
+            component_responder=component_responder,
+        )
         # BrokeredAgent.serve_forever() installs signal handlers, starts the
         # mailbox/pull loop, and blocks until SIGTERM/SIGINT.
         brokered.serve_forever()
@@ -147,7 +162,7 @@ def main() -> None:
 
     if mode in ("", "inprocess"):
         logger.info("Using in-process transport")
-        _serve_blocking(CalendarAgent())
+        _serve_blocking(CalendarAgent(component_responder=component_responder))
         return
 
     _invalid_msg = (
@@ -155,3 +170,68 @@ def main() -> None:
         "expected 'inprocess' or 'brokered'."
     )
     raise ValueError(_invalid_msg)
+
+
+def _build_component_responder(settings: Any) -> Any | None:
+    """Build a :class:`ComponentAgentResponder` when enabled and available.
+
+    Gated by BOTH:
+
+    1. ``importlib.util.find_spec("robotsix_agent_comm")`` — the SDK is
+       installed (defense-in-depth; it is a core dependency).
+    2. ``ComponentAgentSettings.COMPONENT_AGENT_ENABLED`` is true.
+
+    Returns ``None`` when the responder is disabled or the SDK is absent.
+    The responder is passed to :class:`CalendarAgent` which composes it
+    into its request-handling dispatch.
+
+    .. note::
+
+        The ``find_spec`` gate is **defense-in-depth parity** with the
+        robotsix-chat template.  In this repo ``robotsix-agent-comm`` is
+        a core dependency (not optional), so the spec will normally be
+        found.  We do **not** move it to an ``[optional]`` extra because
+        that would break ``brokered_entrypoint`` which requires it for
+        the primary brokered transport.
+    """
+    try:
+        sdk_available = importlib.util.find_spec("robotsix_agent_comm") is not None
+    except (ValueError, ImportError):
+        sdk_available = False
+    if not sdk_available:
+        logger.info("Component-agent responder disabled: robotsix_agent_comm not found")
+        return None
+    from .component_agent.settings import ComponentAgentSettings
+
+    comp = ComponentAgentSettings()
+    if not comp.COMPONENT_AGENT_ENABLED:
+        logger.info("Component-agent responder disabled (not enabled)")
+        return None
+
+    # Token-required-when-enabled invariant is enforced by
+    # ComponentAgentSettings at construction time; if we reach here the
+    # token is non-empty.  We still verify for clarity.
+    token = comp.COMPONENT_AGENT_TOKEN.get_secret_value()
+    if not token:
+        logger.warning("Component-agent responder disabled: token is empty")
+        return None
+
+    from .component_agent.responder import ComponentAgentResponder
+
+    logger.info(
+        "Component-agent responder enabled (agent_id=%r)",
+        comp.COMPONENT_AGENT_ID,
+    )
+    # The responder will be wired into CalendarAgent which passes it the
+    # running agent reference at construction time.  We create the
+    # responder with a placeholder agent=None and the settings object;
+    # CalendarAgent will set the agent reference later.  Actually, the
+    # CalendarAgent passes itself as `agent` when constructing the
+    # responder — but here we pre-build it.  We'll restructure:
+    # CalendarAgent receives the responder and the responder already has
+    # the settings.  The responder's agent reference is set inside
+    # CalendarAgent.__init__ or we pass a factory.
+    #
+    # Simplest: build the responder now with settings, and CalendarAgent
+    # will update its _agent reference.
+    return ComponentAgentResponder(None, settings)

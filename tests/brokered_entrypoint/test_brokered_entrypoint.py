@@ -139,6 +139,7 @@ class TestMain:
         args, kwargs = mock_cal.call_args
         assert args[0] == "robotsix-calendar"
         assert kwargs["agent"] is inst
+        assert kwargs.get("component_responder") is None
         # serve_forever() runs the blocking loop.
         inst.serve_forever.assert_called_once()
 
@@ -155,7 +156,8 @@ class TestMain:
         ):
             brokered_entrypoint.main()
 
-        mock_cal.assert_called_once_with()
+        _args, kwargs = mock_cal.call_args
+        assert kwargs.get("component_responder") is None
         mock_serve.assert_called_once_with(mock_cal.return_value)
         _mock_agent_comm_sdk.BrokeredAgent.assert_not_called()
 
