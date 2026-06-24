@@ -391,6 +391,294 @@ class TestGetCalendar:
             client._get_calendar("missing")
         assert exc_info.value.code == "not_found"
 
+    def test_resolves_configured_default_by_name(self) -> None:
+        client = CalDavClient("https://x.com", "u", "p", default_calendar="Birthdays")
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        assert client._get_calendar("") is cal_b
+
+    def test_default_not_found_raises(self) -> None:
+        client = CalDavClient("https://x.com", "u", "p", default_calendar="Missing")
+        cal = MagicMock(name="Robotsix")
+        cal.name = "Robotsix"
+        client._principal.calendars.return_value = [cal]
+
+        with pytest.raises(OperationError, match="not found"):
+            client._get_calendar("")
+
+    def test_falls_back_to_first_when_no_default(self) -> None:
+        client = CalDavClient("https://x.com", "u", "p")  # no default
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        assert client._get_calendar("") is cal_a
+
+
+class TestIterCalendars:
+    def test_returns_all_when_empty_id(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        result = client._iter_calendars("")
+        assert result == [cal_a, cal_b]
+
+    def test_returns_single_when_id_given(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        result = client._iter_calendars("Birthdays")
+        assert result == [cal_b]
+
+    def test_raises_when_no_calendars(self, client: CalDavClient) -> None:
+        client._principal.calendars.return_value = []
+
+        with pytest.raises(OperationError) as exc_info:
+            client._iter_calendars("")
+        assert exc_info.value.code == "not_found"
+
+
+class TestListCalendars:
+    def test_returns_calendar_names(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_c = MagicMock(name="Damien")
+        cal_c.name = "Damien"
+        client._principal.calendars.return_value = [cal_a, cal_b, cal_c]
+
+        result = client.list_calendars()
+        assert result == ["Robotsix", "Birthdays", "Damien"]
+
+    def test_excludes_addressbooks(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        ab = MagicMock(name="contacts-addressbook")
+        ab.name = "contacts-addressbook"
+        client._principal.calendars.return_value = [cal_a]
+        client._principal.addressbooks.return_value = [ab]
+
+        result = client.list_calendars()
+        assert result == ["Robotsix"]
+
+
+class TestListEventsAggregation:
+    def test_aggregates_across_all_calendars_when_calendar_id_empty(
+        self, client: CalDavClient
+    ) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.search.return_value = [_mock_vevent(uid="evt-a", summary="Event A")]
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_b.search.return_value = [_mock_vevent(uid="evt-b", summary="Event B")]
+        cal_c = MagicMock(name="Damien")
+        cal_c.name = "Damien"
+        cal_c.search.return_value = [
+            _mock_vevent(uid="evt-c", summary="Event C"),
+            _mock_vevent(uid="evt-c2", summary="Event C2"),
+        ]
+        client._principal.calendars.return_value = [cal_a, cal_b, cal_c]
+
+        result = client.list_events("2026-01-01", "2026-01-31")
+
+        assert len(result) == 4
+        assert result[0].uid == "evt-a"
+        assert result[0].calendar_id == "Robotsix"
+        assert result[1].uid == "evt-b"
+        assert result[1].calendar_id == "Birthdays"
+        assert result[2].uid == "evt-c"
+        assert result[2].calendar_id == "Damien"
+        assert result[3].uid == "evt-c2"
+        assert result[3].calendar_id == "Damien"
+
+    def test_single_calendar_when_id_provided(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.search.return_value = [_mock_vevent(uid="evt-a")]
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        result = client.list_events("2026-01-01", "2026-01-31", calendar_id="Robotsix")
+
+        assert len(result) == 1
+        assert result[0].uid == "evt-a"
+        cal_b.search.assert_not_called()
+
+
+class TestListTasksAggregation:
+    def test_aggregates_across_all_calendars_when_calendar_id_empty(
+        self, client: CalDavClient
+    ) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.search.return_value = [_mock_vtodo(uid="task-a")]
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_b.search.return_value = [
+            _mock_vtodo(uid="task-b1"),
+            _mock_vtodo(uid="task-b2"),
+        ]
+        cal_c = MagicMock(name="Damien")
+        cal_c.name = "Damien"
+        cal_c.search.return_value = []  # VTODO collections with no tasks
+        client._principal.calendars.return_value = [cal_a, cal_b, cal_c]
+
+        result = client.list_tasks()
+
+        assert len(result) == 3
+        assert result[0].uid == "task-a"
+        assert result[0].calendar_id == "Robotsix"
+        assert result[1].uid == "task-b1"
+        assert result[1].calendar_id == "Birthdays"
+        assert result[2].uid == "task-b2"
+        assert result[2].calendar_id == "Birthdays"
+
+    def test_single_calendar_when_id_provided(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.search.return_value = [_mock_vtodo(uid="task-a")]
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        result = client.list_tasks(calendar_id="Robotsix")
+
+        assert len(result) == 1
+        assert result[0].uid == "task-a"
+        cal_b.search.assert_not_called()
+
+
+class TestUpdateEventAcrossCalendars:
+    def test_locate_uid_across_all_calendars(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.event.return_value = None  # not here
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_b.event.return_value = _mock_vevent(uid="evt-1", summary="Old")
+        cal_b.save_event.return_value = _mock_vevent(uid="evt-1", summary="Updated")
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        event = _make_event(summary="Updated")
+        result = client.update_event("evt-1", event)
+
+        assert result.summary == "Updated"
+        cal_a.event.assert_called_once_with(uid="evt-1")
+        cal_b.event.assert_called_once_with(uid="evt-1")
+
+    def test_raises_when_uid_not_found_anywhere(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.event.return_value = None
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_b.event.return_value = None
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        with pytest.raises(OperationError, match="not found"):
+            client.update_event("unknown", _make_event())
+
+    def test_explicit_calendar_id_still_works(self, client: CalDavClient) -> None:
+        cal = MagicMock(name="Damien")
+        cal.name = "Damien"
+        cal.event.return_value = _mock_vevent(uid="evt-1", summary="Old")
+        cal.save_event.return_value = _mock_vevent(uid="evt-1", summary="Updated")
+        client._principal.calendars.return_value = [cal]
+
+        event = _make_event(summary="Updated")
+        result = client.update_event("evt-1", event, calendar_id="Damien")
+
+        assert result.summary == "Updated"
+        assert cal.save_event.called
+
+
+class TestDeleteEventAcrossCalendars:
+    def test_locate_and_delete_across_calendars(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.event.return_value = None
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        mock_evt = MagicMock()
+        cal_b.event.return_value = mock_evt
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        client.delete_event("evt-1")
+
+        mock_evt.delete.assert_called_once()
+        cal_a.event.assert_called_once_with(uid="evt-1")
+        cal_b.event.assert_called_once_with(uid="evt-1")
+
+    def test_idempotent_when_not_found_anywhere(self, client: CalDavClient) -> None:
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.event.return_value = None
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_b.event.return_value = None
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        result = client.delete_event("unknown")
+        assert result is None
+
+    def test_explicit_calendar_id_still_works(self, client: CalDavClient) -> None:
+        cal = MagicMock(name="Damien")
+        cal.name = "Damien"
+        mock_evt = MagicMock()
+        cal.event.return_value = mock_evt
+        client._principal.calendars.return_value = [cal]
+
+        client.delete_event("evt-1", calendar_id="Damien")
+
+        mock_evt.delete.assert_called_once()
+
+
+class TestCreateEventDefault:
+    def test_writes_to_configured_default(self) -> None:
+        client = CalDavClient("https://x.com", "u", "p", default_calendar="Birthdays")
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        cal_b.save_event.return_value = _mock_vevent(uid="new-evt")
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        event = _make_event()
+        result = client.create_event(event)
+
+        cal_b.save_event.assert_called_once()
+        assert result.calendar_id == "Birthdays"
+
+    def test_explicit_calendar_id_overrides_default(self) -> None:
+        client = CalDavClient("https://x.com", "u", "p", default_calendar="Birthdays")
+        cal_a = MagicMock(name="Robotsix")
+        cal_a.name = "Robotsix"
+        cal_a.save_event.return_value = _mock_vevent(uid="new-evt")
+        cal_b = MagicMock(name="Birthdays")
+        cal_b.name = "Birthdays"
+        client._principal.calendars.return_value = [cal_a, cal_b]
+
+        event = _make_event()
+        result = client.create_event(event, calendar_id="Robotsix")
+
+        cal_a.save_event.assert_called_once()
+        assert result.calendar_id == "Robotsix"
+
 
 class TestGetAddressbook:
     def test_no_addressbooks_raises_not_found(self, client: CalDavClient) -> None:

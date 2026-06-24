@@ -116,6 +116,11 @@ class TestParse:
                 TaskOperation.LIST_TASKS,
                 {},
             ),
+            (
+                "what calendars do I have",
+                CalendarOperation.LIST_CALENDARS,
+                {},
+            ),
         ],
     )
     def test_classifies_operation(
@@ -167,6 +172,22 @@ class TestBuildAgentContract:
             "llmio wraps it internally. "
             f"Got: {build_call.kwargs.get('output_type')!r}"
         )
+
+
+class TestSystemPrompt:
+    """Smoke-test the system prompt includes required operations."""
+
+    def test_prompt_includes_list_calendars(self) -> None:
+        from robotsix_calendar_agent.intent_parser import _INTENT_SYSTEM_PROMPT
+
+        assert "list_calendars" in _INTENT_SYSTEM_PROMPT
+        assert (
+            "Calendar names can be obtained via list_calendars" in _INTENT_SYSTEM_PROMPT
+        )
+
+    def test_calendar_operation_has_list_calendars(self) -> None:
+        assert hasattr(CalendarOperation, "LIST_CALENDARS")
+        assert CalendarOperation.LIST_CALENDARS == "list_calendars"
 
 
 class TestParseError:

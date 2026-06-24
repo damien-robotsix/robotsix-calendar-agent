@@ -158,7 +158,9 @@ class CalDavClient:
         OperationError: If authentication fails.
     """
 
-    def __init__(self, url: str, username: str, password: str) -> None:
+    def __init__(
+        self, url: str, username: str, password: str, default_calendar: str = ""
+    ) -> None:
         # ``caldav`` ships incomplete type information (mypy resolves the
         # module to ``object``), so route it through ``Any`` to keep the
         # wrapper strict-clean without per-call ignores.
@@ -167,6 +169,7 @@ class CalDavClient:
         _caldav: Any = caldav
 
         self._url = url
+        self._default_calendar = default_calendar
         try:
             self._client = _caldav.DAVClient(
                 url=url, username=username, password=password
@@ -311,7 +314,12 @@ class CalDavClient:
         )
 
     def _get_calendar(self, calendar_id: str = "") -> Any:
-        """Return a caldav calendar object by name, or the default."""
+        """Return a caldav calendar object by name, or the default.
+
+        When *calendar_id* is empty, resolve in order:
+        1. ``self._default_calendar`` by name (when configured).
+        2. The first calendar (``calendars[0]``) as a last-resort fallback.
+        """
         calendars = self._principal.calendars()
         if not calendars:
             raise OperationError(
@@ -326,7 +334,34 @@ class CalDavClient:
                 code="not_found",
                 message=f"Calendar {calendar_id!r} not found.",
             )
+        # Resolve the configured default calendar by name.
+        if self._default_calendar:
+            for cal in calendars:
+                if cal.name == self._default_calendar:
+                    return cal
+            raise OperationError(
+                code="not_found",
+                message=(f"Default calendar {self._default_calendar!r} not found."),
+            )
+        # Last-resort fallback: first calendar (preserves legacy behavior).
         return calendars[0]
+
+    def _iter_calendars(self, calendar_id: str = "") -> list[Any]:
+        """Return calendars to iterate over.
+
+        When *calendar_id* is non-empty, returns a single-element list
+        containing the named calendar.  When empty, returns **all**
+        calendars (raising ``not_found`` if none exist).
+        """
+        if calendar_id:
+            return [self._get_calendar(calendar_id)]
+        calendars = self._principal.calendars()
+        if not calendars:
+            raise OperationError(
+                code="not_found",
+                message="No calendars found on the server.",
+            )
+        return cast(list[Any], calendars)
 
     def _get_addressbook(self, addressbook_id: str = "") -> Any:
         """Return a caldav addressbook object by name, or the default."""
@@ -480,13 +515,24 @@ class CalDavClient:
     # Calendar operations (CalDAV)
     # ------------------------------------------------------------------
 
+    @_wrap_caldav_op("list calendars")
+    def list_calendars(self) -> list[str]:
+        """Return the names of all available calendar collections.
+
+        Only VEVENT / calendar collections are included (addressbooks
+        come from the separate ``self._principal.addressbooks()`` and
+        are inherently excluded).
+        """
+        return [cal.name for cal in self._principal.calendars()]
+
     @_wrap_caldav_op("list events")
     def list_events(
         self, start: str, end: str, calendar_id: str = ""
     ) -> list[CalendarEvent]:
         """Return events in the ISO 8601 date range.
 
-        If *calendar_id* is empty, use the default calendar.
+        When *calendar_id* is empty, events are aggregated from **all**
+        calendars.  Each event is tagged with its source ``calendar_id``.
         """
         logger.debug(
             "list_events start=%r end=%r calendar_id=%r",
@@ -495,25 +541,32 @@ class CalDavClient:
             calendar_id,
         )
         start_dt, end_dt = self._iso_date_range(start, end)
-        cal = self._get_calendar(calendar_id)
-        results = cal.search(
-            start=start_dt,
-            end=end_dt,
-            event=True,
-            expand=False,
-        )
-        return [self._to_calendar_event(r, calendar_id=cal.name) for r in results]
+        aggregated: list[CalendarEvent] = []
+        for cal in self._iter_calendars(calendar_id):
+            results = cal.search(
+                start=start_dt,
+                end=end_dt,
+                event=True,
+                expand=False,
+            )
+            aggregated.extend(
+                self._to_calendar_event(r, calendar_id=cal.name) for r in results
+            )
+        return aggregated
 
     @_wrap_caldav_op("list tasks")
     def list_tasks(self, calendar_id: str = "") -> list[Task]:
-        """Return all VTODO tasks from a CalDAV calendar collection.
+        """Return all VTODO tasks from CalDAV calendar collections.
 
-        If *calendar_id* is empty, use the default calendar.
+        When *calendar_id* is empty, tasks are aggregated from **all**
+        calendars.  Each task is tagged with its source ``calendar_id``.
         """
         logger.debug("list_tasks calendar_id=%r", calendar_id)
-        cal = self._get_calendar(calendar_id)
-        results = cal.search(todo=True)
-        return [self._to_task(r, calendar_id=cal.name) for r in results]
+        aggregated: list[Task] = []
+        for cal in self._iter_calendars(calendar_id):
+            results = cal.search(todo=True)
+            aggregated.extend(self._to_task(r, calendar_id=cal.name) for r in results)
+        return aggregated
 
     @_wrap_caldav_op("create event")
     def create_event(
@@ -553,6 +606,10 @@ class CalDavClient:
     ) -> CalendarEvent:
         """Update the event identified by *uid*; return the updated event.
 
+        When *calendar_id* is empty, iterates **all** calendars to locate
+        the UID (the UID may live in a non-default collection).  When
+        *calendar_id* is given, only that single calendar is searched.
+
         Raises:
             OperationError: If the UID doesn't exist (code ``"not_found"``).
         """
@@ -562,14 +619,26 @@ class CalDavClient:
             calendar_id,
             event.summary,
         )
-        cal = self._get_calendar(calendar_id)
-        # Fetch the existing event to confirm it exists
-        existing = cal.event(uid=uid)
-        if existing is None:
-            raise OperationError(
-                code="not_found",
-                message=f"Event with UID {uid!r} not found.",
-            )
+        if calendar_id:
+            cal = self._get_calendar(calendar_id)
+            existing = cal.event(uid=uid)
+            if existing is None:
+                raise OperationError(
+                    code="not_found",
+                    message=f"Event with UID {uid!r} not found.",
+                )
+        else:
+            # Locate the UID across all calendars.
+            cal = None
+            for candidate in self._iter_calendars(""):
+                if candidate.event(uid=uid) is not None:
+                    cal = candidate
+                    break
+            if cal is None:
+                raise OperationError(
+                    code="not_found",
+                    message=f"Event with UID {uid!r} not found.",
+                )
         # Build updated iCal with the same UID
         updated = CalendarEvent(
             uid=uid,
@@ -578,7 +647,7 @@ class CalDavClient:
             location=event.location,
             dtstart=event.dtstart,
             dtend=event.dtend,
-            calendar_id=calendar_id,
+            calendar_id=calendar_id or cal.name,
         )
         ical = self._event_to_ical(updated)
         saved = cal.save_event(ical)
@@ -588,14 +657,24 @@ class CalDavClient:
     def delete_event(self, uid: str, calendar_id: str = "") -> None:
         """Delete the event identified by *uid*. Idempotent.
 
-        Returns ``None`` when the UID does not exist (already deleted).
+        When *calendar_id* is empty, iterates **all** calendars to locate
+        the UID.  Returns ``None`` when the UID does not exist in any
+        calendar (already deleted).
         """
         logger.debug("delete_event uid=%r calendar_id=%r", uid, calendar_id)
-        cal = self._get_calendar(calendar_id)
-        event_obj = cal.event(uid=uid)
-        if event_obj is None:
+        if calendar_id:
+            cal = self._get_calendar(calendar_id)
+            event_obj = cal.event(uid=uid)
+            if event_obj is None:
+                return None
+            event_obj.delete()
+        else:
+            for cal in self._iter_calendars(""):
+                event_obj = cal.event(uid=uid)
+                if event_obj is not None:
+                    event_obj.delete()
+                    return None
             return None
-        event_obj.delete()
 
     # ------------------------------------------------------------------
     # Contacts operations (CardDAV)
