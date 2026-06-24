@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- `intent_parser.py`: replaced `get_provider` + `provider.build_agent(level=2)` with `build_agent_for_level(2, ...)` to match current `robotsix-llmio` API.
 - Hardened Dockerfile: pinned base images to digest, added uv package cache
   mount, cleaned apt lists in builder stage, and replaced `RUN chown` with
   `COPY --chown` to eliminate an unnecessary layer.

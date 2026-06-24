@@ -81,15 +81,14 @@ class IntentParser:
                 produce a valid structured result.
         """
         try:
-            from robotsix_llmio.core import get_provider, run_agent
-
-            provider = get_provider(**self._model_config)
+            from robotsix_llmio.core import build_agent_for_level, run_agent
 
             # level=2 is the standard LLMIO default (DeepSeek V4 Pro).
             # The implement agent already uses this tier successfully for
             # tool calls and structured output via pydantic-ai.
-            handle = provider.build_agent(
-                level=2,
+            handle = build_agent_for_level(
+                2,
+                provider_kwargs=self._model_config or None,
                 system_prompt=_INTENT_SYSTEM_PROMPT,
                 output_type=_IntentOutput,
             )

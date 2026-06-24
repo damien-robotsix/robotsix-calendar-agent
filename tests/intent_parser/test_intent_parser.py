@@ -40,11 +40,9 @@ def _mock_run_agent(
 
 
 def _setup_llmio_mock(output: _IntentOutput | Exception) -> MagicMock:
-    """Set up llmio mocks: get_provider + run_agent return the given output."""
-    mock_provider = MagicMock()
+    """Set up llmio mocks: build_agent_for_level + run_agent return the given output."""
     mock_handle = MagicMock()
-    mock_provider.build_agent.return_value = mock_handle
-    _mock_llmio_core.get_provider.return_value = mock_provider
+    _mock_llmio_core.build_agent_for_level.return_value = mock_handle
 
     if isinstance(output, Exception):
         _mock_llmio_core.run_agent.side_effect = output
@@ -144,7 +142,7 @@ class TestBuildAgentContract:
     """Guard the build_agent call signature against regressions."""
 
     def test_build_agent_called_with_level_2_and_raw_output_type(self) -> None:
-        """build_agent must receive level=2 and the raw _IntentOutput class.
+        """build_agent_for_level must receive level=2 and the raw _IntentOutput class.
 
         The new robotsix-llmio wraps raw pydantic output_type in PromptedOutput
         on reasoning tiers, avoiding the tool_choice/thinking conflict.  If
@@ -157,16 +155,16 @@ class TestBuildAgentContract:
         parser = IntentParser()
         parser.parse("list events")
 
-        mock_provider = _mock_llmio_core.get_provider.return_value
-        build_call = mock_provider.build_agent.call_args
-        assert build_call is not None, "build_agent was never called"
-        assert build_call.kwargs.get("level") == 2, (
-            "IntentParser must use level=2 (Pro/reasoning tier); got "
-            f"{build_call.kwargs.get('level')!r}"
+        build_call = _mock_llmio_core.build_agent_for_level.call_args
+        assert build_call is not None, "build_agent_for_level was never called"
+        # First positional argument is the level
+        assert build_call.args[0] == 2, (
+            "IntentParser must call build_agent_for_level(2, ...); got "
+            f"{build_call.args[0]!r}"
         )
         assert build_call.kwargs.get("output_type") is _IntentOutput, (
-            "output_type must be the raw _IntentOutput pydantic class — "
-            "llmio auto-wraps it in PromptedOutput on reasoning tiers. "
+            "output_type must be the raw _IntentOutput class — "
+            "llmio wraps it internally. "
             f"Got: {build_call.kwargs.get('output_type')!r}"
         )
 
