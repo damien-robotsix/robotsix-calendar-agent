@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Pinned `actions/checkout` and `actions/dependency-review-action` in the `dependency-review` job to immutable SHAs (fixes a pre-existing zizmor finding).
 
 - Enable Ruff's `RUF` rule set and remove three stale `# noqa: BLE001` suppressions.
+- Added `fail_under = 85` to `[tool.coverage.report]` in `pyproject.toml` so local `pytest --cov` runs enforce the same 85% coverage threshold as CI.
 
 - Expand `SECURITY.md` with supported versions table and disclosure policy.
 
