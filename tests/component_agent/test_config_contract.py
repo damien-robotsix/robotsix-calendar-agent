@@ -28,7 +28,7 @@ def _settings(**overrides: Any) -> Settings:
     env = {
         "RADICALE_URL": "https://rad.example.com",
         "RADICALE_USERNAME": "user",
-        "RADICALE_PASSWORD": "secret",
+        "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
         "RADICALE_DEFAULT_CALENDAR": "TestCal",
         "CALENDAR_AGENT_TRANSPORT": "inprocess",
         "CALENDAR_AGENT_ID": "test-calendar",
