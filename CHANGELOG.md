@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Registered `docs/modules.yaml` under the `init` module's `doc_paths`.
+
 ### Fixed
 - Added missing `reference/component_agent.md` to `mkdocs.yml` navigation under Code Reference.
 
