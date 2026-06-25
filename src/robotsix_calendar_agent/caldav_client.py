@@ -143,6 +143,26 @@ def _is_transient_exception(exc: BaseException) -> bool:
     )
 
 
+def _comp_text(comp: Any, name: str) -> str:
+    """Extract a text value from an iCalendar component property."""
+    value = comp.get(name)
+    return str(value) if value is not None else ""
+
+
+def _comp_dt(comp: Any, name: str) -> str:
+    """Extract a datetime value from an iCalendar component property."""
+    import datetime
+
+    value = comp.get(name)
+    if value is None:
+        return ""
+    moment = getattr(value, "dt", value)
+    # datetime is a subclass of date — both serialise via isoformat().
+    if isinstance(moment, datetime.date):
+        return moment.isoformat()
+    return str(moment)
+
+
 class CalDavClient:
     """Typed wrapper around ``caldav.DAVClient`` for Radicale.
 
@@ -218,31 +238,15 @@ class CalDavClient:
         Reads via caldav 2.0's ``icalendar_component`` (the ``icalendar`` lib),
         replacing the deprecated ``vobject_instance``.
         """
-        import datetime
-
         comp = obj.icalendar_component
 
-        def _text(name: str) -> str:
-            value = comp.get(name)
-            return str(value) if value is not None else ""
-
-        def _dt(name: str) -> str:
-            value = comp.get(name)
-            if value is None:
-                return ""
-            moment = getattr(value, "dt", value)
-            # datetime is a subclass of date — both serialise via isoformat().
-            if isinstance(moment, datetime.date):
-                return moment.isoformat()
-            return str(moment)
-
         return CalendarEvent(
-            uid=_text("UID"),
-            summary=_text("SUMMARY"),
-            description=_text("DESCRIPTION"),
-            location=_text("LOCATION"),
-            dtstart=_dt("DTSTART"),
-            dtend=_dt("DTEND"),
+            uid=_comp_text(comp, "UID"),
+            summary=_comp_text(comp, "SUMMARY"),
+            description=_comp_text(comp, "DESCRIPTION"),
+            location=_comp_text(comp, "LOCATION"),
+            dtstart=_comp_dt(comp, "DTSTART"),
+            dtend=_comp_dt(comp, "DTEND"),
             calendar_id=calendar_id,
         )
 
@@ -253,30 +257,15 @@ class CalDavClient:
         Reads via caldav 2.0's ``icalendar_component`` (the ``icalendar`` lib),
         same pattern as ``_to_calendar_event`` but for VTODO fields.
         """
-        import datetime
-
         comp = obj.icalendar_component
 
-        def _text(name: str) -> str:
-            value = comp.get(name)
-            return str(value) if value is not None else ""
-
-        def _dt(name: str) -> str:
-            value = comp.get(name)
-            if value is None:
-                return ""
-            moment = getattr(value, "dt", value)
-            if isinstance(moment, datetime.date):
-                return moment.isoformat()
-            return str(moment)
-
         return Task(
-            uid=_text("UID"),
-            summary=_text("SUMMARY"),
-            description=_text("DESCRIPTION"),
-            dtstart=_dt("DTSTART"),
-            due=_dt("DUE"),
-            status=_text("STATUS"),
+            uid=_comp_text(comp, "UID"),
+            summary=_comp_text(comp, "SUMMARY"),
+            description=_comp_text(comp, "DESCRIPTION"),
+            dtstart=_comp_dt(comp, "DTSTART"),
+            due=_comp_dt(comp, "DUE"),
+            status=_comp_text(comp, "STATUS"),
             calendar_id=calendar_id,
         )
 

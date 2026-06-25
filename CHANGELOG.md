@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `_handle_delete_event`, `_handle_list_contacts`, `_handle_delete_contact`);
   `_dispatch` now only passes `operation` to the two create/update handlers
   that forward it to `_entity_op`.
+- `caldav_client.py`: lifted duplicated inner closures `_text` / `_dt` from
+  `_to_calendar_event` and `_to_task` into module-level helpers `_comp_text`
+  and `_comp_dt`.
 - `intent_parser.py`: replaced `get_provider` + `provider.build_agent(level=2)` with `build_agent_for_level(2, ...)` to match current `robotsix-llmio` API.
 - Hardened Dockerfile: pinned base images to digest, added uv package cache
   mount, cleaned apt lists in builder stage, and replaced `RUN chown` with
