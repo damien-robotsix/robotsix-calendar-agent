@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- `agent.py`: removed unused `operation` parameter from six dispatch handlers
+  (`_handle_list_events`, `_handle_list_tasks`, `_handle_list_calendars`,
+  `_handle_delete_event`, `_handle_list_contacts`, `_handle_delete_contact`);
+  `_dispatch` now only passes `operation` to the two create/update handlers
+  that forward it to `_entity_op`.
 - `intent_parser.py`: replaced `get_provider` + `provider.build_agent(level=2)` with `build_agent_for_level(2, ...)` to match current `robotsix-llmio` API.
 - Hardened Dockerfile: pinned base images to digest, added uv package cache
   mount, cleaned apt lists in builder stage, and replaced `RUN chown` with

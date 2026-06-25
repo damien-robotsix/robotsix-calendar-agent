@@ -274,7 +274,9 @@ class CalendarAgent:
                 message=f"Unknown operation: {op}",
             )
 
-        return handler(self._caldav, params, op)
+        if handler in _CREATE_UPDATE_HANDLERS:
+            return handler(self._caldav, params, op)
+        return handler(self._caldav, params)
 
     # ------------------------------------------------------------------
     # telemetry
@@ -435,7 +437,6 @@ def _delete_entity_op(
 def _handle_list_events(
     client: CalDavClient,
     params: dict[str, Any],
-    operation: str = "",
 ) -> list[dict[str, Any]]:
     return [
         _event_to_dict(e)
@@ -450,7 +451,6 @@ def _handle_list_events(
 def _handle_list_tasks(
     client: CalDavClient,
     params: dict[str, Any],
-    operation: str = "",
 ) -> list[dict[str, Any]]:
     return [
         _task_to_dict(t)
@@ -479,7 +479,6 @@ def _handle_create_or_update_event(
 def _handle_list_calendars(
     client: CalDavClient,
     params: dict[str, Any],
-    operation: str = "",
 ) -> list[str]:
     """Return the names of the user's available calendars."""
     return client.list_calendars()
@@ -488,7 +487,6 @@ def _handle_list_calendars(
 def _handle_delete_event(
     client: CalDavClient,
     params: dict[str, Any],
-    operation: str = "",
 ) -> dict[str, bool]:
     return _delete_entity_op(
         params, delete_fn=client.delete_event, id_key="calendar_id"
@@ -498,7 +496,6 @@ def _handle_delete_event(
 def _handle_list_contacts(
     client: CalDavClient,
     params: dict[str, Any],
-    operation: str = "",
 ) -> list[dict[str, Any]]:
     return [
         _contact_to_dict(c)
@@ -525,14 +522,18 @@ def _handle_create_or_update_contact(
 def _handle_delete_contact(
     client: CalDavClient,
     params: dict[str, Any],
-    operation: str = "",
 ) -> dict[str, bool]:
     return _delete_entity_op(
         params, delete_fn=client.delete_contact, id_key="addressbook_id"
     )
 
 
-_DISPATCH = {
+_CREATE_UPDATE_HANDLERS: set[Callable[..., Any]] = {
+    _handle_create_or_update_event,
+    _handle_create_or_update_contact,
+}
+
+_DISPATCH: dict[str, Callable[..., Any]] = {
     "list_events": _handle_list_events,
     "list_calendars": _handle_list_calendars,
     "create_event": _handle_create_or_update_event,
