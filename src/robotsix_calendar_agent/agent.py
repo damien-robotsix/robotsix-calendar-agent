@@ -401,15 +401,6 @@ def _entity_op(
             )
         kwargs = {id_key: params.get(id_key, "")}
         result = update_fn(uid, entity, **kwargs)
-    elif "uid" in params:
-        uid = params["uid"]
-        if not uid:
-            raise OperationError(
-                code="missing_uid",
-                message="A UID is required to update, but none was provided.",
-            )
-        kwargs = {id_key: params.get(id_key, "")}
-        result = update_fn(uid, entity, **kwargs)
     else:
         kwargs = {id_key: params.get(id_key, "")}
         result = create_fn(entity, **kwargs)
