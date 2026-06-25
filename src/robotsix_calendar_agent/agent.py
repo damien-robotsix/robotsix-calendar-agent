@@ -536,12 +536,12 @@ def _handle_delete_contact(
     )
 
 
-_CREATE_UPDATE_HANDLERS = {
+_CREATE_UPDATE_HANDLERS: set[Callable[..., Any]] = {
     _handle_create_or_update_event,
     _handle_create_or_update_contact,
 }
 
-_DISPATCH = {
+_DISPATCH: dict[str, Callable[..., Any]] = {
     "list_events": _handle_list_events,
     "list_calendars": _handle_list_calendars,
     "create_event": _handle_create_or_update_event,
