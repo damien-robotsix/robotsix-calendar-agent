@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   reasoning tiers, preventing "Thinking mode does not support this tool_choice"
 
 ### Fixed
+- Added missing `RADICALE_DEFAULT_CALENDAR` commented entry to `.env.example`.
 - Fix `_entity_op` bug where a create operation with an incidental `uid` in
   params was silently dispatched as an update. The dispatch now uses only the
   `operation` string to decide between create/update.
