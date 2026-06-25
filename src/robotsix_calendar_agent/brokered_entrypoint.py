@@ -210,12 +210,7 @@ def _build_component_responder(settings: Any) -> Any | None:
 
     # Token-required-when-enabled invariant is enforced by
     # ComponentAgentSettings at construction time; if we reach here the
-    # token is non-empty.  We still verify for clarity.
-    token = comp.COMPONENT_AGENT_TOKEN.get_secret_value()
-    if not token:
-        logger.warning("Component-agent responder disabled: token is empty")
-        return None
-
+    # token is non-empty.
     from .component_agent.responder import ComponentAgentResponder
 
     logger.info(
