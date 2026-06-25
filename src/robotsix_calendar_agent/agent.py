@@ -388,7 +388,8 @@ def _entity_op(
 
     Captures the common 3-step pattern:
     1. Build domain object from params.
-    2. Call client CRUD method (create if no uid, else update).
+    2. Call client CRUD method — create unless *operation* starts with
+       ``"update"`` (dispatch is operation-based, never uid-based).
     3. Serialize result via serializer.
     """
     entity = builder(params)
