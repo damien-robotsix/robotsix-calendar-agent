@@ -355,3 +355,30 @@ class TestResponderInertWhenDisabled:
             s = Settings()
             result = brokered_entrypoint._build_component_responder(s)
             assert result is None
+
+    def test_responder_created_when_enabled_with_token(self) -> None:
+        """When COMPONENT_AGENT_ENABLED=true and a token is set,
+        _build_component_responder returns a ComponentAgentResponder."""
+        from robotsix_calendar_agent import brokered_entrypoint
+        from robotsix_calendar_agent.component_agent.responder import (
+            ComponentAgentResponder,
+        )
+
+        env = {
+            "RADICALE_URL": "https://rad.example.com",
+            "RADICALE_USERNAME": "user",
+            "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
+            "COMPONENT_AGENT_ENABLED": "true",
+            "COMPONENT_AGENT_TOKEN": "secret-token",
+        }
+        with (
+            patch.dict(os.environ, env, clear=True),
+            patch(
+                "robotsix_calendar_agent.brokered_entrypoint.importlib.util.find_spec",
+                return_value=MagicMock(),
+            ),
+        ):
+            s = Settings()
+            result = brokered_entrypoint._build_component_responder(s)
+            assert isinstance(result, ComponentAgentResponder)
+            assert result._settings is s
