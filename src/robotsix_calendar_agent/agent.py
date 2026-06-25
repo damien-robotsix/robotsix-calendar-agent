@@ -388,21 +388,13 @@ def _entity_op(
 
     Captures the common 3-step pattern:
     1. Build domain object from params.
-    2. Call client CRUD method (create if no uid, else update).
+    2. Call client CRUD method — create unless *operation* starts with
+       ``"update"`` (dispatch is operation-based, never uid-based).
     3. Serialize result via serializer.
     """
     entity = builder(params)
     if operation and operation.startswith("update"):
         uid = params.get("uid", "")
-        if not uid:
-            raise OperationError(
-                code="missing_uid",
-                message="A UID is required to update, but none was provided.",
-            )
-        kwargs = {id_key: params.get(id_key, "")}
-        result = update_fn(uid, entity, **kwargs)
-    elif "uid" in params:
-        uid = params["uid"]
         if not uid:
             raise OperationError(
                 code="missing_uid",

@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   reasoning tiers, preventing "Thinking mode does not support this tool_choice"
 
 ### Fixed
+- Fix `_entity_op` bug where a create operation with an incidental `uid` in
+  params was silently dispatched as an update. The dispatch now uses only the
+  `operation` string to decide between create/update.
 - Component-agent responder delegation in `_handle_request_impl` now catches
   unexpected exceptions and returns an `Error` response instead of letting them
   propagate unhandled.
