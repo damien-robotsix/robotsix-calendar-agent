@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Added missing `reference/component_agent.md` to `mkdocs.yml` navigation under Code Reference.
+
 ### Changed
 - `agent.py`: removed unused `operation` parameter from six dispatch handlers
   (`_handle_list_events`, `_handle_list_tasks`, `_handle_list_calendars`,
