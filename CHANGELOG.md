@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   errors when using `level=2` with raw pydantic `output_type`.
 
 ### Added
+- Added `COMPONENT_AGENT_ENABLED`, `COMPONENT_AGENT_TOKEN`, and
+  `COMPONENT_AGENT_ID` commented entries to `.env.example` for discoverability.
+
 - Added `list_tasks` operation: the calendar agent can now list VTODO tasks
   from a CalDAV calendar via a new `Task` dataclass, `CalDavClient.list_tasks()`,
   and `list_tasks` intent classifier support. Fixes broken `query_tasks` channel
