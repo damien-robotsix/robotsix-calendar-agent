@@ -38,14 +38,18 @@ RUN groupadd -g 1001 app && useradd -u 1001 -g app -m -d /app -s /bin/false app
 
 WORKDIR /app
 
-# Copy the virtualenv and source from the builder.
+# Copy the virtualenv, source, and healthcheck from the builder.
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --from=builder --chown=app:app /app/src /app/src
+COPY --from=builder --chown=app:app /app/healthcheck.py /app/healthcheck.py
 
 # Runtime configuration.
 ENV CALENDAR_AGENT_TRANSPORT=brokered
 ENV PATH="/app/.venv/bin:${PATH}"
 
 USER app
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD python /app/healthcheck.py
 
 CMD ["calendar-agent"]
