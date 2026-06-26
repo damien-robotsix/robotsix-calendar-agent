@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `brokered_entrypoint.py`: removed unreachable `if not token:` guard in `_build_component_responder` (token-empty invariant is already enforced by `ComponentAgentSettings`). Added test coverage for the enabled-with-token path.
 
 ### Changed
+- Removed dead `if TYPE_CHECKING: pass` blocks and unused `TYPE_CHECKING` imports from `agent.py` and `caldav_client.py`.
 - `__init__.py`: re-exported symbols now flow through `agent.py` instead of
   duplicating imports from `.caldav_client` and `.intent_parser`.
 - Merged `component_agent/responder.py` into `brokered_entrypoint.py`:
