@@ -15,6 +15,7 @@ sentinel.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterator
 from typing import Any
 
 from pydantic import ValidationError as PydanticValidationError
@@ -116,7 +117,7 @@ def _component_settings_field_names() -> list[str]:
 def _iter_config_fields(
     settings: Any,
     comp_settings: Any,
-):
+) -> Iterator[tuple[str, Any]]:
     """Yield ``(key, value)`` for every core + component config field."""
     from ..settings import Settings as CoreSettings
     from .settings import ComponentAgentSettings
