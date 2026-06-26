@@ -10,7 +10,7 @@ import functools
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import tenacity
 from tenacity import (
@@ -19,9 +19,6 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
-
-if TYPE_CHECKING:
-    pass
 
 _F = TypeVar("_F", bound=Callable[..., Any])
 

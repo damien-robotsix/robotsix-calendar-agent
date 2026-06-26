@@ -10,7 +10,7 @@ import json
 import logging
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 try:
     from robotsix_llmio.core import setup_langfuse_tracing  # pragma: no cover
@@ -19,9 +19,6 @@ try:
     setup_logging(loggers=["robotsix_calendar_agent"])
     setup_langfuse_tracing()
 except ImportError:  # pragma: no cover
-    pass
-
-if TYPE_CHECKING:
     pass
 
 from .add_to_calendar_handler import (
