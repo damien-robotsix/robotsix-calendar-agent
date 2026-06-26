@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Extracted `_iter_config_fields` helper in `config_contract.py` to deduplicate settings-iteration loops across `get_config_snapshot` and `describe_config`.
 
 ### Fixed
+- Fixed `intent_parser` entry in `docs/modules.yaml`: added missing `path` key, added `test_paths` key, and moved test files out of `paths` to match conventions of other module entries.
 - Added missing `reference/component_agent.md` to `mkdocs.yml` navigation under Code Reference.
 - `brokered_entrypoint.py`: removed unreachable `if not token:` guard in `_build_component_responder` (token-empty invariant is already enforced by `ComponentAgentSettings`). Added test coverage for the enabled-with-token path.
 
