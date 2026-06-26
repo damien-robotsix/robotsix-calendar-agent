@@ -113,6 +113,22 @@ def _component_settings_field_names() -> list[str]:
     return list(ComponentAgentSettings.model_fields.keys())
 
 
+def _iter_config_fields(
+    settings: Any,
+    comp_settings: Any,
+):
+    """Yield ``(key, value)`` for every core + component config field."""
+    from ..settings import Settings as CoreSettings
+    from .settings import ComponentAgentSettings
+
+    for name in CoreSettings.model_fields:
+        key = name.lower()
+        yield key, getattr(settings, name)
+    for name in ComponentAgentSettings.model_fields:
+        key = name.lower()
+        yield key, getattr(comp_settings, name)
+
+
 def _read_value(settings: Any, comp_settings: Any, key: str) -> Any:
     """Return the live, possibly-redacted value for *key*."""
     field_name = _resolve_field_name(key)
@@ -157,17 +173,7 @@ def get_config_snapshot(
         comp_settings = ComponentAgentSettings()
 
     result: dict[str, Any] = {}
-    for name in _core_settings_field_names():
-        key = name.lower()
-        value = getattr(settings, name)
-        if _is_secret_field(key) or hasattr(value, "get_secret_value"):
-            result[key] = _REDACTED
-        else:
-            result[key] = value
-
-    for name in _component_settings_field_names():
-        key = name.lower()
-        value = getattr(comp_settings, name)
+    for key, value in _iter_config_fields(settings, comp_settings):
         if _is_secret_field(key) or hasattr(value, "get_secret_value"):
             result[key] = _REDACTED
         else:
@@ -192,20 +198,7 @@ def describe_config(
         comp_settings = ComponentAgentSettings()
 
     keys: dict[str, dict[str, Any]] = {}
-    for name in _core_settings_field_names():
-        key = name.lower()
-        value = getattr(settings, name)
-        secret = _is_secret_field(key) or hasattr(value, "get_secret_value")
-        keys[key] = {
-            "type": type(value).__name__,
-            "settable": key in SETTABLE_KEYS,
-            "secret": secret,
-            "value": _REDACTED if secret else value,
-        }
-
-    for name in _component_settings_field_names():
-        key = name.lower()
-        value = getattr(comp_settings, name)
+    for key, value in _iter_config_fields(settings, comp_settings):
         secret = _is_secret_field(key) or hasattr(value, "get_secret_value")
         keys[key] = {
             "type": type(value).__name__,
