@@ -46,7 +46,20 @@ from .intent_parser import (
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["CalendarAgent"]
+__all__ = [
+    "CalDavClient",
+    "CalendarAgent",
+    "CalendarEvent",
+    "CalendarOperation",
+    "Contact",
+    "ContactOperation",
+    "IntentParseError",
+    "IntentParser",
+    "OperationError",
+    "ParsedIntent",
+    "Task",
+    "TaskOperation",
+]
 
 
 class CalendarAgent:
