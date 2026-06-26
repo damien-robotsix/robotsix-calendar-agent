@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Registered `docs/modules.yaml` under the `init` module's `doc_paths`.
+- Extracted `_iter_config_fields` helper in `config_contract.py` to deduplicate settings-iteration loops across `get_config_snapshot` and `describe_config`.
 
 ### Fixed
 - Added missing `reference/component_agent.md` to `mkdocs.yml` navigation under Code Reference.
