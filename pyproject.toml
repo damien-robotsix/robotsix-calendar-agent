@@ -64,6 +64,9 @@ robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git"
 [tool.hatch.build.targets.wheel]
 packages = ["src/robotsix_calendar_agent"]
 
+[tool.deptry]
+known_first_party = ["robotsix_calendar_agent"]
+
 [tool.ruff]
 target-version = "py312"
 line-length = 88
