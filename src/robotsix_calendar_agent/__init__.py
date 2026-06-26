@@ -8,20 +8,18 @@ against a Radicale server.
 
 from __future__ import annotations
 
-from .agent import CalendarAgent
-from .caldav_client import (
+from .agent import (
     CalDavClient,
+    CalendarAgent,
     CalendarEvent,
-    Contact,
-    OperationError,
-    Task,
-)
-from .intent_parser import (
     CalendarOperation,
+    Contact,
     ContactOperation,
     IntentParseError,
     IntentParser,
+    OperationError,
     ParsedIntent,
+    Task,
     TaskOperation,
 )
 

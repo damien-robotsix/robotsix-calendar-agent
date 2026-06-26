@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `brokered_entrypoint.py`: removed unreachable `if not token:` guard in `_build_component_responder` (token-empty invariant is already enforced by `ComponentAgentSettings`). Added test coverage for the enabled-with-token path.
 
 ### Changed
+- `__init__.py`: re-exported symbols now flow through `agent.py` instead of
+  duplicating imports from `.caldav_client` and `.intent_parser`.
 - `agent.py`: removed unused `operation` parameter from six dispatch handlers
   (`_handle_list_events`, `_handle_list_tasks`, `_handle_list_calendars`,
   `_handle_delete_event`, `_handle_list_contacts`, `_handle_delete_contact`);
