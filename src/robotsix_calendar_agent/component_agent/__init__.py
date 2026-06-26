@@ -1,7 +1,8 @@
 """Component-agent management surface for robotsix-calendar.
 
-Provides the responder, config contract, and settings for the
-``monitor`` / ``config-get`` / ``config-set`` management kinds.
+Provides the config contract and settings for the ``monitor`` /
+``config-get`` / ``config-set`` management kinds.  The responder itself
+lives in :mod:`~robotsix_calendar_agent.brokered_entrypoint`.
 """
 
 from __future__ import annotations
@@ -14,16 +15,10 @@ from .config_contract import (
     get_config_snapshot,
     validate_config_update,
 )
-from .responder import (
-    COMPONENT_KINDS,
-    ComponentAgentResponder,
-)
 from .settings import ComponentAgentSettings
 
 __all__ = [
-    "COMPONENT_KINDS",
     "SETTABLE_KEYS",
-    "ComponentAgentResponder",
     "ComponentAgentSettings",
     "ConfigContractError",
     "apply_config_update",

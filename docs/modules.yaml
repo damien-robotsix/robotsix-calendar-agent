@@ -91,11 +91,9 @@ modules:
       - src/robotsix_calendar_agent/component_agent/__init__.py
       - src/robotsix_calendar_agent/component_agent/settings.py
       - src/robotsix_calendar_agent/component_agent/config_contract.py
-      - src/robotsix_calendar_agent/component_agent/responder.py
     test_paths:
       - tests/component_agent/__init__.py
       - tests/component_agent/test_config_contract.py
-      - tests/component_agent/test_responder.py
     doc_paths:
       - docs/reference/component_agent.md
     depends_on:
