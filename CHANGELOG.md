@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - `__init__.py`: re-exported symbols now flow through `agent.py` instead of
   duplicating imports from `.caldav_client` and `.intent_parser`.
+- Merged `component_agent/responder.py` into `brokered_entrypoint.py`:
+  `ComponentAgentResponder` and `COMPONENT_KINDS` now live alongside the
+  brokered lifecycle, eliminating the deferred/lazy import dance between
+  the two modules.
 - `agent.py`: removed unused `operation` parameter from six dispatch handlers
   (`_handle_list_events`, `_handle_list_tasks`, `_handle_list_calendars`,
   `_handle_delete_event`, `_handle_list_contacts`, `_handle_delete_contact`);
