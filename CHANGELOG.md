@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Enabled Ruff `S` (flake8-bandit) rules in `pyproject.toml` and removed the slower `bandit` pre-commit hook.
 
 ### Added
+- `actionlint` job in CI (`.github/workflows/ci.yml`) and pre-commit hook (`.pre-commit-config.yaml`) for workflow syntax validation and shellcheck on inline scripts.
 - Docker `HEALTHCHECK` via `healthcheck.py` that validates CalDAV reachability using the existing `CalDavClient.health()` probe.
 - Registered `docs/modules.yaml` under the `init` module's `doc_paths`.
 - Extracted `_iter_config_fields` helper in `config_contract.py` to deduplicate settings-iteration loops across `get_config_snapshot` and `describe_config`.
