@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv lock --check
 
@@ -26,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv run --frozen vulture src/ vulture_whitelist.py
 
@@ -34,6 +38,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: |
           for i in 1 2 3; do
@@ -50,6 +56,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
         with:
           config-file: .github/dependency-review-config.yml
@@ -61,6 +69,8 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv run --with zizmor zizmor . --format=sarif > zizmor.sarif
       - uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e  # v4
@@ -75,9 +85,12 @@ jobs:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: commitizen-tools/commitizen-action@338bbd841b75aaee6bf5340e1fa12f6ab58ff9ff  # 0.27.1
         with:
-          check_pr: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          push: false
+          commit: false
 
   ci:
     strategy:
