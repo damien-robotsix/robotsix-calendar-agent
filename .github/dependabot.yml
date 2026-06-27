@@ -5,15 +5,24 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: increase
+    open-pull-requests-limit: 10
     groups:
       dev-deps:
         patterns: ["ruff", "mypy", "pytest*"]
       docs-deps:
         patterns: ["mkdocs*"]
-    open-pull-requests-limit: 5
+      prod-deps:
+        patterns: ["*"]
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
+    groups:
+      all-actions:
+        patterns: ["*"]
+    cooldown:
+      default-days: 7
