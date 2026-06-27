@@ -74,6 +74,8 @@ modules:
       - docs/reference/brokered_entrypoint.md
     depends_on:
       - agent
+      - settings
+      - component_agent
 
   - name: settings
     path: src/robotsix_calendar_agent/settings.py
