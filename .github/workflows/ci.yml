@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
-      - uses: docker://rhysd/actionlint:1.7.7@sha256:1d74bfc9fd194f5e9a431d488700026bd8a1958312fc65c97df9a444600e17fa
+      - uses: docker://rhysd/actionlint@sha256:1d74bfc9fd194f5e9a431d488700026bd8a1958312fc65c97df9a444600e17fa  # v1.7.7
 
   ci:
     strategy:
