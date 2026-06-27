@@ -97,5 +97,4 @@ modules:
     doc_paths:
       - docs/reference/component_agent.md
     depends_on:
-      - agent
       - settings
