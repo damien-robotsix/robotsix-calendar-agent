@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Removed spurious `agent` dependency from `component_agent` module entry in `docs/modules.yaml`.
+
 ### Changed
 - Enabled Ruff `S` (flake8-bandit) rules in `pyproject.toml` and removed the slower `bandit` pre-commit hook.
 
