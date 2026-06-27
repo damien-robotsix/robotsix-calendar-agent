@@ -1,8 +1,13 @@
 .git/
 .robotsix-mill/
+__pycache__/
+*.pem
+*.key
+.env*
+.idea/
+.vscode/
 docs/
 tests/
-.env.example
 .secrets.baseline
 vulture_whitelist.py
 *.md
