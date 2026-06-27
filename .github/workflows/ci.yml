@@ -68,6 +68,12 @@ jobs:
         with:
           sarif_file: zizmor.sarif
 
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: rhysd/actionlint@03d0035246f3e81f36aed592ffb4bebf33a03106  # v1.7.7
+
   ci:
     strategy:
       fail-fast: false
