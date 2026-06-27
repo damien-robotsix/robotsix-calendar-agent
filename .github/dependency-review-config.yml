@@ -7,3 +7,9 @@ allow-licenses:
   - BSD-3-Clause
   - ISC
   - Python-2.0
+  - HPND
+  - HPND-Markus-Kuhn
+allow-dependencies-licenses:
+  - 'pkg:pypi/commitizen'
+  - 'pkg:pypi/tomlkit'
+  - 'pkg:pypi/wrapt'

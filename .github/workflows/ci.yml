@@ -94,9 +94,12 @@ jobs:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: commitizen-tools/commitizen-action@338bbd841b75aaee6bf5340e1fa12f6ab58ff9ff  # 0.27.1
         with:
-          check_pr: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          push: false
+          commit: false
 
   ci:
     strategy:
