@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv lock --check
 
@@ -26,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv run --frozen vulture src/ vulture_whitelist.py
 
@@ -34,10 +38,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: |
           for i in 1 2 3; do
             uv audit --frozen && exit 0
+            echo "Attempt $i failed, retrying in 40s..."
             sleep 40
           done
           exit 1
@@ -50,6 +57,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
         with:
           config-file: .github/dependency-review-config.yml
@@ -61,6 +70,8 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv run --with zizmor zizmor . --format=sarif > zizmor.sarif
       - uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e  # v4
@@ -72,7 +83,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
-      - uses: docker://rhysd/actionlint@sha256:1d74bfc9fd194f5e9a431d488700026bd8a1958312fc65c97df9a444600e17fa  # v1.7.7
+        with:
+          persist-credentials: false
+      - uses: rhysd/actionlint@03d0035246f3e81f36aed592ffb4bebf33a03106  # v1.7.7
 
   ci:
     strategy:
