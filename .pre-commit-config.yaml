@@ -32,6 +32,12 @@ repos:
         args: ['--baseline', '.secrets.baseline']
         exclude: '^uv\.lock$|^package-lock\.json$|.*\.lock$'
 
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.6.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
   - repo: local
     hooks:
       - id: vulture

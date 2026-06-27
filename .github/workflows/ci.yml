@@ -68,6 +68,17 @@ jobs:
         with:
           sarif_file: zizmor.sarif
 
+  commitizen-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          fetch-depth: 0
+      - uses: commitizen-tools/commitizen-action@338bbd841b75aaee6bf5340e1fa12f6ab58ff9ff  # 0.27.1
+        with:
+          check_pr: true
+
   ci:
     strategy:
       fail-fast: false
