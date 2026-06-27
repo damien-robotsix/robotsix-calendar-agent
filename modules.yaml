@@ -1,0 +1,102 @@
+modules:
+  - name: init
+    path: src/robotsix_calendar_agent/__init__.py
+    paths:
+      - src/robotsix_calendar_agent/__init__.py
+      - src/robotsix_calendar_agent/py.typed
+    depends_on:
+      - agent
+      - caldav_client
+      - intent_parser
+    test_paths:
+      - tests/test_smoke.py
+      - tests/__init__.py
+      - tests/conftest.py
+    doc_paths:
+      - docs/index.md
+      - docs/configuration.md
+      - docs/tutorials/index.md
+      - docs/reference/index.md
+      - docs/modules.yaml
+
+  - name: agent
+    path: src/robotsix_calendar_agent/agent.py
+    test_paths:
+      - tests/agent/test_agent.py
+    doc_paths:
+      - docs/reference/agent.md
+    depends_on:
+      - add_to_calendar_handler
+      - caldav_client
+      - intent_parser
+
+  - name: caldav_client
+    path: src/robotsix_calendar_agent/caldav_client.py
+    depends_on: []
+    test_paths:
+      - tests/caldav_client/test_caldav_client.py
+      - tests/caldav_client/__init__.py
+      - tests/caldav_client/caldav_test_server.py
+      - tests/caldav_client/test_caldav_integration.py
+    doc_paths:
+      - docs/reference/caldav_client.md
+
+  - name: add_to_calendar_handler
+    path: src/robotsix_calendar_agent/add_to_calendar_handler.py
+    paths:
+      - src/robotsix_calendar_agent/add_to_calendar_handler.py
+    test_paths:
+      - tests/add_to_calendar_handler/test_add_to_calendar_handler.py
+    doc_paths:
+      - docs/reference/add_to_calendar_handler.md
+    depends_on:
+      - caldav_client
+
+  - name: intent_parser
+    path: src/robotsix_calendar_agent/intent_parser.py
+    paths:
+      - src/robotsix_calendar_agent/intent_parser.py
+    test_paths:
+      - tests/intent_parser/test_intent_parser.py
+      - tests/intent_parser/test_intent_parser_contract.py
+    doc_paths:
+      - docs/reference/intent_parser.md
+    depends_on:
+      - robotsix-llmio
+
+  - name: brokered_entrypoint
+    path: src/robotsix_calendar_agent/brokered_entrypoint.py
+    paths:
+      - src/robotsix_calendar_agent/brokered_entrypoint.py
+    test_paths:
+      - tests/brokered_entrypoint/test_brokered_entrypoint.py
+    doc_paths:
+      - docs/reference/brokered_entrypoint.md
+    depends_on:
+      - agent
+      - settings
+      - component_agent
+
+  - name: settings
+    path: src/robotsix_calendar_agent/settings.py
+    paths:
+      - src/robotsix_calendar_agent/settings.py
+    test_paths:
+      - tests/settings/test_settings.py
+    doc_paths:
+      - docs/reference/settings.md
+    depends_on: []
+
+  - name: component_agent
+    path: src/robotsix_calendar_agent/component_agent/
+    paths:
+      - src/robotsix_calendar_agent/component_agent/__init__.py
+      - src/robotsix_calendar_agent/component_agent/settings.py
+      - src/robotsix_calendar_agent/component_agent/config_contract.py
+    test_paths:
+      - tests/component_agent/__init__.py
+      - tests/component_agent/test_config_contract.py
+    doc_paths:
+      - docs/reference/component_agent.md
+    depends_on:
+      - settings
