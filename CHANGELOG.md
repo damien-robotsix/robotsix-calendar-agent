@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Enabled Ruff `S` (flake8-bandit) rules in `pyproject.toml` and removed the slower `bandit` pre-commit hook.
 
 ### Added
+- Commitizen (`commitizen>=4,<5`) dev dependency for automated semantic version bumping, changelog generation, and conventional-commit enforcement.
+- `[tool.commitizen]` configuration in `pyproject.toml` targeting both version locations (`pyproject.toml:version` and `src/robotsix_calendar_agent/__init__.py`), with changelog generation and incremental mode enabled.
+- Commitizen pre-commit hook in `.pre-commit-config.yaml` to enforce Conventional Commits message format.
+- Commitizen PR title check in CI (`ci.yml`) to gate non-conventional PR titles.
 - Docker `HEALTHCHECK` via `healthcheck.py` that validates CalDAV reachability using the existing `CalDavClient.health()` probe.
 - Registered `docs/modules.yaml` under the `init` module's `doc_paths`.
 - Extracted `_iter_config_fields` helper in `config_contract.py` to deduplicate settings-iteration loops across `get_config_snapshot` and `describe_config`.
