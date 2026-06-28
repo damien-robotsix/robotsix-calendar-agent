@@ -36,15 +36,6 @@ def _make_payload(**overrides: object) -> dict[str, Any]:
     return defaults
 
 
-def _assert_response_body(
-    call_args: tuple[Any, ...], expected_body: dict[str, Any]
-) -> None:
-    """Assert that Response.to was called with the given body fields."""
-    _, kwargs = call_args
-    body = kwargs["body"]
-    for key, value in expected_body.items():
-        assert body[key] == value, f"body[{key!r}] mismatch: {body[key]!r} != {value!r}"
-
 
 # ---------------------------------------------------------------------------
 # _build_error_body
