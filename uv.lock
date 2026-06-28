@@ -1687,7 +1687,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "robotsix-agent-comm" },
-    { name = "robotsix-llmio", extra = ["openrouter-deepseek", "tracing"] },
+    { name = "robotsix-llmio", extra = ["openrouter", "tracing"] },
     { name = "tenacity" },
 ]
 
@@ -1713,7 +1713,7 @@ requires-dist = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" },
-    { name = "robotsix-llmio", extras = ["openrouter-deepseek", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992" },
+    { name = "robotsix-llmio", extras = ["openrouter", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992" },
     { name = "tenacity", specifier = ">=9.0,<10" },
 ]
 
@@ -1744,7 +1744,7 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-openrouter-deepseek = [
+openrouter = [
     { name = "pydantic-ai-slim", extra = ["openrouter"] },
 ]
 tracing = [
