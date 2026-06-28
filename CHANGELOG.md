@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Enabled Ruff `S` (flake8-bandit) rules in `pyproject.toml` and removed the slower `bandit` pre-commit hook.
 
 ### Added
+- Hypothesis property-based round-trip tests for calendar event, task, and contact serialization against the in-process Radicale fixture.
 - `actionlint` job in CI (`.github/workflows/ci.yml`) and pre-commit hook (`.pre-commit-config.yaml`) for workflow syntax validation and shellcheck on inline scripts.
 - Commitizen (`commitizen>=4,<5`) dev dependency for automated semantic version bumping, changelog generation, and conventional-commit enforcement.
 - `[tool.commitizen]` configuration in `pyproject.toml` targeting both version locations (`pyproject.toml:version` and `src/robotsix_calendar_agent/__init__.py`), with changelog generation and incremental mode enabled.

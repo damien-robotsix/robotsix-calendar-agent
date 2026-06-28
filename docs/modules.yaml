@@ -38,6 +38,7 @@ modules:
       - tests/caldav_client/__init__.py
       - tests/caldav_client/caldav_test_server.py
       - tests/caldav_client/test_caldav_integration.py
+      - tests/caldav_client/test_hypothesis_roundtrip.py
     doc_paths:
       - docs/reference/caldav_client.md
 
