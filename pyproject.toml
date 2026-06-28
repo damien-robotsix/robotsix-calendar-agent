@@ -12,11 +12,11 @@ license = { text = "MIT" }
 authors = [{ name = "Damien Robotsix", email = "damien.robotsix@gmail.com" }]
 dependencies = [
     "robotsix-agent-comm",
-    # The intent parser uses llmio's default provider (openrouter-deepseek); the
+    # The intent parser uses llmio's default provider (openrouter); the
     # provider extra must be installed or get_provider() raises ImportError. The
     # tracing extra pulls the OpenTelemetry/OTLP deps setup_langfuse_tracing()
     # needs to export intent-parse traces to Langfuse.
-    "robotsix-llmio[openrouter-deepseek,tracing]",
+    "robotsix-llmio[openrouter,tracing]",
     "caldav",
     "pydantic",
     "pydantic-settings",
