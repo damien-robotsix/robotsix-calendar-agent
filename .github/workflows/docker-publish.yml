@@ -17,5 +17,5 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-    uses: damien-robotsix/robotsix-mill/.github/workflows/docker-release.yml@d32ec9261f070f254a08fc29dfeca570950b3d6c  # pragma: allowlist secret
-    secrets: inherit  # pragma: allowlist secret
+    uses: damien-robotsix/robotsix-mill/.github/workflows/docker-release.yml@d32ec9261f070f254a08fc29dfeca570950b3d6c  # pragma: allowlist secret  # zizmor: ignore[secrets-inherit]
+    secrets: inherit  # pragma: allowlist secret  # zizmor: ignore[secrets-inherit]
