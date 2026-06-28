@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Fixed
+- Extract ISO 8601 parsing and time-ordering validation from `handle_add_to_calendar` into a dedicated `_parse_and_validate_iso_dates` helper, reducing the handler by ~22 lines.
 - Removed spurious `agent` dependency from `component_agent` module entry in `docs/modules.yaml`.
 
 ### Changed
