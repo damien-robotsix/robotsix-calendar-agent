@@ -9,6 +9,7 @@ parser.
 
 from __future__ import annotations
 
+import datetime
 import logging
 from typing import Any
 
@@ -182,6 +183,47 @@ def _resolve_event_dates(
     return _explicit_dates(payload) or _resolve_dates_via_llm(intent_parser, payload)
 
 
+def _parse_and_validate_iso_dates(
+    dtstart_str: str,
+    dtend_str: str,
+    correlation_id: str,
+    request: Any,
+) -> tuple[datetime.datetime, datetime.datetime] | Any:
+    """Parse ISO 8601 date strings and assert *dtend* > *dtstart*.
+
+    Returns ``(dtstart, dtend)`` on success, or a
+    :class:`~robotsix_agent_comm.protocol.Response` with
+    ``ERROR_INVALID_DATES`` when either string is unparseable or
+    *dtend* is not strictly after *dtstart*.
+    """
+    from robotsix_agent_comm.protocol import Response
+
+    try:
+        dtstart = datetime.datetime.fromisoformat(dtstart_str)
+        dtend = datetime.datetime.fromisoformat(dtend_str)
+    except (ValueError, TypeError):
+        return Response.to(
+            request,
+            body=_build_error_body(
+                ERROR_INVALID_DATES,
+                "Cannot parse one or both date strings as ISO 8601.",
+                correlation_id,
+            ),
+        )
+
+    if dtend <= dtstart:
+        return Response.to(
+            request,
+            body=_build_error_body(
+                ERROR_INVALID_DATES,
+                "End time must be after start time.",
+                correlation_id,
+            ),
+        )
+
+    return dtstart, dtend
+
+
 def _create_calendar_event(
     caldav_client: Any,
     request: Any,
@@ -254,8 +296,6 @@ def handle_add_to_calendar(
     (when provided) resolves concrete start/end datetimes from the subject,
     body, and extracted date references.
     """
-    import datetime
-
     from robotsix_agent_comm.protocol import Response
 
     # -- validation ---------------------------------------------------
@@ -283,28 +323,12 @@ def handle_add_to_calendar(
 
     # -- ISO 8601 parsing + time-ordering -----------------------------
 
-    try:
-        dtstart = datetime.datetime.fromisoformat(dtstart_str)
-        dtend = datetime.datetime.fromisoformat(dtend_str)
-    except (ValueError, TypeError):
-        return Response.to(
-            request,
-            body=_build_error_body(
-                ERROR_INVALID_DATES,
-                "Cannot parse one or both date strings as ISO 8601.",
-                correlation_id,
-            ),
-        )
-
-    if dtend <= dtstart:
-        return Response.to(
-            request,
-            body=_build_error_body(
-                ERROR_INVALID_DATES,
-                "End time must be after start time.",
-                correlation_id,
-            ),
-        )
+    dates_result = _parse_and_validate_iso_dates(
+        dtstart_str, dtend_str, correlation_id, request
+    )
+    if not isinstance(dates_result, tuple):
+        return dates_result  # error Response
+    dtstart, _dtend = dates_result
 
     # -- event creation -----------------------------------------------
 

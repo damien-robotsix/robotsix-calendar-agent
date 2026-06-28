@@ -123,6 +123,124 @@ class TestEventToDict:
 
 
 # ---------------------------------------------------------------------------
+# _parse_and_validate_iso_dates
+# ---------------------------------------------------------------------------
+
+
+class TestParseAndValidateIsoDates:
+    """Direct unit tests for _parse_and_validate_iso_dates()."""
+
+    def _make_request(self) -> MagicMock:
+        return MagicMock()
+
+    def test_success_returns_dtstart_dtend_tuple(self) -> None:
+        from datetime import datetime
+
+        from robotsix_calendar_agent.add_to_calendar_handler import (
+            _parse_and_validate_iso_dates,
+        )
+
+        request = self._make_request()
+        result = _parse_and_validate_iso_dates(
+            "2026-03-15T09:00:00",
+            "2026-03-15T10:00:00",
+            "corr-1",
+            request,
+        )
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        assert result[0] == datetime(2026, 3, 15, 9, 0, 0)
+        assert result[1] == datetime(2026, 3, 15, 10, 0, 0)
+
+    def test_invalid_dtstart_returns_error_response(self) -> None:
+        from robotsix_calendar_agent.add_to_calendar_handler import (
+            _parse_and_validate_iso_dates,
+        )
+
+        request = self._make_request()
+        result = _parse_and_validate_iso_dates(
+            "not-a-date",
+            "2026-03-15T10:00:00",
+            "corr-2",
+            request,
+        )
+        assert not isinstance(result, tuple)
+        # It's a Response; verify the body through the call args on the mock
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_INVALID_DATES
+        assert body["correlation_id"] == "corr-2"
+
+    def test_invalid_dtend_returns_error_response(self) -> None:
+        from robotsix_calendar_agent.add_to_calendar_handler import (
+            _parse_and_validate_iso_dates,
+        )
+
+        request = self._make_request()
+        result = _parse_and_validate_iso_dates(
+            "2026-03-15T09:00:00",
+            "garbage",
+            "corr-3",
+            request,
+        )
+        assert not isinstance(result, tuple)
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_INVALID_DATES
+
+    def test_dtend_before_dtstart_returns_error_response(self) -> None:
+        from robotsix_calendar_agent.add_to_calendar_handler import (
+            _parse_and_validate_iso_dates,
+        )
+
+        request = self._make_request()
+        result = _parse_and_validate_iso_dates(
+            "2026-03-15T10:00:00",
+            "2026-03-15T09:00:00",
+            "corr-4",
+            request,
+        )
+        assert not isinstance(result, tuple)
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_INVALID_DATES
+
+    def test_dtend_equal_to_dtstart_returns_error_response(self) -> None:
+        from robotsix_calendar_agent.add_to_calendar_handler import (
+            _parse_and_validate_iso_dates,
+        )
+
+        request = self._make_request()
+        result = _parse_and_validate_iso_dates(
+            "2026-03-15T09:00:00",
+            "2026-03-15T09:00:00",
+            "corr-5",
+            request,
+        )
+        assert not isinstance(result, tuple)
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_INVALID_DATES
+
+    def test_type_error_parsing_returns_error_response(self) -> None:
+        from robotsix_calendar_agent.add_to_calendar_handler import (
+            _parse_and_validate_iso_dates,
+        )
+
+        request = self._make_request()
+        result = _parse_and_validate_iso_dates(
+            12345,  # type: ignore[arg-type]
+            "2026-03-15T10:00:00",
+            "corr-6",
+            request,
+        )
+        assert not isinstance(result, tuple)
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_INVALID_DATES
+
+
+# ---------------------------------------------------------------------------
 # handle_add_to_calendar — unit tests (direct call, no agent)
 # ---------------------------------------------------------------------------
 
