@@ -6,6 +6,8 @@ updates:
       interval: "weekly"
     versioning-strategy: increase
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
     groups:
       dev-deps:
         patterns: ["ruff", "mypy", "pytest*"]
@@ -22,6 +24,8 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
     groups:
       all-actions:
         patterns: ["*"]

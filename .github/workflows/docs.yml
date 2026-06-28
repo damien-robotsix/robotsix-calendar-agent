@@ -11,7 +11,7 @@ jobs:
   deploy:
     permissions:
       contents: write
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-docs.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main  # pragma: allowlist secret
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-docs.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main  # pragma: allowlist secret  # zizmor: ignore[secrets-inherit]
     with:
       docs-install-args: "--group docs"
-    secrets: inherit  # pragma: allowlist secret
+    secrets: inherit  # pragma: allowlist secret  # zizmor: ignore[secrets-inherit]
