@@ -43,6 +43,7 @@ Issues = "https://github.com/damien-robotsix/robotsix-calendar-agent/issues"
 
 [dependency-groups]
 dev = [
+    "commitizen>=4,<5",
     "ruff",
     "mypy",
     "pytest",
@@ -99,3 +100,14 @@ relative_files = true
 [tool.coverage.report]
 fail_under = 85
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_files = [
+    "pyproject.toml:version",
+    "src/robotsix_calendar_agent/__init__.py",
+]
+update_changelog_on_bump = true
+changelog_incremental = true
+tag_format = "v$version"

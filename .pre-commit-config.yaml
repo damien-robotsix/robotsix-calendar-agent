@@ -37,6 +37,12 @@ repos:
     hooks:
       - id: actionlint
 
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.6.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
   - repo: local
     hooks:
       - id: vulture
