@@ -100,20 +100,6 @@ def _resolve_field_name(key: str) -> str:
     return key.upper()
 
 
-def _core_settings_field_names() -> list[str]:
-    """Return the list of core ``Settings`` field names (uppercase)."""
-    from ..settings import Settings as CoreSettings
-
-    return list(CoreSettings.model_fields.keys())
-
-
-def _component_settings_field_names() -> list[str]:
-    """Return the list of ``ComponentAgentSettings`` field names."""
-    from .settings import ComponentAgentSettings
-
-    return list(ComponentAgentSettings.model_fields.keys())
-
-
 def _iter_config_fields(
     settings: Any,
     comp_settings: Any,
@@ -128,24 +114,6 @@ def _iter_config_fields(
     for name in ComponentAgentSettings.model_fields:
         key = name.lower()
         yield key, getattr(comp_settings, name)
-
-
-def _read_value(settings: Any, comp_settings: Any, key: str) -> Any:
-    """Return the live, possibly-redacted value for *key*."""
-    field_name = _resolve_field_name(key)
-    # Core settings take precedence
-    if field_name in _core_settings_field_names():
-        value = getattr(settings, field_name)
-    elif field_name in _component_settings_field_names():
-        value = getattr(comp_settings, field_name)
-    else:
-        raise ConfigContractError(
-            code="unknown_key",
-            message=f"Unknown config key: {key!r}",
-        )
-    if _is_secret_field(key) or hasattr(value, "get_secret_value"):
-        return _REDACTED
-    return value
 
 
 # ---------------------------------------------------------------------------
