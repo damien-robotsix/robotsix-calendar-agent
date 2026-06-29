@@ -27,9 +27,6 @@ _normalize_log_level
 _token_required_when_enabled
 cls
 
-# Planned helper — kept for future use in config contract
-_read_value
-
 # logging.Formatter subclass — format() called by logging framework internals
 format
 

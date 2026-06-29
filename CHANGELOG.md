@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Removed
+- Dead code: `_read_value` function in `config_contract.py` (never called)
+
 ### Fixed
 - Resolved mypy errors in `healthcheck.py`, `vulture_whitelist.py`, and
   `tests/intent_parser/test_intent_parser.py` that were causing the CI

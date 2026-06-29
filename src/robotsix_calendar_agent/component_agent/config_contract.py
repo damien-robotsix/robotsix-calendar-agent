@@ -130,24 +130,6 @@ def _iter_config_fields(
         yield key, getattr(comp_settings, name)
 
 
-def _read_value(settings: Any, comp_settings: Any, key: str) -> Any:
-    """Return the live, possibly-redacted value for *key*."""
-    field_name = _resolve_field_name(key)
-    # Core settings take precedence
-    if field_name in _core_settings_field_names():
-        value = getattr(settings, field_name)
-    elif field_name in _component_settings_field_names():
-        value = getattr(comp_settings, field_name)
-    else:
-        raise ConfigContractError(
-            code="unknown_key",
-            message=f"Unknown config key: {key!r}",
-        )
-    if _is_secret_field(key) or hasattr(value, "get_secret_value"):
-        return _REDACTED
-    return value
-
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
