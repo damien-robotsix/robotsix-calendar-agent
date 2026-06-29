@@ -23,11 +23,15 @@ original_text
 _normalize_transport
 _validate_port
 _empty_str_to_none
+_normalize_log_level
 _token_required_when_enabled
 cls
 
 # Planned helper — kept for future use in config contract
 _read_value
+
+# logging.Formatter subclass — format() called by logging framework internals
+format
 
 # Refactored out of agent.py; still covered by dedicated unit tests
 handle_add_to_calendar
