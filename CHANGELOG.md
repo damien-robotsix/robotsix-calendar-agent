@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `reference/logging_config.md` entry in `mkdocs.yml` nav under "Code Reference"
+
 ### Removed
 - Dead code: `_read_value` function in `config_contract.py` (never called)
 
