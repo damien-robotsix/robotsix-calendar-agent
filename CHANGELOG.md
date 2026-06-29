@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Removed spurious `agent` dependency from `component_agent` module entry in `docs/modules.yaml`.
 
 ### Changed
-- Enabled Ruff `S` (flake8-bandit) rules in `pyproject.toml` and removed the slower `bandit` pre-commit hook.
+- Merged `add_to_calendar` bypass in `agent.py` into the standard parse → dispatch → render pipeline: the structured payload is now converted to a synthetic natural-language instruction and fed through `_intent_parser.parse()` → `_dispatch()` → `_render_reply()`, eliminating the standalone `handle_add_to_calendar` call from the request handler.
 
 ### Added
 - `actionlint` job in CI (`.github/workflows/ci.yml`) and pre-commit hook (`.pre-commit-config.yaml`) for workflow syntax validation and shellcheck on inline scripts.
