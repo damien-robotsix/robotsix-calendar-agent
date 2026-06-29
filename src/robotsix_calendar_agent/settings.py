@@ -6,6 +6,7 @@ normalise configuration from the process environment.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from pydantic import SecretStr, field_validator
@@ -41,6 +42,10 @@ class Settings(BaseSettings):
     BROKER_TLS_CA: str | None = None
     BROKER_CLIENT_CERT: str | None = None
     BROKER_CLIENT_KEY: str | None = None
+
+    # -- Logging -------------------------------------------------------------
+    LOG_LEVEL: str = "INFO"
+    JSON_LOGS: bool = False
 
     # -- Validators ----------------------------------------------------------
 
@@ -90,4 +95,16 @@ class Settings(BaseSettings):
         """
         if isinstance(v, str) and v == "":
             return None
+        return v
+
+    @field_validator("LOG_LEVEL")
+    @classmethod
+    def _normalize_log_level(cls, v: str) -> str:
+        """Normalise to uppercase and reject invalid log levels."""
+        v = v.strip().upper()
+        if v not in logging.getLevelNamesMapping():
+            raise ValueError(
+                f"Invalid LOG_LEVEL={v!r}; must be one of "
+                f"{sorted(logging.getLevelNamesMapping())}"
+            )
         return v

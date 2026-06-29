@@ -23,6 +23,8 @@ All configuration is read from environment variables via
 | `BROKER_TLS_CA` | `str \| None` | `None` | Path to CA certificate PEM for verifying the broker |
 | `BROKER_CLIENT_CERT` | `str \| None` | `None` | Path to client certificate PEM for mTLS (optional) |
 | `BROKER_CLIENT_KEY` | `str \| None` | `None` | Path to client key PEM for mTLS (optional) |
+| `LOG_LEVEL` | `str` | `"INFO"` | Log level for the root logger — one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (case-insensitive) |
+| `JSON_LOGS` | `bool` | `False` | When `true`, emit each log line as a single-line JSON object for structured-log ingestion |
 
 ### Component-agent settings
 

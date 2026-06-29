@@ -108,8 +108,14 @@ def caldav_task(uid: str = "task-1") -> MagicMock:
 
 @pytest.fixture(autouse=True)
 def clean_env() -> None:
-    """Remove Radicale env vars so tests don't leak state."""
-    for key in ("RADICALE_URL", "RADICALE_USERNAME", "RADICALE_PASSWORD"):
+    """Remove Radicale + logging env vars so tests don't leak state."""
+    for key in (
+        "RADICALE_URL",
+        "RADICALE_USERNAME",
+        "RADICALE_PASSWORD",
+        "LOG_LEVEL",
+        "JSON_LOGS",
+    ):
         os.environ.pop(key, None)
 
 

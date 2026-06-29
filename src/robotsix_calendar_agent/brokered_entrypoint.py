@@ -139,9 +139,11 @@ def main() -> None:
         ValueError: If ``CALENDAR_AGENT_TRANSPORT`` holds an unrecognised value
             or a required brokered env var is missing.
     """
+    from .logging_config import configure_logging
     from .settings import Settings
 
     settings = Settings()
+    configure_logging(level=settings.LOG_LEVEL, json_logs=settings.JSON_LOGS)
     mode = settings.CALENDAR_AGENT_TRANSPORT
 
     # -- optional component-agent responder --------------------------------
