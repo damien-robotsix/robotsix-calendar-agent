@@ -616,6 +616,77 @@ class TestHandleAddToCalendar:
         _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
         assert kwargs["code"] == "parse_error"
 
+    def test_llm_instruction_includes_description_and_location(
+        self, calendar_agent: MagicMock
+    ) -> None:
+        """Regression: ensure description & location are forwarded in
+        the LLM-resolution instruction, not only the explicit-dates branch."""
+        mock_parser = calendar_agent._mock_parser
+        mock_parser.parse.return_value = MagicMock(
+            operation="create_event",
+            params={
+                "summary": "Meeting",
+                "description": "Discuss roadmap",
+                "location": "Room 42",
+                "dtstart": "2026-06-30T14:00:00",
+                "dtend": "2026-06-30T15:00:00",
+            },
+        )
+        calendar_agent._mock_caldav.create_event.return_value = MagicMock(
+            uid="evt-desc",
+            summary="Meeting",
+            description="Discuss roadmap",
+            location="Room 42",
+            dtstart="2026-06-30T14:00:00",
+            dtend="2026-06-30T15:00:00",
+            calendar_id="cal",
+        )
+
+        req = make_request(
+            {
+                "add_to_calendar": {
+                    "subject": "Meeting",
+                    "description": "Discuss roadmap",
+                    "location": "Room 42",
+                    "body_text": "Let's meet June 30 at 2pm.",
+                    "email_date": "2026-06-28",
+                    "correlation_id": "corr-desc",
+                }
+            }
+        )
+        calendar_agent._handle_request(req)
+
+        parse_call_arg = mock_parser.parse.call_args[0][0]
+        assert "Description: Discuss roadmap" in parse_call_arg
+        assert "Location: Room 42" in parse_call_arg
+
+    def test_add_to_calendar_with_wrong_operation_is_rejected(
+        self, calendar_agent: MagicMock
+    ) -> None:
+        """Hardening: when add_to_calendar is present but the parser
+        returns a non-create_event operation, the agent must reject it."""
+        mock_parser = calendar_agent._mock_parser
+        mock_parser.parse.return_value = MagicMock(
+            operation="list_events",
+            params={},
+        )
+
+        req = make_request(
+            {
+                "add_to_calendar": {
+                    "subject": "Some event",
+                    "suggested_dtstart": "2026-06-30T09:00:00",
+                    "suggested_dtend": "2026-06-30T10:00:00",
+                    "correlation_id": "corr-badop",
+                }
+            }
+        )
+        calendar_agent._handle_request(req)
+
+        _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
+        assert kwargs["code"] == "unexpected_operation"
+        assert "create" in kwargs["message"]
+
 
 # ---------------------------------------------------------------------------
 # Lifecycle

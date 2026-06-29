@@ -233,6 +233,21 @@ class CalendarAgent:
             logger.exception("Intent parse error for '%s': %s", instruction, exc)
             return Error.to(request, code="parse_error", message=str(exc))
 
+        # Hardening: add_to_calendar must always resolve to create_event.
+        if "add_to_calendar" in body and parsed.operation != "create_event":
+            logger.error(
+                "add_to_calendar resolved to %r instead of create_event",
+                parsed.operation,
+            )
+            return Error.to(
+                request,
+                code="unexpected_operation",
+                message=(
+                    f"add_to_calendar requests must create an event, "
+                    f"but parser returned '{parsed.operation}'."
+                ),
+            )
+
         try:
             result = self._dispatch(parsed)
             return Response.to(
@@ -361,6 +376,12 @@ def _build_add_to_calendar_instruction(payload: dict[str, Any]) -> str:
         "Create a calendar event for the following email.",
         f"Email subject: {subject}",
     ]
+    desc = payload.get("description")
+    if desc:
+        lines.append(f"Description: {desc}")
+    loc = payload.get("location")
+    if loc:
+        lines.append(f"Location: {loc}")
     email_date = payload.get("email_date")
     if email_date:
         lines.append(f"Email date: {email_date}")
