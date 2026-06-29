@@ -144,10 +144,11 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update coverage data (badge + HTML on data branch)
+          COVERAGE_PATH: coverage.xml
+      - name: Generate coverage badge
         uses: py-cov-action/python-coverage-comment-action@63f52f4fbbffada6e8dee8ec432de7e01df9ba79  # v3.41
         if: github.ref == 'refs/heads/main'
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MINIMUM_GREEN: 90
-          MINIMUM_ORANGE: 80
+          COVERAGE_PATH: coverage.xml
+          badge-directory: badges
