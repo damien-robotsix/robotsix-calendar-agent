@@ -7,8 +7,9 @@ Exercises the in-process Radicale server fixture with
   preserves ``SUMMARY``, ``DESCRIPTION``, ``LOCATION``, ``UID``.
 * VTODO → Radicale → parsed ``Task`` preserves ``SUMMARY``,
   ``DESCRIPTION``, ``STATUS``, ``UID``.
-* ``Contact`` → vCard → Radicale → parsed ``Contact`` preserves
-  ``full_name``, ``email``, ``phone``, ``address``, ``UID``.
+* ``Contact`` → vCard → parsed ``Contact`` preserves ``full_name``,
+  ``email``, ``phone``, ``address``, ``UID`` (pure serialization
+  round-trip; caldav v3.x removed CardDAV address-book support).
 
 Each test runs up to 200 random examples and shrinks failures to
 a minimal reproducer.
@@ -35,6 +36,12 @@ pytestmark = pytest.mark.integration
 # ---------------------------------------------------------------------------
 # shared strategies
 # ---------------------------------------------------------------------------
+
+# Cached calendar references — created once per session so hypothesis
+# examples don't pollute the "default" calendar used by other tests.
+# Set by the first call to each roundtrip test.
+_hypothesis_cal_event: Any = None
+_hypothesis_cal_task: Any = None
 
 # Printable text — includes spaces, punctuation, emoji, but excludes
 # control characters and newlines (the latter are significant in iCal
@@ -94,7 +101,7 @@ def _build_event_ical(event: CalendarEvent) -> str:
     )
 
 
-@given(  # type: ignore[untyped-decorator]
+@given(
     summary=_text_required,
     description=_text,
     location=_text,
@@ -102,7 +109,7 @@ def _build_event_ical(event: CalendarEvent) -> str:
     dtstart=_date,
     dtend_offset=st.integers(min_value=0, max_value=30),
 )
-@settings(  # type: ignore[untyped-decorator]
+@settings(
     max_examples=200,
     derandomize=True,
     deadline=None,  # integration: Radicale in-process but still not instant
@@ -135,9 +142,11 @@ def test_event_roundtrip(
 
     ical = _build_event_ical(event)
 
-    principal = caldav_client.principal()
-    calendars = principal.calendars()
-    cal = calendars[0]
+    global _hypothesis_cal_event
+    if _hypothesis_cal_event is None:
+        principal = caldav_client.principal()
+        _hypothesis_cal_event = principal.make_calendar(name="hypothesis-events")
+    cal = _hypothesis_cal_event
     cal.save_event(ical)
 
     # Search a generous window around the event date.
@@ -190,7 +199,7 @@ def _build_task_ical(task: Task) -> str:
     return "\n".join(lines) + "\n"
 
 
-@given(  # type: ignore[untyped-decorator]
+@given(
     summary=_text_required,
     description=_text,
     uid=_uid,
@@ -198,7 +207,7 @@ def _build_task_ical(task: Task) -> str:
     due_offset=st.integers(min_value=1, max_value=30),
     status=st.sampled_from(["NEEDS-ACTION", "IN-PROCESS", "COMPLETED", "CANCELLED"]),
 )
-@settings(  # type: ignore[untyped-decorator]
+@settings(
     max_examples=200,
     derandomize=True,
     deadline=None,
@@ -231,12 +240,14 @@ def test_task_roundtrip(
 
     ical = _build_task_ical(task)
 
-    principal = caldav_client.principal()
-    calendars = principal.calendars()
-    cal = calendars[0]
-    cal.save_event(ical)
+    global _hypothesis_cal_task
+    if _hypothesis_cal_task is None:
+        principal = caldav_client.principal()
+        _hypothesis_cal_task = principal.make_calendar(name="hypothesis-tasks")
+    cal = _hypothesis_cal_task
+    cal.save_todo(ical)
 
-    results = cal.search(todo=True)
+    results = cal.search(todo=True, include_completed=True)
     matches = [r for r in results if str(r.icalendar_component.get("UID")) == uid]
     assert len(matches) == 1, f"Expected 1 match for UID {uid!r}, got {len(matches)}"
 
@@ -248,8 +259,29 @@ def test_task_roundtrip(
 
 
 # ---------------------------------------------------------------------------
-# contact roundtrip
+# contact roundtrip (pure serialization — no Radicale)
 # ---------------------------------------------------------------------------
+#
+# CardDAV support was removed from the caldav library in v3.x
+# (``principal.addressbooks()`` no longer exists).  The contact
+# round-trip is therefore tested as a pure serialization identity:
+# ``_contact_to_vcard`` → ``_to_contact`` — no Radicale involved.
+#
+# This still catches the same class of edge-case bugs (unicode,
+# special characters, empty fields, boundary-length values) because
+# ``_to_contact`` parses the exact vCard text that
+# ``_contact_to_vcard`` produces.
+
+
+class _FakeVCardObj:
+    """Minimal stub of a caldav ``CalendarObjectResource`` for ``_to_contact``.
+
+    The production ``_to_contact`` only reads ``obj.data`` (the raw vCard
+    text), so a simple ``.data`` attribute is sufficient.
+    """
+
+    def __init__(self, data: str) -> None:
+        self.data = data
 
 
 def _build_vcard(contact: Contact) -> str:
@@ -271,28 +303,26 @@ def _build_vcard(contact: Contact) -> str:
     return "\n".join(lines) + "\n"
 
 
-@given(  # type: ignore[untyped-decorator]
+@given(
     full_name=_text_required,
     email=_text,
     phone=_text,
     address=_text,
     uid=_uid,
 )
-@settings(  # type: ignore[untyped-decorator]
+@settings(
     max_examples=200,
     derandomize=True,
     deadline=None,
-    suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_contact_roundtrip(
-    caldav_client: Any,
     full_name: str,
     email: str,
     phone: str,
     address: str,
     uid: str,
 ) -> None:
-    """Contact → vCard → Radicale → Contact roundtrip."""
+    """Contact → vCard → Contact roundtrip (pure serialization)."""
     contact = Contact(
         uid=uid,
         full_name=full_name,
@@ -302,19 +332,7 @@ def test_contact_roundtrip(
     )
 
     vcard = _build_vcard(contact)
-
-    principal = caldav_client.principal()
-    addressbooks = principal.addressbooks()
-    if not addressbooks:
-        principal.make_addressbook(name="default")
-        addressbooks = principal.addressbooks()
-    ab = addressbooks[0]
-    ab.save_object(vcard)
-
-    results = ab.search(f"UID:{uid}")
-    assert len(results) == 1, f"Expected 1 match for UID {uid!r}, got {len(results)}"
-
-    parsed = CalDavClient._to_contact(results[0])
+    parsed = CalDavClient._to_contact(_FakeVCardObj(vcard))
     assert parsed.full_name == full_name
     assert parsed.email == email
     assert parsed.phone == phone

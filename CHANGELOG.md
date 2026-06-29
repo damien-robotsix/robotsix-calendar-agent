@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Extract ISO 8601 parsing and time-ordering validation from `handle_add_to_calendar` into a dedicated `_parse_and_validate_iso_dates` helper, reducing the handler by ~22 lines.
 - Removed spurious `agent` dependency from `component_agent` module entry in `docs/modules.yaml`.
+- **vCard round-trip serialization:** Added `_unescape_text` helper to reverse `_escape_text` escaping, and fixed `_to_contact` to properly unescape vCard field values (FN, EMAIL, TEL, UID). Also replaced naive `ADR` semicolon-split with an escape-aware single-pass parser, and removed `value.strip()` that was silently dropping whitespace-only field values.
 
 ### Changed
 - Bumped pre-commit hooks to latest versions: `pre-commit-hooks` v5.0.0→v6.0.0, `ruff-pre-commit` v0.15.15→v0.15.20, `mirrors-mypy` v1.19.1→v2.1.0, `actionlint` v1.7.7→v1.7.12, `commitizen` v4.6.0→v4.16.4.
