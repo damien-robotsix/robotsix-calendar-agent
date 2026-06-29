@@ -1,0 +1,23 @@
+# CODEOWNERS — automatically request reviews from the listed owners
+# when files in the matching paths are changed in a pull request.
+#
+# Order matters: the last matching pattern takes precedence.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Core source and tests
+/src/                                @damien-robotsix
+/tests/                              @damien-robotsix
+
+# CI/CD and workflows
+/.github/workflows/                  @damien-robotsix
+/.github/dependabot.yml              @damien-robotsix
+/.github/dependency-review-config.yml @damien-robotsix
+
+# Container images
+/Dockerfile                          @damien-robotsix
+
+# Documentation
+/docs/                               @damien-robotsix
+
+# Catch-all fallback
+*                                    @damien-robotsix
