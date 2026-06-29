@@ -10,12 +10,12 @@
 | src/robotsix\_calendar\_agent/brokered\_entrypoint.py              |      138 |        3 |       32 |        4 |     96% |90-\>92, 208, 322-\>329, 324-\>323, 376-377 |
 | src/robotsix\_calendar\_agent/caldav\_client.py                    |      358 |       37 |       96 |        7 |     89% |124, 160, 281, 301-323, 464-465, 475-478, 685, 724, 825-831 |
 | src/robotsix\_calendar\_agent/component\_agent/\_\_init\_\_.py     |        4 |        0 |        0 |        0 |    100% |           |
-| src/robotsix\_calendar\_agent/component\_agent/config\_contract.py |       97 |       15 |       36 |        0 |     84% |105-107, 112-114, 135-148, 262-263 |
+| src/robotsix\_calendar\_agent/component\_agent/config\_contract.py |       81 |        2 |       30 |        0 |     98% |   230-231 |
 | src/robotsix\_calendar\_agent/component\_agent/settings.py         |       13 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/intent\_parser.py                    |       56 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/logging\_config.py                   |       24 |        0 |        6 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/settings.py                          |       52 |        0 |        8 |        0 |    100% |           |
-| **TOTAL**                                                          | **1079** |   **91** |  **278** |   **17** | **90%** |           |
+| **TOTAL**                                                          | **1063** |   **78** |  **272** |   **17** | **91%** |           |
 
 
 ## Setup coverage badge
