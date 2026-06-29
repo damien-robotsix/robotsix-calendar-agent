@@ -10,6 +10,6 @@ permissions:
 
 jobs:
   bump:
-    uses: damien-robotsix/robotsix-mill/.github/workflows/deps-bump.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/deps-bump.yml@5cd8c1facb02299da618979e7a55f1953f9c075a  # main
     secrets:
       DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}

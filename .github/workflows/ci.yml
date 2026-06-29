@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   security:
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-security.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-security.yml@5cd8c1facb02299da618979e7a55f1953f9c075a  # main
     with:
       install-extras: ""
       trufflehog-pr-diff: true
@@ -109,7 +109,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@3c5ac1dda3069742afbdd79dc326d9db4d97f17f  # main
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-ci.yml@5cd8c1facb02299da618979e7a55f1953f9c075a  # main
     with:
       python-version: ${{ matrix.python-version }}
       install-extras: ""
