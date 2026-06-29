@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - Dead code: `_read_value` function in `config_contract.py` (never called)
 
+### Changed
+- Moved `tests/test_logging_config.py` into `tests/logging_config/`
+  subdirectory to match the module-mirroring convention followed by all
+  other test modules.
+
 ### Fixed
 - Resolved mypy errors in `healthcheck.py`, `vulture_whitelist.py`, and
   `tests/intent_parser/test_intent_parser.py` that were causing the CI
