@@ -14,6 +14,8 @@ TLS broker.
 
 ## Status
 
+![coverage](badges/coverage.svg)
+
 Early scaffold — under active development.
 
 ## Development
