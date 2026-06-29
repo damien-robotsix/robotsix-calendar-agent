@@ -586,6 +586,17 @@ class CalDavClient:
         saved = cal.save_event(ical)
         return self._to_calendar_event(saved, calendar_id=cal.name)
 
+    def _find_event_by_uid(self, uid: str) -> tuple[Any, Any] | None:
+        """Locate an event by UID across all calendars.
+
+        Returns ``(calendar, event_obj)`` or ``None`` if not found.
+        """
+        for cal in self._iter_calendars(""):
+            event_obj = cal.event(uid=uid)
+            if event_obj is not None:
+                return cal, event_obj
+        return None
+
     @_wrap_caldav_op("update event")
     def update_event(
         self, uid: str, event: CalendarEvent, calendar_id: str = ""
@@ -614,17 +625,13 @@ class CalDavClient:
                     message=f"Event with UID {uid!r} not found.",
                 )
         else:
-            # Locate the UID across all calendars.
-            cal = None
-            for candidate in self._iter_calendars(""):
-                if candidate.event(uid=uid) is not None:
-                    cal = candidate
-                    break
-            if cal is None:
+            result = self._find_event_by_uid(uid)
+            if result is None:
                 raise OperationError(
                     code="not_found",
                     message=f"Event with UID {uid!r} not found.",
                 )
+            cal, _ = result
         # Build updated iCal with the same UID
         updated = CalendarEvent(
             uid=uid,
@@ -655,11 +662,11 @@ class CalDavClient:
                 return None
             event_obj.delete()
         else:
-            for cal in self._iter_calendars(""):
-                event_obj = cal.event(uid=uid)
-                if event_obj is not None:
-                    event_obj.delete()
-                    return None
+            result = self._find_event_by_uid(uid)
+            if result is None:
+                return None
+            _cal, event_obj = result
+            event_obj.delete()
             return None
 
     # ------------------------------------------------------------------

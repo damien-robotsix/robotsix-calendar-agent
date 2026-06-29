@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Merged `add_to_calendar` bypass in `agent.py` into the standard parse → dispatch → render pipeline: the structured payload is now converted to a synthetic natural-language instruction and fed through `_intent_parser.parse()` → `_dispatch()` → `_render_reply()`, eliminating the standalone `handle_add_to_calendar` call from the request handler.
+- Extracted shared `_find_event_by_uid` helper in `CalDavClient` to eliminate duplicated UID-lookup logic in `update_event` and `delete_event`.
+- Enabled Ruff `S` (flake8-bandit) rules in `pyproject.toml` and removed the slower `bandit` pre-commit hook.
 
 ### Added
 - `actionlint` job in CI (`.github/workflows/ci.yml`) and pre-commit hook (`.pre-commit-config.yaml`) for workflow syntax validation and shellcheck on inline scripts.
