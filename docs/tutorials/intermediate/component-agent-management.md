@@ -32,15 +32,17 @@ If `COMPONENT_AGENT_ENABLED` is `true` but the token is empty, the
 agent refuses to start with a `ValueError`.  This is intentional —
 management access must be authenticated.
 
-When wiring the responder into an in-process agent, pass it via the
-constructor:
+When wiring the responder into an in-process agent, construct it
+directly and pass it via the calendar agent constructor.  The
+``component_agent_enabled`` / ``component_agent_token`` gating is
+presumed satisfied (see the environment variables above).
 
 ```python
-from robotsix_calendar_agent.brokered_entrypoint import _build_component_responder
+from robotsix_calendar_agent.brokered_entrypoint import ComponentAgentResponder
 from robotsix_calendar_agent.settings import Settings
 
 settings = Settings()
-responder = _build_component_responder(settings)
+responder = ComponentAgentResponder(None, settings)
 agent = CalendarAgent(agent=calendar_comm, component_responder=responder)
 ```
 
@@ -168,11 +170,11 @@ from robotsix_agent_comm.sdk import Agent
 from robotsix_agent_comm.transport import Registry
 
 from robotsix_calendar_agent import CalendarAgent
-from robotsix_calendar_agent.brokered_entrypoint import _build_component_responder
+from robotsix_calendar_agent.brokered_entrypoint import ComponentAgentResponder
 from robotsix_calendar_agent.settings import Settings
 
 settings = Settings()
-responder = _build_component_responder(settings)
+responder = ComponentAgentResponder(None, settings)
 
 registry = Registry()
 calendar_comm = Agent("calendar", registry)

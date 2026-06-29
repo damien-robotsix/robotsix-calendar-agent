@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Resolved mypy errors in `healthcheck.py`, `vulture_whitelist.py`, and
   `tests/intent_parser/test_intent_parser.py` that were causing the CI
   job to fail.
+- Fixed wrong Python version prerequisite (3.14+ → 3.12+) in `docs/tutorials/basic/first-agent.md`, and replaced private `_build_component_responder` usage with the public `ComponentAgentResponder` constructor in `docs/tutorials/intermediate/component-agent-management.md`.
 
 ### Added
 - Four tutorials in `docs/tutorials/`: first agent, calendar event CRUD,
