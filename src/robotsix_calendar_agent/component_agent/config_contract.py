@@ -100,20 +100,6 @@ def _resolve_field_name(key: str) -> str:
     return key.upper()
 
 
-def _core_settings_field_names() -> list[str]:
-    """Return the list of core ``Settings`` field names (uppercase)."""
-    from ..settings import Settings as CoreSettings
-
-    return list(CoreSettings.model_fields.keys())
-
-
-def _component_settings_field_names() -> list[str]:
-    """Return the list of ``ComponentAgentSettings`` field names."""
-    from .settings import ComponentAgentSettings
-
-    return list(ComponentAgentSettings.model_fields.keys())
-
-
 def _iter_config_fields(
     settings: Any,
     comp_settings: Any,
