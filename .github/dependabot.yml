@@ -11,13 +11,10 @@ updates:
     groups:
       dev-deps:
         patterns: ["ruff", "mypy", "pytest*"]
-        pr-review-days: 7
       docs-deps:
         patterns: ["mkdocs*"]
-        pr-review-days: 7
       prod-deps:
         patterns: ["*"]
-        pr-review-days: 7
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -29,4 +26,3 @@ updates:
     groups:
       all-actions:
         patterns: ["*"]
-        pr-review-days: 7
