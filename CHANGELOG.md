@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Four tutorials in `docs/tutorials/`: first agent, calendar event CRUD,
   brokered service deployment, and component-agent management.
+- Moved `logging_config` tests into per-module subdirectory
+  `tests/logging_config/` (consistent with all other modules) and added
+  reference documentation at `docs/reference/logging_config.md`.
 - Configurable log level via `LOG_LEVEL` env var (default `INFO`) and
   structured JSON log output via `JSON_LOGS` env var (default `false`).
 - Coverage report CI job with HTML artifact upload, PR coverage comments

@@ -96,7 +96,8 @@ modules:
     test_paths:
       - tests/logging_config/__init__.py
       - tests/logging_config/test_logging_config.py
-    doc_paths: []
+    doc_paths:
+      - docs/reference/logging_config.md
     depends_on: []
 
   - name: component_agent
