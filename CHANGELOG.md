@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Removed spurious `agent` dependency from `component_agent` module entry in `docs/modules.yaml`.
 
 ### Changed
+- Bumped pre-commit hooks to latest versions: `pre-commit-hooks` v5.0.0→v6.0.0, `ruff-pre-commit` v0.15.15→v0.15.20, `mirrors-mypy` v1.19.1→v2.1.0, `actionlint` v1.7.7→v1.7.12, `commitizen` v4.6.0→v4.16.4.
 - Merged `add_to_calendar` bypass in `agent.py` into the standard parse → dispatch → render pipeline: the structured payload is now converted to a synthetic natural-language instruction and fed through `_intent_parser.parse()` → `_dispatch()` → `_render_reply()`, eliminating the standalone `handle_add_to_calendar` call from the request handler.
 
 ### Added
