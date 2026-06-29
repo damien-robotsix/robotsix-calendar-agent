@@ -76,6 +76,7 @@ modules:
       - agent
       - settings
       - component_agent
+      - logging_config
 
   - name: settings
     path: src/robotsix_calendar_agent/settings.py
@@ -85,6 +86,15 @@ modules:
       - tests/settings/test_settings.py
     doc_paths:
       - docs/reference/settings.md
+    depends_on: []
+
+  - name: logging_config
+    path: src/robotsix_calendar_agent/logging_config.py
+    paths:
+      - src/robotsix_calendar_agent/logging_config.py
+    test_paths:
+      - tests/test_logging_config.py
+    doc_paths: []
     depends_on: []
 
   - name: component_agent
