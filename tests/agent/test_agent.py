@@ -7,12 +7,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from robotsix_calendar_agent.add_to_calendar_handler import (
-    ERROR_INVALID_DATES,
-    ERROR_MISSING_DATES,
-    ERROR_MISSING_SUBJECT,
-)
-
 # Shared helpers and module-level mocks live in conftest.
 from tests.conftest import (
     _mock_agent_comm_protocol,
@@ -412,9 +406,22 @@ class TestDispatch:
 
 
 class TestHandleAddToCalendar:
+    # -- success path (explicit dates) ---------------------------------
+
     def test_valid_request_creates_event(
         self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
+        mock_parser = calendar_agent._mock_parser
+        mock_parser.parse.return_value = MagicMock(
+            operation="create_event",
+            params={
+                "summary": "Test Subject",
+                "description": "Test Description",
+                "location": "Office",
+                "dtstart": "2026-03-15T09:00:00",
+                "dtend": "2026-03-15T10:00:00",
+            },
+        )
         mock_caldav = calendar_agent._mock_caldav
         created_event = MagicMock(
             uid="evt-1",
@@ -430,140 +437,29 @@ class TestHandleAddToCalendar:
         req = make_add_to_calendar_request(correlation_id="corr-123")
         calendar_agent._handle_request(req)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["correlation_id"] == "corr-123"
-        assert body["result"]["status"] == "created"
-        assert body["result"]["event"]["uid"] == "evt-1"
-        assert body["result"]["event"]["summary"] == "Test Subject"
-        assert "confirmation_text" in body["result"]
-        assert "Test Subject" in body["result"]["confirmation_text"]
-
+        mock_parser.parse.assert_called_once()
         mock_caldav.create_event.assert_called_once()
-        calendar_agent._mock_parser.parse.assert_not_called()
-
-    def test_missing_subject_returns_error(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        req = make_add_to_calendar_request(subject="", correlation_id="corr-1")
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
+        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
         body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_MISSING_SUBJECT
-        assert body["correlation_id"] == "corr-1"
+        assert body["result"]["uid"] == "evt-1"
+        assert body["result"]["summary"] == "Test Subject"
+        assert "reply" in body
+        assert "Test Subject" in body["reply"]
 
-    def test_missing_dates_returns_error(
+    def test_instruction_includes_explicit_dates(
         self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
-        req = make_add_to_calendar_request(
-            suggested_dtstart="", suggested_dtend="", correlation_id="corr-2"
+        mock_parser = calendar_agent._mock_parser
+        mock_parser.parse.return_value = MagicMock(
+            operation="create_event",
+            params={
+                "summary": "S",
+                "dtstart": "2026-03-15T09:00:00",
+                "dtend": "2026-03-15T10:00:00",
+            },
         )
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_MISSING_DATES
-        assert body["correlation_id"] == "corr-2"
-
-    def test_empty_dtstart_returns_missing_dates(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        req = make_add_to_calendar_request(
-            suggested_dtstart="", correlation_id="corr-3"
-        )
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_MISSING_DATES
-
-    def test_invalid_date_string_returns_invalid_dates(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        req = make_add_to_calendar_request(
-            suggested_dtstart="not-a-date", correlation_id="corr-4"
-        )
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_INVALID_DATES
-
-    def test_dtend_before_dtstart_returns_invalid_dates(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        req = make_add_to_calendar_request(
-            suggested_dtstart="2026-03-15T10:00:00",
-            suggested_dtend="2026-03-15T09:00:00",
-            correlation_id="corr-5",
-        )
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_INVALID_DATES
-
-    def test_dtend_equal_to_dtstart_returns_invalid_dates(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        req = make_add_to_calendar_request(
-            suggested_dtstart="2026-03-15T09:00:00",
-            suggested_dtend="2026-03-15T09:00:00",
-            correlation_id="corr-eq",
-        )
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_INVALID_DATES
-
-    def test_operation_error_propagates_code(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        from robotsix_calendar_agent.caldav_client import OperationError
-
         mock_caldav = calendar_agent._mock_caldav
-        mock_caldav.create_event.side_effect = OperationError(
-            code="auth_failed", message="Authentication failed"
-        )
-
-        req = make_add_to_calendar_request(correlation_id="corr-6")
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == "auth_failed"
-        assert body["correlation_id"] == "corr-6"
-
-    def test_unexpected_exception_returns_internal_error(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        mock_caldav = calendar_agent._mock_caldav
-        mock_caldav.create_event.side_effect = RuntimeError("boom")
-
-        req = make_add_to_calendar_request(correlation_id="corr-7")
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == "internal_error"
-        assert body["correlation_id"] == "corr-7"
-
-    def test_add_to_calendar_bypasses_intent_parser(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        mock_caldav = calendar_agent._mock_caldav
-        created_event = MagicMock(
+        mock_caldav.create_event.return_value = MagicMock(
             uid="evt-x",
             summary="S",
             description="",
@@ -572,7 +468,6 @@ class TestHandleAddToCalendar:
             dtend="2026-03-15T10:00:00",
             calendar_id="cal",
         )
-        mock_caldav.create_event.return_value = created_event
 
         req = make_add_to_calendar_request(
             subject="S",
@@ -582,74 +477,71 @@ class TestHandleAddToCalendar:
         )
         calendar_agent._handle_request(req)
 
-        calendar_agent._mock_parser.parse.assert_not_called()
+        # The synthetic instruction must embed the explicit datetimes.
+        parse_call_arg = mock_parser.parse.call_args[0][0]
+        assert "dtstart=2026-03-15T09:00:00" in parse_call_arg
+        assert "dtend=2026-03-15T10:00:00" in parse_call_arg
 
-    def test_correlation_id_echoed_on_success(
+    # -- error paths ---------------------------------------------------
+
+    def test_parse_error_propagates(
         self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
+        from robotsix_calendar_agent.intent_parser import IntentParseError
+
+        calendar_agent._mock_parser.parse.side_effect = IntentParseError(
+            "cannot parse"
+        )
+        req = make_add_to_calendar_request()
+        calendar_agent._handle_request(req)
+
+        _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
+        assert kwargs["code"] == "parse_error"
+        assert "cannot parse" in kwargs["message"]
+
+    def test_operation_error_propagates_code(
+        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
+    ) -> None:
+        from robotsix_calendar_agent.caldav_client import OperationError
+
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="create_event",
+            params={
+                "summary": "Test Subject",
+                "dtstart": "2026-03-15T09:00:00",
+                "dtend": "2026-03-15T10:00:00",
+            },
+        )
         mock_caldav = calendar_agent._mock_caldav
-        created_event = MagicMock(
-            uid="evt-y",
-            summary="S",
-            description="",
-            location="",
-            dtstart="2026-03-15T09:00:00",
-            dtend="2026-03-15T10:00:00",
-            calendar_id="cal",
+        mock_caldav.create_event.side_effect = OperationError(
+            code="auth_failed", message="Authentication failed"
         )
-        mock_caldav.create_event.return_value = created_event
 
-        req = make_add_to_calendar_request(
-            subject="S",
-            description="",
-            location="",
-            correlation_id="my-custom-id",
-        )
+        req = make_add_to_calendar_request(correlation_id="corr-6")
         calendar_agent._handle_request(req)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["correlation_id"] == "my-custom-id"
+        _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
+        assert kwargs["code"] == "auth_failed"
 
-    def test_missing_correlation_id_echoes_empty_string(
+    def test_unexpected_exception_returns_internal_error(
         self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
     ) -> None:
+        calendar_agent._mock_parser.parse.return_value = MagicMock(
+            operation="create_event",
+            params={
+                "summary": "Test Subject",
+                "dtstart": "2026-03-15T09:00:00",
+                "dtend": "2026-03-15T10:00:00",
+            },
+        )
         mock_caldav = calendar_agent._mock_caldav
-        created_event = MagicMock(
-            uid="evt-z",
-            summary="S",
-            description="",
-            location="",
-            dtstart="2026-03-15T09:00:00",
-            dtend="2026-03-15T10:00:00",
-            calendar_id="cal",
-        )
-        mock_caldav.create_event.return_value = created_event
+        mock_caldav.create_event.side_effect = RuntimeError("boom")
 
-        req = make_add_to_calendar_request(
-            subject="S",
-            description="",
-            location="",
-            correlation_id="",
-        )
+        req = make_add_to_calendar_request(correlation_id="corr-7")
         calendar_agent._handle_request(req)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["correlation_id"] == ""
-
-    def test_whitespace_only_subject_returns_missing_subject(
-        self, calendar_agent: MagicMock, make_add_to_calendar_request: MagicMock
-    ) -> None:
-        req = make_add_to_calendar_request(subject="   ", correlation_id="corr-ws")
-        calendar_agent._handle_request(req)
-
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        _, kwargs = call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_MISSING_SUBJECT
+        _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
+        assert kwargs["code"] == "internal_error"
 
     # -- LLM date resolution (auto-mail's dateless payload) ------------
 
@@ -691,22 +583,23 @@ class TestHandleAddToCalendar:
         calendar_agent._handle_request(req)
 
         mock_parser.parse.assert_called_once()
+        # Verify the resolution instruction carries the email context.
+        parse_call_arg = mock_parser.parse.call_args[0][0]
+        assert "Dentist appointment" in parse_call_arg
+        assert "March 15" in parse_call_arg
         calendar_agent._mock_caldav.create_event.assert_called_once()
         _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
         body = kwargs["body"]
-        assert body["correlation_id"] == "corr-llm"
-        assert body["result"]["status"] == "created"
-        assert body["result"]["event"]["uid"] == "evt-llm"
+        assert body["result"]["uid"] == "evt-llm"
+        assert "reply" in body
 
-    def test_llm_cannot_resolve_returns_missing_dates(
+    def test_llm_cannot_resolve_returns_parse_error(
         self, calendar_agent: MagicMock
     ) -> None:
+        from robotsix_calendar_agent.intent_parser import IntentParseError
+
         mock_parser = calendar_agent._mock_parser
-        # Parser returns a non-create_event intent → no usable dates.
-        mock_parser.parse.return_value = MagicMock(
-            operation="list_events",
-            params={},
-        )
+        mock_parser.parse.side_effect = IntentParseError("cannot resolve dates")
 
         req = make_request(
             {
@@ -720,10 +613,8 @@ class TestHandleAddToCalendar:
         calendar_agent._handle_request(req)
 
         calendar_agent._mock_caldav.create_event.assert_not_called()
-        _, kwargs = _mock_agent_comm_protocol.Response.to.call_args
-        body = kwargs["body"]
-        assert body["error"]["code"] == ERROR_MISSING_DATES
-        assert body["correlation_id"] == "corr-nodate"
+        _, kwargs = _mock_agent_comm_protocol.Error.to.call_args
+        assert kwargs["code"] == "parse_error"
 
 
 # ---------------------------------------------------------------------------

@@ -21,10 +21,7 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
-from .add_to_calendar_handler import (
-    _event_to_dict,
-    handle_add_to_calendar,
-)
+from .add_to_calendar_handler import _event_to_dict
 from .caldav_client import (
     CalDavClient,
     CalendarEvent,
@@ -215,15 +212,11 @@ class CalendarAgent:
                         message=str(exc),
                     )
 
+        instruction: str | None
         if "add_to_calendar" in body:
-            return handle_add_to_calendar(
-                self._caldav,
-                request,
-                body["add_to_calendar"],
-                intent_parser=self._intent_parser,
-            )
-
-        instruction: str | None = body.get("instruction")
+            instruction = _build_add_to_calendar_instruction(body["add_to_calendar"])
+        else:
+            instruction = body.get("instruction")
         if not instruction:
             logger.error("Request missing 'instruction' key: %s", body)
             return Error.to(
@@ -333,6 +326,56 @@ class CalendarAgent:
 
     def __exit__(self, *args: Any) -> None:
         self.stop()
+
+
+# ---------------------------------------------------------------------------
+# add-to-calendar synthetic instruction builder
+# ---------------------------------------------------------------------------
+
+
+def _build_add_to_calendar_instruction(payload: dict[str, Any]) -> str:
+    """Convert a structured ``add_to_calendar`` payload into a natural-language
+    instruction that the intent parser can consume.
+
+    When the payload carries explicit ``suggested_dtstart``/``suggested_dtend``
+    ISO strings they are embedded directly.  Otherwise a resolution instruction
+    is built from the email context so the LLM intent parser can infer dates.
+    """
+    subject = str(payload.get("subject", ""))
+    ds = payload.get("suggested_dtstart")
+    de = payload.get("suggested_dtend")
+
+    if isinstance(ds, str) and ds and isinstance(de, str) and de:
+        parts = [f"add event: subject={subject}", f"dtstart={ds}", f"dtend={de}"]
+        desc = payload.get("description")
+        if desc:
+            parts.append(f"description={desc}")
+        loc = payload.get("location")
+        if loc:
+            parts.append(f"location={loc}")
+        return " ".join(parts)
+
+    # No explicit dates — build a resolution instruction so the LLM
+    # intent parser can infer start/end from the email context.
+    lines = [
+        "Create a calendar event for the following email.",
+        f"Email subject: {subject}",
+    ]
+    email_date = payload.get("email_date")
+    if email_date:
+        lines.append(f"Email date: {email_date}")
+    extracted = payload.get("extracted_dates")
+    if extracted:
+        lines.append("Date/time references found: " + ", ".join(extracted))
+    body_text = payload.get("body_text")
+    if body_text:
+        lines.append("Email body:")
+        lines.append(str(body_text))
+    lines.append(
+        "Resolve a concrete start and end datetime in ISO 8601. If no end "
+        "time is stated, default the end to one hour after the start."
+    )
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
