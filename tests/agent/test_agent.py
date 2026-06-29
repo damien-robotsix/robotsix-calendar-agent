@@ -489,9 +489,7 @@ class TestHandleAddToCalendar:
     ) -> None:
         from robotsix_calendar_agent.intent_parser import IntentParseError
 
-        calendar_agent._mock_parser.parse.side_effect = IntentParseError(
-            "cannot parse"
-        )
+        calendar_agent._mock_parser.parse.side_effect = IntentParseError("cannot parse")
         req = make_add_to_calendar_request()
         calendar_agent._handle_request(req)
 

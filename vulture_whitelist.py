@@ -28,3 +28,6 @@ cls
 
 # Planned helper — kept for future use in config contract
 _read_value
+
+# Refactored out of agent.py; still covered by dedicated unit tests
+handle_add_to_calendar
