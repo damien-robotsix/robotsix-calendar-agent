@@ -23,7 +23,7 @@ RETRY_DELAY_SECONDS = 2
 
 
 def main() -> None:
-    settings = Settings()  # type: ignore[call-arg]
+    settings = Settings()
     url = settings.RADICALE_URL
     username = settings.RADICALE_USERNAME
     password = settings.RADICALE_PASSWORD.get_secret_value()

@@ -36,7 +36,7 @@ def _mock_run_agent(
     operation: str, params: dict[str, Any] | None = None
 ) -> _IntentOutput:
     """Return a mock intent output."""
-    return _IntentOutput(operation=operation, params=params or {})
+    return _IntentOutput(operation=operation, params=params or {})  # type: ignore[arg-type]
 
 
 def _setup_llmio_mock(output: _IntentOutput | Exception) -> MagicMock:
@@ -187,7 +187,7 @@ class TestSystemPrompt:
 
     def test_calendar_operation_has_list_calendars(self) -> None:
         assert hasattr(CalendarOperation, "LIST_CALENDARS")
-        assert CalendarOperation.LIST_CALENDARS == "list_calendars"
+        assert CalendarOperation.LIST_CALENDARS == "list_calendars"  # type: ignore[comparison-overlap]
 
 
 class TestParseError:

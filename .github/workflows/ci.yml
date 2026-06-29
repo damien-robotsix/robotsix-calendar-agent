@@ -144,17 +144,10 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Generate coverage badge
+      - name: Update coverage data (badge + HTML on data branch)
         uses: py-cov-action/python-coverage-comment-action@63f52f4fbbffada6e8dee8ec432de7e01df9ba79  # v3.41
         if: github.ref == 'refs/heads/main'
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BADGE_DIRECTORY: badges
-      - name: Commit coverage badge
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add badges/coverage.svg
-          git commit -m "chore: update coverage badge [skip ci]" || echo "No changes to commit"
-          git push
+          MINIMUM_GREEN: 90
+          MINIMUM_ORANGE: 80

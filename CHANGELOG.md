@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Resolved mypy errors in `healthcheck.py`, `vulture_whitelist.py`, and
+  `tests/intent_parser/test_intent_parser.py` that were causing the CI
+  job to fail.
+
 ### Added
 - Configurable log level via `LOG_LEVEL` env var (default `INFO`) and
   structured JSON log output via `JSON_LOGS` env var (default `false`).

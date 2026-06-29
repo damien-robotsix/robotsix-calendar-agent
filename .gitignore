@@ -20,3 +20,5 @@ site/
 # coverage data
 .coverage
 .coverage.*
+coverage.xml
+htmlcov/
