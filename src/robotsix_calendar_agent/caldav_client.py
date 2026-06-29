@@ -281,20 +281,61 @@ class CalDavClient:
                 continue
             # Property name without parameters (e.g. "TEL;TYPE=cell" -> "TEL").
             key = name.split(";", 1)[0].strip().upper()
-            fields.setdefault(key, value.strip())  # first occurrence wins
+            fields.setdefault(key, value)  # first occurrence wins
 
         address = ""
         adr = fields.get("ADR", "")
         if adr:
-            # vCard ADR is structured (PO;ext;street;city;region;postal;country);
-            # join the non-empty components.
-            address = ", ".join(part for part in adr.split(";") if part)
+            # vCard ADR is structured (PO;ext;street;city;region;postal;country).
+            # Split on ";" separators while respecting backslash-escaping:
+            #   \\ → literal backslash (does NOT escape the following char)
+            #   \; → escaped semicolon (literal ";", not a separator)
+            #   \n → newline
+            #   \, → literal comma
+            components: list[str] = []
+            current: list[str] = []
+            i = 0
+            while i < len(adr):
+                ch = adr[i]
+                if ch == "\\" and i + 1 < len(adr):
+                    nxt = adr[i + 1]
+                    if nxt == "\\":
+                        current.append("\\")
+                        i += 2
+                        continue
+                    elif nxt == ";":
+                        current.append(";")
+                        i += 2
+                        continue
+                    elif nxt == ",":
+                        current.append(",")
+                        i += 2
+                        continue
+                    elif nxt == "n":
+                        current.append("\n")
+                        i += 2
+                        continue
+                    else:
+                        # Unknown escape — keep both chars.
+                        current.append(ch)
+                        current.append(nxt)
+                        i += 2
+                        continue
+                elif ch == ";":
+                    components.append("".join(current))
+                    current = []
+                    i += 1
+                else:
+                    current.append(ch)
+                    i += 1
+            components.append("".join(current))
+            address = ", ".join(c for c in components if c)
 
         return Contact(
-            uid=fields.get("UID", ""),
-            full_name=fields.get("FN", ""),
-            email=fields.get("EMAIL", ""),
-            phone=fields.get("TEL", ""),
+            uid=CalDavClient._unescape_text(fields.get("UID", "")),
+            full_name=CalDavClient._unescape_text(fields.get("FN", "")),
+            email=CalDavClient._unescape_text(fields.get("EMAIL", "")),
+            phone=CalDavClient._unescape_text(fields.get("TEL", "")),
             address=address,
             addressbook_id=addressbook_id,
         )
@@ -381,6 +422,27 @@ class CalDavClient:
         result = result.replace(";", "\\;")
         result = result.replace(",", "\\,")
         result = result.replace("\n", "\\n")
+        return result
+
+    @staticmethod
+    def _unescape_text(value: str) -> str:
+        """Reverse the escaping applied by :meth:`_escape_text`.
+
+        Uses a placeholder for ``\\\\`` to avoid creating spurious
+        escape sequences during sequential replacement.  Restores
+        ``\\n`` → ``\n``, ``\\;`` → ``;``, ``\\,`` → ``,``,
+        ``\\\\`` → ``\\``.
+        """
+        if not value:
+            return value
+        # Replace \\ with a sentinel to avoid it forming spurious
+        # \; or \, sequences in later steps.
+        SENTINEL = "\x00"
+        result = value.replace("\\\\", SENTINEL)
+        result = result.replace("\\n", "\n")
+        result = result.replace("\\;", ";")
+        result = result.replace("\\,", ",")
+        result = result.replace(SENTINEL, "\\")
         return result
 
     @staticmethod
