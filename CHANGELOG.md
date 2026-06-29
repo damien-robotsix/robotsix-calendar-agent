@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Configurable log level via `LOG_LEVEL` env var (default `INFO`) and
   structured JSON log output via `JSON_LOGS` env var (default `false`).
+- Coverage report CI job with HTML artifact upload, PR coverage comments
+  via `python-coverage-comment-action`, and auto-generated coverage badge
+  on main.
 
 ### Fixed
 - Extract ISO 8601 parsing and time-ordering validation from `handle_add_to_calendar` into a dedicated `_parse_and_validate_iso_dates` helper, reducing the handler by ~22 lines.

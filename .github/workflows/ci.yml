@@ -116,3 +116,39 @@ jobs:
       cov-package: "robotsix_calendar_agent"
       coverage-threshold: "85"
       mypy-advisory: false
+
+  coverage-report:
+    if: ${{ !cancelled() }}
+    needs: [ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
+      - run: uv sync --frozen
+      - name: Generate coverage report
+        run: |
+          uv run pytest --cov=robotsix_calendar_agent --cov-report=xml --cov-report=html --cov-report=term \
+            -m 'not integration' tests/
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: coverage-html
+          path: htmlcov/
+      - name: Post PR coverage comment
+        uses: py-cov-action/python-coverage-comment-action@63f52f4fbbffada6e8dee8ec432de7e01df9ba79  # v3.41
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          coverage-path: coverage.xml
+      - name: Generate coverage badge
+        uses: py-cov-action/python-coverage-comment-action@63f52f4fbbffada6e8dee8ec432de7e01df9ba79  # v3.41
+        if: github.ref == 'refs/heads/main'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          coverage-path: coverage.xml
+          badge-directory: badges
