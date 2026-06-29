@@ -122,7 +122,7 @@ jobs:
     needs: [ci]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
@@ -143,12 +143,9 @@ jobs:
         uses: py-cov-action/python-coverage-comment-action@63f52f4fbbffada6e8dee8ec432de7e01df9ba79  # v3.41
         if: github.event_name == 'pull_request'
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          coverage-path: coverage.xml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate coverage badge
         uses: py-cov-action/python-coverage-comment-action@63f52f4fbbffada6e8dee8ec432de7e01df9ba79  # v3.41
         if: github.ref == 'refs/heads/main'
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          coverage-path: coverage.xml
-          badge-directory: badges
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
