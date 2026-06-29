@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   job to fail.
 
 ### Added
+- Four tutorials in `docs/tutorials/`: first agent, calendar event CRUD,
+  brokered service deployment, and component-agent management.
 - Configurable log level via `LOG_LEVEL` env var (default `INFO`) and
   structured JSON log output via `JSON_LOGS` env var (default `false`).
 - Coverage report CI job with HTML artifact upload, PR coverage comments
