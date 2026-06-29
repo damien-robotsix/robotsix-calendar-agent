@@ -14,7 +14,7 @@ TLS broker.
 
 ## Status
 
-![coverage](badges/coverage.svg)
+![coverage](https://raw.githubusercontent.com/damien-robotsix/robotsix-calendar-agent/python-coverage-comment-action-data/badge.svg)
 
 Early scaffold — under active development.
 
