@@ -38,3 +38,4 @@ nav:
       - reference/brokered_entrypoint.md
       - reference/add_to_calendar_handler.md
       - reference/component_agent.md
+      - reference/logging_config.md
