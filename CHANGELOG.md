@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - Dead code: `_read_value` function in `config_contract.py` (never called)
 
+### Fixed
+- Classified `docs/tutorials/intermediate/brokered-service.md` under the
+  `brokered_entrypoint` module in `docs/modules.yaml`
+
 ### Changed
 - Classified `docs/tutorials/basic/first-agent.md` under the `init` module
   in `docs/modules.yaml`.
