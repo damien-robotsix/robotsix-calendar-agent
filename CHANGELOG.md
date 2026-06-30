@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 - Dead code: `_read_value` function in `config_contract.py` (never called)
 
+### Fixed
+- Classified `docs/tutorials/intermediate/brokered-service.md` under the
+  `brokered_entrypoint` module in `docs/modules.yaml`
+
 ### Changed
 - Moved `tests/test_logging_config.py` into `tests/logging_config/`
   subdirectory to match the module-mirroring convention followed by all
