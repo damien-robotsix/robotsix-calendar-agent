@@ -1102,9 +1102,7 @@ class TestOperationErrorPropagation:
 class TestCaldavExceptionMapping:
     """Verify that caldav-specific exceptions are mapped to distinct codes."""
 
-    def test_not_found_error_maps_to_not_found(
-        self, client: CalDavClient
-    ) -> None:
+    def test_not_found_error_maps_to_not_found(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.save_event.side_effect = client._caldav.lib.error.NotFoundError(
             "resource not found"
@@ -1113,9 +1111,7 @@ class TestCaldavExceptionMapping:
             client.create_event(_make_event())
         assert exc_info.value.code == "not_found"
 
-    def test_rate_limit_error_maps_to_rate_limited(
-        self, client: CalDavClient
-    ) -> None:
+    def test_rate_limit_error_maps_to_rate_limited(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.save_event.side_effect = client._caldav.lib.error.RateLimitError(
             "too many requests"
@@ -1124,9 +1120,7 @@ class TestCaldavExceptionMapping:
             client.create_event(_make_event())
         assert exc_info.value.code == "rate_limited"
 
-    def test_etag_mismatch_error_maps_to_conflict(
-        self, client: CalDavClient
-    ) -> None:
+    def test_etag_mismatch_error_maps_to_conflict(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.save_event.side_effect = client._caldav.lib.error.EtagMismatchError(
             "ETag changed"
@@ -1139,8 +1133,8 @@ class TestCaldavExceptionMapping:
         self, client: CalDavClient
     ) -> None:
         cal = client._principal.calendars.return_value[0]
-        cal.save_event.side_effect = (
-            client._caldav.lib.error.AuthorizationError("bad credentials")
+        cal.save_event.side_effect = client._caldav.lib.error.AuthorizationError(
+            "bad credentials"
         )
         with pytest.raises(OperationError) as exc_info:
             client.create_event(_make_event())
