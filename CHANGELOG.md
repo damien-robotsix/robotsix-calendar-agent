@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - `reference/logging_config.md` entry in `mkdocs.yml` nav under "Code Reference"
 - Classify `docs/tutorials/basic/manage-events.md` under the `agent` module in `docs/modules.yaml`.
+- Map caldav-specific exceptions (`NotFoundError`, `RateLimitError`, `EtagMismatchError`, `AuthorizationError`) to distinct `OperationError` codes in `_wrap_caldav_op`.
 
 ### Removed
 - Dead code: `_read_value` function in `config_contract.py` (never called)

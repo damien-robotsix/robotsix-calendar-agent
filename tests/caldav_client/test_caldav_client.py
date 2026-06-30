@@ -24,6 +24,12 @@ from robotsix_calendar_agent.caldav_client import (
 # import the real caldav library without interference.
 _mock_caldav = MagicMock()
 _mock_caldav.error.AuthorizationError = type("AuthorizationError", (Exception,), {})
+_mock_caldav.lib.error.NotFoundError = type("NotFoundError", (Exception,), {})
+_mock_caldav.lib.error.RateLimitError = type("RateLimitError", (Exception,), {})
+_mock_caldav.lib.error.EtagMismatchError = type("EtagMismatchError", (Exception,), {})
+# Alias AuthorizationError under lib.error so _wrap_caldav_op's
+# self._caldav.lib.error.AuthorizationError resolves.
+_mock_caldav.lib.error.AuthorizationError = _mock_caldav.error.AuthorizationError
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -1085,4 +1091,66 @@ class TestOperationErrorPropagation:
         ab.search.side_effect = Exception("boom")
         with pytest.raises(OperationError) as exc_info:
             client.delete_contact("cnt-1")
+        assert exc_info.value.code == "caldav_error"
+
+
+# ---------------------------------------------------------------------------
+# caldav exception → OperationError mapping in _wrap_caldav_op
+# ---------------------------------------------------------------------------
+
+
+class TestCaldavExceptionMapping:
+    """Verify that caldav-specific exceptions are mapped to distinct codes."""
+
+    def test_not_found_error_maps_to_not_found(
+        self, client: CalDavClient
+    ) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.side_effect = client._caldav.lib.error.NotFoundError(
+            "resource not found"
+        )
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
+        assert exc_info.value.code == "not_found"
+
+    def test_rate_limit_error_maps_to_rate_limited(
+        self, client: CalDavClient
+    ) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.side_effect = client._caldav.lib.error.RateLimitError(
+            "too many requests"
+        )
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
+        assert exc_info.value.code == "rate_limited"
+
+    def test_etag_mismatch_error_maps_to_conflict(
+        self, client: CalDavClient
+    ) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.side_effect = client._caldav.lib.error.EtagMismatchError(
+            "ETag changed"
+        )
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
+        assert exc_info.value.code == "conflict"
+
+    def test_authorization_error_maps_to_auth_failed(
+        self, client: CalDavClient
+    ) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.side_effect = (
+            client._caldav.lib.error.AuthorizationError("bad credentials")
+        )
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
+        assert exc_info.value.code == "auth_failed"
+
+    def test_generic_exception_still_maps_to_caldav_error(
+        self, client: CalDavClient
+    ) -> None:
+        cal = client._principal.calendars.return_value[0]
+        cal.save_event.side_effect = ValueError("something unexpected")
+        with pytest.raises(OperationError) as exc_info:
+            client.create_event(_make_event())
         assert exc_info.value.code == "caldav_error"
