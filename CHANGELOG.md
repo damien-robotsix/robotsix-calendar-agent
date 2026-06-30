@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Dead code: `_read_value` function in `config_contract.py` (never called)
 
 ### Changed
+- Classified `docs/tutorials/basic/first-agent.md` under the `init` module
+  in `docs/modules.yaml`.
 - Moved `tests/test_logging_config.py` into `tests/logging_config/`
   subdirectory to match the module-mirroring convention followed by all
   other test modules.
