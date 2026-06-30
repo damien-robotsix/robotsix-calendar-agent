@@ -183,17 +183,17 @@ class CalDavClient:
         # wrapper strict-clean without per-call ignores.
         import caldav
 
-        _caldav: Any = caldav
+        self._caldav: Any = caldav
 
         self._url = url
         self._default_calendar = default_calendar
         try:
-            self._client = _caldav.DAVClient(
+            self._client = self._caldav.DAVClient(
                 url=url, username=username, password=password
             )
             self._principal = self._client.principal()
             logger.info("CalDavClient connected to %s as %s", url, username)
-        except _caldav.error.AuthorizationError as exc:
+        except self._caldav.error.AuthorizationError as exc:
             logger.exception("CalDAV auth failed for %s as %s: %s", url, username, exc)
             raise OperationError(
                 code="auth_failed",
@@ -548,6 +548,26 @@ class CalDavClient:
                     return retrying_func(self, *args, **kwargs)
                 except OperationError:
                     raise
+                except self._caldav.lib.error.NotFoundError as exc:
+                    raise OperationError(
+                        code="not_found",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except self._caldav.lib.error.RateLimitError as exc:
+                    raise OperationError(
+                        code="rate_limited",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except self._caldav.lib.error.EtagMismatchError as exc:
+                    raise OperationError(
+                        code="conflict",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except self._caldav.lib.error.AuthorizationError as exc:
+                    raise OperationError(
+                        code="auth_failed",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
                 except Exception as exc:
                     logger.exception("%s failed: %s", func.__name__, exc)
                     raise OperationError(
