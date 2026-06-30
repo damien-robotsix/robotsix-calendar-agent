@@ -112,5 +112,6 @@ modules:
       - tests/component_agent/test_config_contract.py
     doc_paths:
       - docs/reference/component_agent.md
+      - docs/tutorials/intermediate/component-agent-management.md
     depends_on:
       - settings
