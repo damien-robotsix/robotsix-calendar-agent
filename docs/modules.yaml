@@ -26,6 +26,7 @@ modules:
       - tests/agent/test_agent.py
     doc_paths:
       - docs/reference/agent.md
+      - docs/tutorials/basic/manage-events.md
     depends_on:
       - add_to_calendar_handler
       - caldav_client
