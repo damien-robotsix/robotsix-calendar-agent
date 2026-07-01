@@ -1764,8 +1764,8 @@ wheels = [
 
 [[package]]
 name = "robotsix-agent-comm"
-version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d#fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" }
+version = "0.1.dev191+gc46db6a93"
+source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=c46db6a937172db3c06cd40e96f0de027b644206#c46db6a937172db3c06cd40e96f0de027b644206" }
 
 [[package]]
 name = "robotsix-calendar-agent"
@@ -1803,7 +1803,7 @@ requires-dist = [
     { name = "caldav" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" },
+    { name = "robotsix-agent-comm", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=c46db6a937172db3c06cd40e96f0de027b644206" },
     { name = "robotsix-llmio", extras = ["openrouter", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992" },
     { name = "tenacity", specifier = ">=9.0,<10" },
 ]

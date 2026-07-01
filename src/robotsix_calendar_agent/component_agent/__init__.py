@@ -7,9 +7,10 @@ lives in :mod:`~robotsix_calendar_agent.brokered_entrypoint`.
 
 from __future__ import annotations
 
+from robotsix_agent_comm.protocol import ConfigContractError
+
 from .config_contract import (
     SETTABLE_KEYS,
-    ConfigContractError,
     apply_config_update,
     describe_config,
     get_config_snapshot,
