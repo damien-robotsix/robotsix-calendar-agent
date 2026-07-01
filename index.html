@@ -1,0 +1,1625 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agent-comm calendar and contacts agent for Radicale">
+      
+      
+      
+      
+      
+        <link rel="next" href="tutorials/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>robotsix-calendar-agent</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#robotsix-calendar-agent" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="robotsix-calendar-agent" class="md-header__button md-logo" aria-label="robotsix-calendar-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            robotsix-calendar-agent
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="robotsix-calendar-agent" class="md-nav__button md-logo" aria-label="robotsix-calendar-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    robotsix-calendar-agent
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting started
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-configure-radicale-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Configure Radicale access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Install dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-start-the-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Start the agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-send-a-request-via-agent-comm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Send a request via agent-comm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-process-transport-inprocess-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-process transport (inprocess, default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#brokered-transport-brokered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Brokered transport (brokered)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker / Compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operations-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-options-calendaragent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor options (CalendarAgent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Basic
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/basic/first-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your First Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/basic/manage-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Calendar Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intermediate
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Intermediate
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/intermediate/brokered-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokered Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/intermediate/component-agent-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component-Agent Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Code Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    robotsix_calendar_agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CalendarAgent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/intent_parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intent Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/caldav_client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CalDAV Client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/brokered_entrypoint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokered Entrypoint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/add_to_calendar_handler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Add-to-Calendar Handler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/component_agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/logging_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting started
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-configure-radicale-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Configure Radicale access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Install dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-start-the-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Start the agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-send-a-request-via-agent-comm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Send a request via agent-comm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-process-transport-inprocess-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-process transport (inprocess, default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#brokered-transport-brokered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Brokered transport (brokered)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker / Compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operations-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-options-calendaragent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor options (CalendarAgent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="robotsix-calendar-agent">robotsix-calendar-agent</h1>
+<p>An agent-comm agent that manages a Radicale server's calendars (CalDAV) and
+contacts (CardDAV) — full read-write including delete — driven entirely by
+the <code>robotsix-agent-comm</code> messaging system.</p>
+<h2 id="architecture">Architecture</h2>
+<pre><code>agent-comm Request → CalendarAgent → IntentParser (llmio)
+                                   → CalDavClient (caldav) → Radicale
+                                   ← Response / Error
+</code></pre>
+<ol>
+<li>A natural-language instruction arrives as an agent-comm <code>Request</code>.</li>
+<li><code>CalendarAgent</code> passes the instruction to <code>IntentParser</code>, which uses
+   <code>robotsix-llmio</code> to classify it into one of 8 operations and extract
+   structured parameters.</li>
+<li>The parsed intent is dispatched to <code>CalDavClient</code>, which wraps the
+   <code>caldav</code> library to perform CRUD operations against the Radicale server.</li>
+<li>The result is returned as a correlated <code>Response</code> (or <code>Error</code> on failure).</li>
+</ol>
+<h2 id="getting-started">Getting started</h2>
+<h3 id="1-configure-radicale-access">1. Configure Radicale access</h3>
+<p>Set the environment variables pointing to your Radicale server:</p>
+<pre><code class="language-bash">export RADICALE_URL=&quot;https://radicale.example.com&quot;
+export RADICALE_USERNAME=&quot;your-username&quot;
+export RADICALE_PASSWORD=&quot;your-password&quot;  # pragma: allowlist secret
+</code></pre>
+<p>Alternatively, pass these values as constructor arguments to <code>CalendarAgent</code>.</p>
+<h3 id="2-install-dependencies">2. Install dependencies</h3>
+<pre><code class="language-bash">uv sync
+</code></pre>
+<h3 id="3-start-the-agent">3. Start the agent</h3>
+<pre><code class="language-python">from robotsix_calendar_agent import CalendarAgent
+
+agent = CalendarAgent()
+agent.start()
+</code></pre>
+<h3 id="4-send-a-request-via-agent-comm">4. Send a request via agent-comm</h3>
+<pre><code class="language-python">from robotsix_agent_comm.sdk import Agent
+from robotsix_agent_comm.transport import Registry
+from robotsix_agent_comm.protocol import Request, Metadata
+
+registry = Registry()
+# The calendar agent has already registered itself on this registry.
+# Create a requester agent to send a message:
+requester = Agent(&quot;requester&quot;, registry)
+requester.start()
+
+# Send a request to the calendar agent:
+response = requester.send_request(
+    &quot;calendar&quot;,
+    {&quot;instruction&quot;: &quot;list events this week&quot;},
+)
+print(response.body)
+</code></pre>
+<h2 id="deployment">Deployment</h2>
+<p>The agent supports two transport modes, selected by the
+<code>CALENDAR_AGENT_TRANSPORT</code> environment variable.</p>
+<h3 id="in-process-transport-inprocess-default">In-process transport (<code>inprocess</code>, default)</h3>
+<p>The agent constructs its own in-memory
+<code>robotsix_agent_comm.transport.Registry</code>. This is the zero-config path
+used by tests and single-process deployments where a requester and the
+calendar agent live in the same process:</p>
+<pre><code class="language-python">from robotsix_calendar_agent import CalendarAgent
+
+agent = CalendarAgent()  # transport=None → in-process Registry
+agent.start()
+</code></pre>
+<h3 id="brokered-transport-brokered">Brokered transport (<code>brokered</code>)</h3>
+<p>The agent connects to a secured, TLS-authenticated broker and runs as an
+independent long-lived service. The broker pushes dispatched messages to
+the agent's handler. Connection details come from the <code>BROKER_*</code>
+environment variables (see the configuration reference below).</p>
+<p>A console-script entrypoint, <code>calendar-agent</code>, drives the long-lived
+service. It reads <code>CALENDAR_AGENT_TRANSPORT</code>, builds the selected
+transport, starts the agent, and blocks until <code>SIGTERM</code>/<code>SIGINT</code>, on
+which it stops the agent and exits cleanly:</p>
+<pre><code class="language-bash">export CALENDAR_AGENT_TRANSPORT=brokered
+export BROKER_HOST=broker.example.com
+export BROKER_TLS_CA=/certs/ca.pem
+export BROKER_AGENT_TOKEN=your-broker-token
+calendar-agent
+</code></pre>
+<h3 id="docker-compose">Docker / Compose</h3>
+<p>A <code>Dockerfile</code> at the repo root packages the agent (defaulting to
+<code>CALENDAR_AGENT_TRANSPORT=brokered</code>) and runs the <code>calendar-agent</code>
+console-script:</p>
+<pre><code class="language-bash">docker build -t calendar-agent .
+</code></pre>
+<p>A <code>docker-compose.yml</code> defines the <code>calendar-agent</code> service alongside a
+<code>broker</code> service (the broker's real definition lives in the
+<code>robotsix-agent-comm</code> repo). TLS material is mounted read-only and all
+broker environment variables are wired in; the service restarts
+<code>unless-stopped</code>:</p>
+<pre><code class="language-bash">docker compose up calendar-agent
+</code></pre>
+<h2 id="operations-reference">Operations reference</h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Example instruction</th>
+<th>Key params</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>list_events</code></td>
+<td>"list events this week"</td>
+<td><code>start</code>, <code>end</code> (ISO 8601)</td>
+</tr>
+<tr>
+<td><code>create_event</code></td>
+<td>"add a dentist appointment next Tuesday at 3pm"</td>
+<td><code>summary</code>, <code>dtstart</code>, <code>dtend</code></td>
+</tr>
+<tr>
+<td><code>update_event</code></td>
+<td>"reschedule the dentist to 4pm"</td>
+<td><code>uid</code>, updated fields</td>
+</tr>
+<tr>
+<td><code>delete_event</code></td>
+<td>"cancel the dentist appointment"</td>
+<td><code>uid</code></td>
+</tr>
+<tr>
+<td><code>list_contacts</code></td>
+<td>"show all contacts"</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>create_contact</code></td>
+<td>"add John Doe, john@example.com"</td>
+<td><code>full_name</code>, <code>email</code>, <code>phone</code></td>
+</tr>
+<tr>
+<td><code>update_contact</code></td>
+<td>"change John's email to john.doe@example.com"</td>
+<td><code>uid</code>, updated fields</td>
+</tr>
+<tr>
+<td><code>delete_contact</code></td>
+<td>"remove John Doe from contacts"</td>
+<td><code>uid</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="configuration-reference">Configuration reference</h2>
+<p>See <a href="configuration/">Configuration</a> for the canonical environment-variable
+reference.</p>
+<h3 id="environment-variables">Environment variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RADICALE_URL</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Radicale server URL</td>
+</tr>
+<tr>
+<td><code>RADICALE_USERNAME</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Radicale username</td>
+</tr>
+<tr>
+<td><code>RADICALE_PASSWORD</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Radicale password</td>
+</tr>
+<tr>
+<td><code>CALENDAR_AGENT_TRANSPORT</code></td>
+<td>No</td>
+<td><code>inprocess</code></td>
+<td>Transport mode: <code>inprocess</code> (in-memory <code>Registry</code>) or <code>brokered</code></td>
+</tr>
+<tr>
+<td><code>CALENDAR_AGENT_ID</code></td>
+<td>No</td>
+<td><code>robotsix-calendar</code></td>
+<td>Agent identity registered on the broker</td>
+</tr>
+<tr>
+<td><code>BROKER_HOST</code></td>
+<td>When brokered</td>
+<td>—</td>
+<td>Broker hostname/IP</td>
+</tr>
+<tr>
+<td><code>BROKER_PORT</code></td>
+<td>No</td>
+<td><code>9090</code></td>
+<td>Broker port</td>
+</tr>
+<tr>
+<td><code>BROKER_SCHEME</code></td>
+<td>When brokered</td>
+<td><code>https</code></td>
+<td>Broker URL scheme (<code>http</code> or <code>https</code>)</td>
+</tr>
+<tr>
+<td><code>BROKER_TLS_CA</code></td>
+<td>When brokered</td>
+<td>—</td>
+<td>Path to CA certificate PEM for verifying the broker</td>
+</tr>
+<tr>
+<td><code>BROKER_CLIENT_CERT</code></td>
+<td>No</td>
+<td>—</td>
+<td>Path to client certificate PEM (mTLS, optional)</td>
+</tr>
+<tr>
+<td><code>BROKER_CLIENT_KEY</code></td>
+<td>No</td>
+<td>—</td>
+<td>Path to client key PEM (mTLS, optional)</td>
+</tr>
+<tr>
+<td><code>BROKER_AGENT_TOKEN</code></td>
+<td>When brokered</td>
+<td>—</td>
+<td>Authentication token for the broker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="constructor-options-calendaragent">Constructor options (<code>CalendarAgent</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>agent_id</code></td>
+<td><code>str</code></td>
+<td><code>"calendar"</code></td>
+<td>Agent-comm agent ID</td>
+</tr>
+<tr>
+<td><code>radicale_url</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>Radicale URL (falls back to env)</td>
+</tr>
+<tr>
+<td><code>radicale_username</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>Radicale username (falls back to env)</td>
+</tr>
+<tr>
+<td><code>radicale_password</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>Radicale password (falls back to env)</td>
+</tr>
+<tr>
+<td><code>llm_model_config</code></td>
+<td><code>dict \| None</code></td>
+<td><code>None</code></td>
+<td>Forwarded to llmio for model selection</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
