@@ -78,6 +78,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "S", "T10", "EXE"]
 ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
+"healthcheck.py" = ["T201"]
 "vulture_whitelist.py" = ["B018", "F821"]
 "tests/**/*.py" = ["S105", "S106", "S603"]
 
