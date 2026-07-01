@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Fix stale operation count in `intent_parser` module docstring (8 → 10) to reflect all calendar, contact, and task operation types.
 - Migrate `ConfigContractError` from local definition to `robotsix_agent_comm.protocol.ConfigContractError`; bump `robotsix-agent-comm` pin to include the canonical implementation.
 # Changelog
 
