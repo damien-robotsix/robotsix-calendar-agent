@@ -283,13 +283,10 @@ class ComponentAgentResponder:
 
     def _handle_config_set(self, request: Any) -> Any:
         """Validate, apply, and return audit map for a config update."""
-        from robotsix_agent_comm.protocol import Error
+        from robotsix_agent_comm.protocol import ConfigContractError, Error
         from robotsix_agent_comm.protocol import Response as BrokerResponse
 
-        from .component_agent.config_contract import (
-            ConfigContractError,
-            apply_config_update,
-        )
+        from .component_agent.config_contract import apply_config_update
 
         body: dict[str, Any] = request.body or {}
         updates: dict[str, Any] = body.get("updates", {})

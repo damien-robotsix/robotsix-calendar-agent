@@ -60,7 +60,7 @@ docs = [
 ]
 
 [tool.uv.sources]
-robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" }  # pragma: allowlist secret
+robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "c46db6a937172db3c06cd40e96f0de027b644206" }  # pragma: allowlist secret
 robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "555b633624775c5cb4727f265a6659c953a3e992" }  # pragma: allowlist secret
 
 [tool.hatch.build.targets.wheel]

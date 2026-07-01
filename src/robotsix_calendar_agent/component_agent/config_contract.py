@@ -19,27 +19,9 @@ from collections.abc import Iterator
 from typing import Any
 
 from pydantic import ValidationError as PydanticValidationError
+from robotsix_agent_comm.protocol import ConfigContractError
 
 logger = logging.getLogger(__name__)
-
-
-# ---------------------------------------------------------------------------
-# Error
-# ---------------------------------------------------------------------------
-
-
-class ConfigContractError(Exception):
-    """Raised when a config operation fails validation.
-
-    Mirrors the shape of ``robotsix_agent_comm.protocol.Error`` so the
-    responder can translate it cleanly.
-    """
-
-    def __init__(self, code: str, message: str, details: Any = None) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-        self.details = details
 
 
 # ---------------------------------------------------------------------------

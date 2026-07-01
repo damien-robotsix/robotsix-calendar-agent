@@ -1,3 +1,6 @@
+## 0.0.0 (unreleased)
+
+- Migrate `ConfigContractError` from local definition to `robotsix_agent_comm.protocol.ConfigContractError`; bump `robotsix-agent-comm` pin to include the canonical implementation.
 # Changelog
 
 All notable changes to this project are documented in this file.

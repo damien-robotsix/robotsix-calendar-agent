@@ -22,6 +22,20 @@ _mock_agent_comm_sdk = MagicMock()
 _mock_agent_comm_protocol = MagicMock()
 _mock_agent_comm_transport = MagicMock()
 
+
+class _MockConfigContractError(Exception):
+    """Stand-in for ``robotsix_agent_comm.protocol.ConfigContractError``
+    used in tests so ``pytest.raises`` can match it natively."""
+
+    def __init__(self, code: str, message: str, details: Any = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.details = details
+
+
+_mock_agent_comm_protocol.ConfigContractError = _MockConfigContractError
+
 sys.modules["robotsix_agent_comm"] = _mock_agent_comm
 sys.modules["robotsix_agent_comm.sdk"] = _mock_agent_comm_sdk
 sys.modules["robotsix_agent_comm.protocol"] = _mock_agent_comm_protocol
