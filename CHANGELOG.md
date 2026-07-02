@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add robotsix stack standards reference link to README.md and AGENT.md.
 - Suppress Ruff T201 (print) for `healthcheck.py` — this is a standalone CLI script where `print()` is intentional output, not debug scaffolding.
 - Enable Ruff `T10` (debugger statement) and `EXE` (shebang/executable) rule families; make `healthcheck.py` executable to satisfy `EXE` shebang check.
 - Fix stale operation count in `intent_parser` module docstring (8 → 10) to reflect all calendar, contact, and task operation types.
