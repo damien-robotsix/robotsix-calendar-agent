@@ -10,7 +10,9 @@ from robotsix_calendar_agent.add_to_calendar_handler import (
     ERROR_MISSING_DATES,
     ERROR_MISSING_SUBJECT,
     _build_error_body,
+    _build_resolution_instruction,
     _event_to_dict,
+    _resolve_dates_via_llm,
     handle_add_to_calendar,
 )
 from robotsix_calendar_agent.caldav_client import CalendarEvent, OperationError
@@ -534,3 +536,419 @@ class TestHandleAddToCalendar:
         call_args = _mock_agent_comm_protocol.Response.to.call_args
         body = call_args[1]["body"]
         assert body["correlation_id"] == ""
+
+
+# ---------------------------------------------------------------------------
+# _build_resolution_instruction
+# ---------------------------------------------------------------------------
+
+
+class TestBuildResolutionInstruction:
+    def test_full_context_formats_correctly(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Team Lunch",
+            body_text="Let's meet at noon.",
+            email_date="2026-03-15",
+            extracted_dates=["2026-03-20", "noon"],
+        )
+        assert "Team Lunch" in instruction
+        assert "Email subject: Team Lunch" in instruction
+        assert "Email date: 2026-03-15" in instruction
+        assert "Date/time references found: 2026-03-20, noon" in instruction
+        assert "Let's meet at noon." in instruction
+        assert "Email body:" in instruction
+        assert "Resolve a concrete start and end datetime in ISO 8601" in instruction
+        assert "default the end to one hour after the start" in instruction
+
+    def test_minimal_context_no_optional_fields(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Quick Call",
+            body_text="",
+            email_date="",
+            extracted_dates=[],
+        )
+        assert "Email subject: Quick Call" in instruction
+        assert "Email date:" not in instruction
+        assert "Date/time references found:" not in instruction
+        assert "Email body:" not in instruction
+        assert "Resolve a concrete start and end datetime in ISO 8601" in instruction
+
+    def test_body_text_without_email_date_or_extracted_dates(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Reminder",
+            body_text="Don't forget!",
+            email_date="",
+            extracted_dates=[],
+        )
+        assert "Email subject: Reminder" in instruction
+        assert "Email date:" not in instruction
+        assert "Date/time references found:" not in instruction
+        assert "Email body:" in instruction
+        assert "Don't forget!" in instruction
+
+    def test_email_date_without_body_or_extracted_dates(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Event",
+            body_text="",
+            email_date="2026-06-01",
+            extracted_dates=[],
+        )
+        assert "Email subject: Event" in instruction
+        assert "Email date: 2026-06-01" in instruction
+        assert "Date/time references found:" not in instruction
+        assert "Email body:" not in instruction
+
+    def test_extracted_dates_without_body_or_email_date(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Booking",
+            body_text="",
+            email_date="",
+            extracted_dates=["Monday", "3pm"],
+        )
+        assert "Email subject: Booking" in instruction
+        assert "Email date:" not in instruction
+        assert "Date/time references found: Monday, 3pm" in instruction
+        assert "Email body:" not in instruction
+
+
+# ---------------------------------------------------------------------------
+# _resolve_dates_via_llm (direct)
+# ---------------------------------------------------------------------------
+
+
+class TestResolveDatesViaLlmDirect:
+    """Direct unit tests for _resolve_dates_via_llm()."""
+
+    def test_returns_none_when_intent_parser_is_none(self) -> None:
+        payload: dict[str, Any] = {
+            "subject": "Test",
+            "body_text": "Body",
+        }
+        result = _resolve_dates_via_llm(None, payload)
+        assert result is None
+
+    def test_successful_resolution_returns_dtstart_dtend(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {
+            "dtstart": "2026-06-01T12:00:00",
+            "dtend": "2026-06-01T13:00:00",
+        }
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {
+            "subject": "Lunch",
+            "body_text": "Let's eat.",
+            "email_date": "2026-05-30",
+            "extracted_dates": ["June 1st"],
+        }
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result == ("2026-06-01T12:00:00", "2026-06-01T13:00:00")
+
+    def test_non_create_event_operation_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "list_events"
+        parsed.params = {}
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_parser_raises_exception_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        intent_parser.parse.side_effect = RuntimeError("LLM unavailable")
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_missing_dtstart_in_params_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {"dtend": "2026-06-01T13:00:00"}
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_missing_dtend_in_params_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {"dtstart": "2026-06-01T12:00:00"}
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_empty_dtstart_string_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {
+            "dtstart": "",
+            "dtend": "2026-06-01T13:00:00",
+        }
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_empty_dtend_string_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {
+            "dtstart": "2026-06-01T12:00:00",
+            "dtend": "",
+        }
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_none_params_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = None
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_missing_operation_attribute_returns_none(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock(spec=[])
+        del parsed.operation  # ensure no operation attribute
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {"subject": "Test"}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result is None
+
+    def test_missing_payload_keys_default_safely(self) -> None:
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {
+            "dtstart": "2026-06-01T12:00:00",
+            "dtend": "2026-06-01T13:00:00",
+        }
+        intent_parser.parse.return_value = parsed
+
+        payload: dict[str, Any] = {}
+        result = _resolve_dates_via_llm(intent_parser, payload)
+        assert result == ("2026-06-01T12:00:00", "2026-06-01T13:00:00")
+        # Verify the instruction was built with empty defaults
+        call_arg = intent_parser.parse.call_args[0][0]
+        assert "Email subject: " in call_arg
+        assert "Email date:" not in call_arg
+        assert "Date/time references found:" not in call_arg
+        assert "Email body:" not in call_arg
+
+
+# ---------------------------------------------------------------------------
+# handle_add_to_calendar — LLM date resolution (integrated)
+# ---------------------------------------------------------------------------
+
+
+class TestHandleAddToCalendarLlm:
+    """Tests for handle_add_to_calendar() exercising the LLM fallback path.
+
+    These tests supply an intent_parser mock and omit explicit
+    suggested_dtstart / suggested_dtend so the handler must resolve
+    dates via the LLM path.
+    """
+
+    def _make_llm_payload(self, **overrides: object) -> dict[str, Any]:
+        """Build a payload WITHOUT explicit dates so the LLM path is used."""
+        base: dict[str, Any] = {
+            "subject": "Team Lunch",
+            "body_text": "Let's meet at noon.",
+            "email_date": "2026-03-15",
+            "extracted_dates": ["2026-03-20", "noon"],
+            "correlation_id": "corr-llm",
+        }
+        base.update(overrides)
+        return base
+
+    def _make_successful_parser(self) -> MagicMock:
+        """Return an intent_parser mock that resolves dates successfully."""
+        parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {
+            "dtstart": "2026-06-01T12:00:00",
+            "dtend": "2026-06-01T13:00:00",
+        }
+        parser.parse.return_value = parsed
+        return parser
+
+    def test_llm_resolution_success_creates_event(self) -> None:
+        caldav_client = MagicMock()
+        created_event = MagicMock(
+            uid="evt-llm-1",
+            summary="Team Lunch",
+            description="",
+            location="",
+            dtstart="2026-06-01T12:00:00",
+            dtend="2026-06-01T13:00:00",
+            calendar_id="cal",
+        )
+        caldav_client.create_event.return_value = created_event
+        request = MagicMock()
+        payload = self._make_llm_payload()
+        intent_parser = self._make_successful_parser()
+
+        handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=intent_parser
+        )
+
+        # Verify the parser was called with an instruction containing payload context
+        intent_parser.parse.assert_called_once()
+        instruction = intent_parser.parse.call_args[0][0]
+        assert "Team Lunch" in instruction
+        assert "2026-03-15" in instruction
+
+        # Verify a calendar event was created with the resolved dates
+        caldav_client.create_event.assert_called_once()
+        event_arg = caldav_client.create_event.call_args[0][0]
+        assert event_arg.dtstart == "2026-06-01T12:00:00"
+        assert event_arg.dtend == "2026-06-01T13:00:00"
+
+        # Verify success response
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["correlation_id"] == "corr-llm"
+        assert body["result"]["status"] == "created"
+        assert body["result"]["event"]["uid"] == "evt-llm-1"
+
+    def test_non_create_event_operation_falls_back_to_missing_dates(self) -> None:
+        caldav_client = MagicMock()
+        request = MagicMock()
+        payload = self._make_llm_payload()
+
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "list_events"
+        parsed.params = {}
+        intent_parser.parse.return_value = parsed
+
+        handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=intent_parser
+        )
+
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_MISSING_DATES
+        assert body["correlation_id"] == "corr-llm"
+
+    def test_parser_raises_exception_falls_back_to_missing_dates(self) -> None:
+        caldav_client = MagicMock()
+        request = MagicMock()
+        payload = self._make_llm_payload()
+
+        intent_parser = MagicMock()
+        intent_parser.parse.side_effect = RuntimeError("LLM down")
+
+        handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=intent_parser
+        )
+
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_MISSING_DATES
+
+    def test_missing_dtstart_in_params_falls_back_to_missing_dates(self) -> None:
+        caldav_client = MagicMock()
+        request = MagicMock()
+        payload = self._make_llm_payload()
+
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        parsed.params = {"dtend": "2026-06-01T13:00:00"}
+        intent_parser.parse.return_value = parsed
+
+        handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=intent_parser
+        )
+
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_MISSING_DATES
+
+    def test_intent_parser_none_without_explicit_dates_returns_missing_dates(
+        self,
+    ) -> None:
+        caldav_client = MagicMock()
+        request = MagicMock()
+        payload = self._make_llm_payload()
+
+        # Explicitly pass intent_parser=None (the default)
+        handle_add_to_calendar(caldav_client, request, payload, intent_parser=None)
+
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_MISSING_DATES
+
+    def test_llm_dates_still_validated_for_iso_and_ordering(self) -> None:
+        """LLM-resolved dates still go through ISO parsing and dtend>dtstart check."""
+        caldav_client = MagicMock()
+        request = MagicMock()
+        payload = self._make_llm_payload()
+
+        intent_parser = MagicMock()
+        parsed = MagicMock()
+        parsed.operation = "create_event"
+        # dtend before dtstart — should fail validation
+        parsed.params = {
+            "dtstart": "2026-06-01T13:00:00",
+            "dtend": "2026-06-01T12:00:00",
+        }
+        intent_parser.parse.return_value = parsed
+
+        handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=intent_parser
+        )
+
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["error"]["code"] == ERROR_INVALID_DATES
+
+    def test_llm_resolution_with_explicit_dates_skips_llm(self) -> None:
+        """When explicit dates are present, the LLM path is skipped entirely."""
+        caldav_client = MagicMock()
+        created_event = MagicMock(
+            uid="evt-explicit",
+            summary="Test",
+            description="",
+            location="",
+            dtstart="2026-03-15T09:00:00",
+            dtend="2026-03-15T10:00:00",
+            calendar_id="cal",
+        )
+        caldav_client.create_event.return_value = created_event
+        request = MagicMock()
+        payload = _make_payload()  # has explicit suggested_dtstart/dtend
+
+        intent_parser = MagicMock()
+        # intent_parser.parse should never be called
+        handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=intent_parser
+        )
+
+        intent_parser.parse.assert_not_called()
+        call_args = _mock_agent_comm_protocol.Response.to.call_args
+        body = call_args[1]["body"]
+        assert body["result"]["status"] == "created"
