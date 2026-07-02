@@ -1,5 +1,7 @@
 # robotsix-calendar-agent — agent guidance
 
+This repo follows the [robotsix stack standards](https://github.com/damien-robotsix/robotsix-standards).
+
 ## Scope & design
 
 **Stateless agent** that brokers natural-language calendar/contact
