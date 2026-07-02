@@ -14,7 +14,7 @@ agent-comm Request → CalendarAgent → IntentParser (llmio)
 
 1. A natural-language instruction arrives as an agent-comm `Request`.
 2. `CalendarAgent` passes the instruction to `IntentParser`, which uses
-   `robotsix-llmio` to classify it into one of 8 operations and extract
+   `robotsix-llmio` to classify it into one of 10 operations and extract
    structured parameters.
 3. The parsed intent is dispatched to `CalDavClient`, which wraps the
    `caldav` library to perform CRUD operations against the Radicale server.
@@ -133,10 +133,12 @@ docker compose up calendar-agent
 
 | Operation | Example instruction | Key params |
 |---|---|---|
+| `list_calendars` | "what calendars do I have" | (none) |
 | `list_events` | "list events this week" | `start`, `end` (ISO 8601) |
 | `create_event` | "add a dentist appointment next Tuesday at 3pm" | `summary`, `dtstart`, `dtend` |
 | `update_event` | "reschedule the dentist to 4pm" | `uid`, updated fields |
 | `delete_event` | "cancel the dentist appointment" | `uid` |
+| `list_tasks` | "show me my pending tasks" | `calendar_id?` |
 | `list_contacts` | "show all contacts" | (none) |
 | `create_contact` | "add John Doe, john@example.com" | `full_name`, `email`, `phone` |
 | `update_contact` | "change John's email to john.doe@example.com" | `uid`, updated fields |

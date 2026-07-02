@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Fix stale operation count in docs: update "8 operations" → "10 operations" and add missing `list_calendars` and `list_tasks` rows to the operations reference table.
 - Add robotsix stack standards reference link to README.md and AGENT.md.
 - Suppress Ruff T201 (print) for `healthcheck.py` — this is a standalone CLI script where `print()` is intentional output, not debug scaffolding.
 - Enable Ruff `T10` (debugger statement) and `EXE` (shebang/executable) rule families; make `healthcheck.py` executable to satisfy `EXE` shebang check.
