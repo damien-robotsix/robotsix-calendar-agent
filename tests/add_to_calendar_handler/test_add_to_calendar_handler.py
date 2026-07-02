@@ -728,8 +728,11 @@ class TestResolveDatesViaLlmDirect:
 
     def test_missing_operation_attribute_returns_none(self) -> None:
         intent_parser = MagicMock()
+        # spec=[] allows only intrinsic mock attributes — accessing .operation
+        # raises AttributeError, which getattr() in the production code
+        # catches and defaults to "", causing the != "create_event" guard
+        # to return None.
         parsed = MagicMock(spec=[])
-        del parsed.operation  # ensure no operation attribute
         intent_parser.parse.return_value = parsed
 
         payload: dict[str, Any] = {"subject": "Test"}
