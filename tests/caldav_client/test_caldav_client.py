@@ -1148,3 +1148,92 @@ class TestCaldavExceptionMapping:
         with pytest.raises(OperationError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "caldav_error"
+
+
+# ---------------------------------------------------------------------------
+# ADR structured-value parsing (lines 301-323 of _to_contact)
+# ---------------------------------------------------------------------------
+
+
+class TestAdrParsing:
+    """Tests for the hand-rolled ADR structured-value parsing in ``_to_contact``.
+
+    Exercises the while-loop that handles ``\\;`` backslash-escaping,
+    ``\\n`` newline escaping, multi-component splitting, and empty-component
+    filtering.
+    """
+
+    @staticmethod
+    def _vcard_with_adr(adr_value: str) -> MagicMock:
+        """Build a mock vCard object with a specific raw ADR field."""
+        obj = MagicMock()
+        obj.data = (
+            "BEGIN:VCARD\n"
+            "VERSION:3.0\n"
+            "UID:cnt-1\n"
+            "FN:Test Person\n"
+            f"ADR:{adr_value}\n"
+            "END:VCARD\n"
+        )
+        return obj
+
+    def test_full_seven_component_address(self) -> None:
+        """All 7 vCard ADR components are joined with ``", "``."""
+        obj = self._vcard_with_adr(
+            "PO Box 123;Suite 100;123 Main St;Springfield;IL;62701;USA"
+        )
+        contact = CalDavClient._to_contact(obj)
+        assert (
+            contact.address
+            == "PO Box 123, Suite 100, 123 Main St, Springfield, IL, 62701, USA"
+        )
+
+    def test_escaped_semicolon_within_component(self) -> None:
+        r"""``\\;`` produces a literal ``;`` inside a component, not a separator."""
+        obj = self._vcard_with_adr(
+            ";;123 Main St\\; Suite 100;Springfield;IL;62701;USA"
+        )
+        contact = CalDavClient._to_contact(obj)
+        assert contact.address == "123 Main St; Suite 100, Springfield, IL, 62701, USA"
+
+    def test_newline_escape_within_component(self) -> None:
+        r"""``\\n`` produces a literal newline inside a component."""
+        obj = self._vcard_with_adr(";;123 Main St\\nApt 4B;Springfield;IL;62701;USA")
+        contact = CalDavClient._to_contact(obj)
+        assert contact.address == "123 Main St\nApt 4B, Springfield, IL, 62701, USA"
+
+    def test_empty_leading_components(self) -> None:
+        """Empty leading components are filtered out of the joined result."""
+        obj = self._vcard_with_adr(";;;Springfield;IL;62701;USA")
+        contact = CalDavClient._to_contact(obj)
+        assert contact.address == "Springfield, IL, 62701, USA"
+
+    def test_trailing_empty_components(self) -> None:
+        """Trailing empty components are filtered out of the joined result."""
+        obj = self._vcard_with_adr("123 Main St;Springfield;IL;;;;")
+        contact = CalDavClient._to_contact(obj)
+        assert contact.address == "123 Main St, Springfield, IL"
+
+    def test_unicode_characters_in_address(self) -> None:
+        """Unicode characters are preserved across the parsing loop."""
+        obj = self._vcard_with_adr(
+            ";;Rue de la République 42;Café;Île-de-France;75001;France"
+        )
+        contact = CalDavClient._to_contact(obj)
+        assert (
+            contact.address
+            == "Rue de la République 42, Café, Île-de-France, 75001, France"
+        )
+
+    def test_no_adr_field(self) -> None:
+        """A vCard with no ADR field at all yields an empty address string."""
+        obj = MagicMock()
+        obj.data = "BEGIN:VCARD\nVERSION:3.0\nUID:cnt-1\nFN:Test Person\nEND:VCARD\n"
+        contact = CalDavClient._to_contact(obj)
+        assert contact.address == ""
+
+    def test_address_in_sixth_component(self) -> None:
+        """Address placed in the 6th component (postal) — the existing pattern."""
+        obj = self._vcard_with_adr(";;;;;62701;USA")
+        contact = CalDavClient._to_contact(obj)
+        assert contact.address == "62701, USA"
