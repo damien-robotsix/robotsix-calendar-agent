@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add maintenance triage boilerplate: documents the CI failure routing pattern with action verbs (`fork_repo`, `noop`, `notify`), decision criteria, and spawning conventions.
 - Add triage SKIP boilerplate pattern (`.robotsix-mill/boilerplate/triage-skip-boilerplate.md`) — defines when to fast-path implementation-ready drafts past the refine stage.
 - Add `triage_boilerplate` periodic workflow presence file (`.robotsix-mill/periodic/triage_boilerplate.yaml`) to enable the boilerplate response template scanning workflow.
 - Fix stale operation count in docs: update "8 operations" → "10 operations" and add missing `list_calendars` and `list_tasks` rows to the operations reference table.
