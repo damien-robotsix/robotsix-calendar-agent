@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add `triage_boilerplate` periodic workflow presence file (`.robotsix-mill/periodic/triage_boilerplate.yaml`) to enable the boilerplate response template scanning workflow.
 - Fix stale operation count in docs: update "8 operations" → "10 operations" and add missing `list_calendars` and `list_tasks` rows to the operations reference table.
 - Add robotsix stack standards reference link to README.md and AGENT.md.
 - Suppress Ruff T201 (print) for `healthcheck.py` — this is a standalone CLI script where `print()` is intentional output, not debug scaffolding.
