@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Remove dead `_DEFAULT_AGENT_ID` constant from `brokered_entrypoint.py` — all callers use `Settings.CALENDAR_AGENT_ID` since commit `962b0ed`.
 - Add maintenance triage boilerplate: documents the CI failure routing pattern with action verbs (`fork_repo`, `noop`, `notify`), decision criteria, and spawning conventions.
 - Add triage SKIP boilerplate pattern (`.robotsix-mill/boilerplate/triage-skip-boilerplate.md`) — defines when to fast-path implementation-ready drafts past the refine stage.
 - Add `triage_boilerplate` periodic workflow presence file (`.robotsix-mill/periodic/triage_boilerplate.yaml`) to enable the boilerplate response template scanning workflow.

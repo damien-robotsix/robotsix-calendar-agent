@@ -36,10 +36,6 @@ logger = logging.getLogger(__name__)
 
 __all__ = ["COMPONENT_KINDS", "ComponentAgentResponder", "main"]
 
-#: Agent id the calendar agent registers under on the broker. auto-mail
-#: addresses calendar requests to this exact id.
-_DEFAULT_AGENT_ID = "robotsix-calendar"
-
 
 def _build_brokered_agent() -> Any:
     """Build a :class:`BrokeredAgent` from the ``BROKER_*`` env vars.
