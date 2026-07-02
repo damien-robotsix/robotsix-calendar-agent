@@ -129,7 +129,7 @@ class TestParse:
         expected_op: CalendarOperation | ContactOperation | TaskOperation,
         expected_params: dict[str, Any],
     ) -> None:
-        """Verify all 8 operation types are classified correctly."""
+        """Verify all 10 operation types are classified correctly."""
         _mock_llmio_core.reset_mock(return_value=True, side_effect=True)
         _setup_llmio_mock(_mock_run_agent(str(expected_op), expected_params))
 
