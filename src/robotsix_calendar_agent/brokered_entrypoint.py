@@ -357,7 +357,7 @@ def _build_component_responder(settings: Any) -> Any | None:
     """
     try:
         sdk_available = importlib.util.find_spec("robotsix_agent_comm") is not None
-    except (ValueError, ImportError):
+    except ValueError, ImportError:
         sdk_available = False
     if not sdk_available:
         logger.info("Component-agent responder disabled: robotsix_agent_comm not found")

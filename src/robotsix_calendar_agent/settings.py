@@ -74,7 +74,7 @@ class Settings(BaseSettings):
         else:
             try:
                 port = int(v)
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 raise ValueError(_PORT_MSG) from None
         if port < 1 or port > 65535:
             raise ValueError(_PORT_MSG)
