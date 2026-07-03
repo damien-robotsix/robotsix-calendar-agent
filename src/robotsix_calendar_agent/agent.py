@@ -73,12 +73,10 @@ class CalendarAgent:
         llm_model_config: Forwarded to :class:`IntentParser` for llmio
             model selection.
         agent: The agent-comm client to wire the request handler onto and
-            drive via :meth:`start`/:meth:`stop` — a
-            :class:`robotsix_agent_comm.sdk.BrokeredAgent` for the brokered
-            service (see ``brokered_entrypoint``), or any object exposing
-            ``on_request``/``start``/``stop``. When ``None`` (the default), an
-            in-process :class:`robotsix_agent_comm.sdk.Agent` is created for
-            back-compat (tests / single-process use).
+            drive via :meth:`start`/:meth:`stop` — any object exposing
+            ``on_request``/``start``/``stop``. An in-process
+            :class:`robotsix_agent_comm.sdk.Agent` with a
+            :class:`robotsix_agent_comm.transport.Registry` is always created.
 
     Raises:
         ValueError: If Radicale credentials are missing after
@@ -93,7 +91,6 @@ class CalendarAgent:
         radicale_username: str | None = None,
         radicale_password: str | None = None,
         llm_model_config: dict[str, Any] | None = None,
-        agent: Any | None = None,
         component_responder: Any | None = None,
     ) -> None:
         from .settings import Settings
@@ -121,11 +118,10 @@ class CalendarAgent:
         )
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
-        if agent is None:
-            from robotsix_agent_comm.sdk import Agent as AgentCommAgent
-            from robotsix_agent_comm.transport import Registry
+        from robotsix_agent_comm.sdk import Agent as AgentCommAgent
+        from robotsix_agent_comm.transport import Registry
 
-            agent = AgentCommAgent(agent_id, Registry())
+        agent = AgentCommAgent(agent_id, Registry())
 
         self._agent = agent
         self._agent.on_request(self._handle_request)

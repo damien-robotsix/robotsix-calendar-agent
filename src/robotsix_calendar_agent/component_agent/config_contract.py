@@ -33,7 +33,6 @@ _REDACTED = "***"
 _SECRET_FIELDS: frozenset[str] = frozenset(
     {
         "radicale_password",
-        "broker_agent_token",
         "component_agent_token",
     }
 )
@@ -56,12 +55,6 @@ def _is_secret_field(key: str) -> bool:
 #: * ``radicale_url``, ``radicale_username``, ``radicale_password`` —
 #:   the ``CalDavClient`` is already connected; changing identity
 #:   requires a full reconnect.
-#: * ``calendar_agent_transport``, ``calendar_agent_id`` — transport
-#:   mode and agent identity are fixed at process start.
-#: * ``broker_host``, ``broker_port``, ``broker_scheme``,
-#:   ``broker_agent_token``, ``broker_tls_ca``, ``broker_client_cert``,
-#:   ``broker_client_key`` — the broker connection is established once
-#:   and cannot be reconfigured at runtime.
 #: * ``component_agent_enabled``, ``component_agent_token``,
 #:   ``component_agent_id`` — component-agent gating is also
 #:   startup-only.
