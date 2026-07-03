@@ -1,5 +1,8 @@
 ## 0.0.0 (unreleased)
 
+- Deduplicate `__all__` between `__init__.py` and `agent.py`: `__init__.py` now imports
+  `__all__` from `agent` and extends it with `__version__`, eliminating the manual
+  duplicate list that could drift.
 - Add Dependabot auto-merge caller workflow (`.github/workflows/dependabot-auto-merge.yml`).
 - Remove dead `_DEFAULT_AGENT_ID` constant from `brokered_entrypoint.py` — all callers use `Settings.CALENDAR_AGENT_ID` since commit `962b0ed`.
 - Add maintenance triage boilerplate: documents the CI failure routing pattern with action verbs (`fork_repo`, `noop`, `notify`), decision criteria, and spawning conventions.
