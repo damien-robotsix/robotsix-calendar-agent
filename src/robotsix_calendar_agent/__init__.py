@@ -8,7 +8,7 @@ against a Radicale server.
 
 from __future__ import annotations
 
-from .agent import (
+from .agent import (  # noqa: F401 — re-exports for package namespace
     CalDavClient,
     CalendarAgent,
     CalendarEvent,
@@ -22,21 +22,8 @@ from .agent import (
     Task,
     TaskOperation,
 )
+from .agent import __all__ as _agent_all
 
-__all__ = [
-    "CalDavClient",
-    "CalendarAgent",
-    "CalendarEvent",
-    "CalendarOperation",
-    "Contact",
-    "ContactOperation",
-    "IntentParseError",
-    "IntentParser",
-    "OperationError",
-    "ParsedIntent",
-    "Task",
-    "TaskOperation",
-    "__version__",
-]
+__all__ = [*_agent_all, "__version__"]
 
 __version__ = "0.1.0"
