@@ -72,11 +72,11 @@ class CalendarAgent:
             ``RADICALE_PASSWORD``).
         llm_model_config: Forwarded to :class:`IntentParser` for llmio
             model selection.
-        agent: The agent-comm client to wire the request handler onto and
-            drive via :meth:`start`/:meth:`stop` — any object exposing
-            ``on_request``/``start``/``stop``. An in-process
-            :class:`robotsix_agent_comm.sdk.Agent` with a
-            :class:`robotsix_agent_comm.transport.Registry` is always created.
+        component_responder: Optional :class:`ComponentAgentResponder`
+            wired into the request dispatch for management-kind handling
+            (``monitor``, ``config-get``, ``config-set``). Built by
+            :func:`entrypoint.main` and passed here; ``None`` when the
+            component-agent feature is disabled.
 
     Raises:
         ValueError: If Radicale credentials are missing after
