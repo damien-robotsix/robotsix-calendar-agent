@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Pin git version in Dockerfile apt-get install to satisfy hadolint DL3008
 - Bump `requires-python` to `>=3.14` and align tooling: ruff `target-version` → `py314`,
   mypy `python_version` → `3.14`.
 - Update Dockerfile base images to `python:3.14-slim-bookworm` (builder & runtime stages).
