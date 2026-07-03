@@ -5,8 +5,8 @@
 | Name                                                               |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |------------------------------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/robotsix\_calendar\_agent/\_\_init\_\_.py                      |        5 |        0 |        0 |        0 |    100% |           |
-| src/robotsix\_calendar\_agent/add\_to\_calendar\_handler.py        |      103 |        0 |       28 |        0 |    100% |           |
-| src/robotsix\_calendar\_agent/agent.py                             |      230 |       12 |       68 |        5 |     94% |143, 182-184, 199-207, 390-\>393, 500, 628-\>630 |
+| src/robotsix\_calendar\_agent/add\_to\_calendar\_handler.py        |      107 |        0 |       32 |        0 |    100% |           |
+| src/robotsix\_calendar\_agent/agent.py                             |      218 |       12 |       58 |        4 |     93% |143, 182-184, 199-207, 489, 617-\>619 |
 | src/robotsix\_calendar\_agent/brokered\_entrypoint.py              |      137 |        3 |       32 |        4 |     96% |86-\>88, 204, 315-\>322, 317-\>316, 369-370 |
 | src/robotsix\_calendar\_agent/caldav\_client.py                    |      366 |       26 |       96 |        9 |     92% |124, 160, 281, 303-305, 311-313, 320-323, 464-465, 475-478, 705, 744, 845-851 |
 | src/robotsix\_calendar\_agent/component\_agent/\_\_init\_\_.py     |        5 |        0 |        0 |        0 |    100% |           |
@@ -15,7 +15,7 @@
 | src/robotsix\_calendar\_agent/intent\_parser.py                    |       56 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/logging\_config.py                   |       24 |        0 |        6 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/settings.py                          |       52 |        0 |        8 |        0 |    100% |           |
-| **TOTAL**                                                          | **1067** |   **43** |  **272** |   **18** | **95%** |           |
+| **TOTAL**                                                          | **1059** |   **43** |  **266** |   **17** | **95%** |           |
 
 
 ## Setup coverage badge
