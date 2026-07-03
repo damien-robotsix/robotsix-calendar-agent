@@ -7,6 +7,8 @@ permissions:
   contents: read
   packages: read
   security-events: write
+
+# hand-rolled: no shared weekly-container-scan workflow in robotsix-github-workflows
 jobs:
   weekly-scan:
     runs-on: ubuntu-latest

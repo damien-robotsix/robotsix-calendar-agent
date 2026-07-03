@@ -9,12 +9,26 @@ permissions:
 
 jobs:
   security:
-    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-security.yml@5cd8c1facb02299da618979e7a55f1953f9c075a  # main
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-security.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
     with:
       install-extras: ""
       trufflehog-pr-diff: true
       trufflehog-extra-args: "--results=verified,unknown"
 
+  baseline:
+    permissions:
+      contents: read
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/baseline-check.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
+    with:
+      has-docker: true
+
+  docker-pr-scan:
+    permissions:
+      contents: read
+      security-events: write
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/docker-pr-scan.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
+
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   lockfile-check:
     runs-on: ubuntu-latest
     steps:
@@ -24,6 +38,7 @@ jobs:
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv lock --check
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   vulture:
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +48,7 @@ jobs:
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
       - run: uv run --frozen vulture src/ vulture_whitelist.py
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   dependency-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -49,6 +65,7 @@ jobs:
           done
           exit 1
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   dependency-review:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -63,6 +80,7 @@ jobs:
         with:
           config-file: .github/dependency-review-config.yml
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   workflow-audit:
     runs-on: ubuntu-latest
     permissions:
@@ -79,6 +97,7 @@ jobs:
         with:
           sarif_file: zizmor.sarif
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   actionlint:
     runs-on: ubuntu-latest
     steps:
@@ -87,6 +106,7 @@ jobs:
           persist-credentials: false
       - uses: rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca  # v1.7.12
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   commitizen-check:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -109,7 +129,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-ci.yml@5cd8c1facb02299da618979e7a55f1953f9c075a  # main
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-ci.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
     with:
       python-version: ${{ matrix.python-version }}
       install-extras: ""
@@ -117,6 +137,7 @@ jobs:
       coverage-threshold: "85"
       mypy-advisory: false
 
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   coverage-report:
     if: ${{ !cancelled() }}
     needs: [ci]

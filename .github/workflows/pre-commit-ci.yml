@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
 
+# hand-rolled: no shared pre-commit workflow in robotsix-github-workflows
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
