@@ -610,6 +610,56 @@ class TestBuildResolutionInstruction:
         assert "Date/time references found: Monday, 3pm" in instruction
         assert "Email body:" not in instruction
 
+    def test_description_included_when_present(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Team Lunch",
+            body_text="Let's meet at noon.",
+            email_date="2026-03-15",
+            extracted_dates=["2026-03-20"],
+            description="Monthly team gathering",
+        )
+        assert "Description: Monthly team gathering" in instruction
+
+    def test_location_included_when_present(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Team Lunch",
+            body_text="Let's meet at noon.",
+            email_date="2026-03-15",
+            extracted_dates=["2026-03-20"],
+            location="Conference Room B",
+        )
+        assert "Location: Conference Room B" in instruction
+
+    def test_description_and_location_both_included(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Team Lunch",
+            body_text="Let's meet at noon.",
+            email_date="2026-03-15",
+            extracted_dates=["2026-03-20"],
+            description="Monthly team gathering",
+            location="Conference Room B",
+        )
+        assert "Description: Monthly team gathering" in instruction
+        assert "Location: Conference Room B" in instruction
+        # Verify description and location appear before email_date
+        desc_idx = instruction.index("Description:")
+        loc_idx = instruction.index("Location:")
+        ed_idx = instruction.index("Email date:")
+        assert desc_idx < ed_idx
+        assert loc_idx < ed_idx
+
+    def test_empty_description_and_location_not_included(self) -> None:
+        instruction = _build_resolution_instruction(
+            subject="Team Lunch",
+            body_text="Let's meet at noon.",
+            email_date="2026-03-15",
+            extracted_dates=["2026-03-20"],
+            description="",
+            location="",
+        )
+        assert "Description:" not in instruction
+        assert "Location:" not in instruction
+
 
 # ---------------------------------------------------------------------------
 # _resolve_dates_via_llm (direct)
