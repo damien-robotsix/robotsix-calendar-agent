@@ -15,8 +15,6 @@ code blocks, fill in your credentials, and run.
 
 ## Intermediate
 
-- **[Brokered Service](intermediate/brokered-service.md)** — deploy the
-  agent as a long-lived, TLS-authenticated service with Docker Compose.
 - **[Component-Agent Management](intermediate/component-agent-management.md)** —
   enable the management plane and use `monitor`, `config-get`, and
   `config-set` to inspect and reconfigure the agent at runtime.

@@ -189,7 +189,5 @@ equivalent of CalDAV) automatically.
 
 ## Next steps
 
-- [Brokered Service](../intermediate/brokered-service.md) — run the agent as
-  a long-lived, network-connected service.
 - [Component-Agent Management](../intermediate/component-agent-management.md) —
   monitor, inspect, and reconfigure the agent at runtime.

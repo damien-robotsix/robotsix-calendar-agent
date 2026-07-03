@@ -72,12 +72,7 @@ print(response.body)
 
 ## Deployment
 
-The agent supports two transport modes, selected by the
-`CALENDAR_AGENT_TRANSPORT` environment variable.
-
-### In-process transport (`inprocess`, default)
-
-The agent constructs its own in-memory
+The agent runs in-process via an in-memory
 `robotsix_agent_comm.transport.Registry`. This is the zero-config path
 used by tests and single-process deployments where a requester and the
 calendar agent live in the same process:
@@ -87,46 +82,6 @@ from robotsix_calendar_agent import CalendarAgent
 
 agent = CalendarAgent()  # transport=None → in-process Registry
 agent.start()
-```
-
-### Brokered transport (`brokered`)
-
-The agent connects to a secured, TLS-authenticated broker and runs as an
-independent long-lived service. The broker pushes dispatched messages to
-the agent's handler. Connection details come from the `BROKER_*`
-environment variables (see the configuration reference below).
-
-A console-script entrypoint, `calendar-agent`, drives the long-lived
-service. It reads `CALENDAR_AGENT_TRANSPORT`, builds the selected
-transport, starts the agent, and blocks until `SIGTERM`/`SIGINT`, on
-which it stops the agent and exits cleanly:
-
-```bash
-export CALENDAR_AGENT_TRANSPORT=brokered
-export BROKER_HOST=broker.example.com
-export BROKER_TLS_CA=/certs/ca.pem
-export BROKER_AGENT_TOKEN=your-broker-token
-calendar-agent
-```
-
-### Docker / Compose
-
-A `Dockerfile` at the repo root packages the agent (defaulting to
-`CALENDAR_AGENT_TRANSPORT=brokered`) and runs the `calendar-agent`
-console-script:
-
-```bash
-docker build -t calendar-agent .
-```
-
-A `docker-compose.yml` defines the `calendar-agent` service alongside a
-`broker` service (the broker's real definition lives in the
-`robotsix-agent-comm` repo). TLS material is mounted read-only and all
-broker environment variables are wired in; the service restarts
-`unless-stopped`:
-
-```bash
-docker compose up calendar-agent
 ```
 
 ## Operations reference
@@ -156,15 +111,7 @@ reference.
 | `RADICALE_URL` | Yes | — | Radicale server URL |
 | `RADICALE_USERNAME` | Yes | — | Radicale username |
 | `RADICALE_PASSWORD` | Yes | — | Radicale password |
-| `CALENDAR_AGENT_TRANSPORT` | No | `inprocess` | Transport mode: `inprocess` (in-memory `Registry`) or `brokered` |
-| `CALENDAR_AGENT_ID` | No | `robotsix-calendar` | Agent identity registered on the broker |
-| `BROKER_HOST` | When brokered | — | Broker hostname/IP |
-| `BROKER_PORT` | No | `9090` | Broker port |
-| `BROKER_SCHEME` | When brokered | `https` | Broker URL scheme (`http` or `https`) |
-| `BROKER_TLS_CA` | When brokered | — | Path to CA certificate PEM for verifying the broker |
-| `BROKER_CLIENT_CERT` | No | — | Path to client certificate PEM (mTLS, optional) |
-| `BROKER_CLIENT_KEY` | No | — | Path to client key PEM (mTLS, optional) |
-| `BROKER_AGENT_TOKEN` | When brokered | — | Authentication token for the broker |
+
 
 ### Constructor options (`CalendarAgent`)
 

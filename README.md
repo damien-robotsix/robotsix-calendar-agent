@@ -9,11 +9,6 @@ No CLI, no web UI, no separate HTTP API — agent-comm intake only.
 
 This repo follows the [robotsix stack standards](https://github.com/damien-robotsix/robotsix-standards).
 
-It can run in-process (default) or as a long-lived brokered service via
-the `calendar-agent` console-script entrypoint, with a `Dockerfile` and
-`docker-compose.yml` for containerised deployment against a secured
-TLS broker.
-
 ## Status
 
 ![coverage](https://raw.githubusercontent.com/damien-robotsix/robotsix-calendar-agent/python-coverage-comment-action-data/badge.svg)

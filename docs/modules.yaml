@@ -75,8 +75,7 @@ modules:
       - tests/entrypoint/__init__.py
       - tests/entrypoint/test_entrypoint.py
     doc_paths:
-      - docs/reference/brokered_entrypoint.md
-      - docs/tutorials/intermediate/brokered-service.md
+      - docs/reference/entrypoint.md
     depends_on:
       - agent
       - settings
