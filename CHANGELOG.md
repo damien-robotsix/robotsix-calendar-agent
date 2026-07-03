@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add ``__main__.py`` to support ``python -m robotsix_calendar_agent`` invocation, following the Uvicorn pattern.
 - Move entrypoint tests from `tests/brokered_entrypoint/` (deleted) to `tests/entrypoint/test_entrypoint.py`, dropping broker-specific test classes and updating imports to `robotsix_calendar_agent.entrypoint`.
 - Remove all broker-related documentation: BROKER_* env vars, brokered transport mode, brokered_entrypoint references,
   and the brokered-service tutorial — replaced with in-process-only docs and entrypoint module reference
