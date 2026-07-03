@@ -105,7 +105,7 @@ src/robotsix_calendar_agent/
 
 ## Periodic workflows
 
-This repo is targeted by **14 periodic agent workflows** (second-highest
+This repo is targeted by **15 periodic agent workflows** (second-highest
 in the fleet). Key ones referenced above:
 
 - `env_doc_sync` — enforces `docs/configuration.md` ↔ `settings.py` consistency
