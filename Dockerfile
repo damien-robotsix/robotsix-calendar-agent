@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Builder stage: installs build dependencies and creates the virtualenv.
-FROM python:3.12-slim-bookworm@sha256:db8e83a44af476c636a6a753adace39ad37863b63c0afd2862db7bbafeeb3944 AS builder
+FROM python:3.14-slim-bookworm AS builder
 
 # Install uv from the official image.
 COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 
 # Runtime stage: minimal image with only the virtualenv and source.
-FROM python:3.12-slim-bookworm@sha256:db8e83a44af476c636a6a753adace39ad37863b63c0afd2862db7bbafeeb3944 AS runtime
+FROM python:3.14-slim-bookworm AS runtime
 
 # Create a dedicated non-root user.
 RUN groupadd -g 1001 app && useradd -u 1001 -g app -m -d /app -s /bin/false app

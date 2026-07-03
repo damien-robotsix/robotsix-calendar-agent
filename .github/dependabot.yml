@@ -17,6 +17,16 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
+    groups:
+      all-actions:
+        patterns: ["*"]
+
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
@@ -32,6 +42,3 @@ updates:
     open-pull-requests-limit: 10
     cooldown:
       default-days: 7
-    groups:
-      all-actions:
-        patterns: ["*"]
