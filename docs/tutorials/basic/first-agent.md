@@ -121,7 +121,7 @@ uv run python hello_calendar.py
 
 - [Managing Calendar Events](manage-events.md) — create, update, and delete
   events with natural language.
-- [Brokered Service](../intermediate/brokered-service.md) — deploy the agent
-  as a long-lived, TLS-authenticated service.
+- [Component-Agent Management](../intermediate/component-agent-management.md) —
+  monitor, inspect, and reconfigure the agent at runtime.
 - [Configuration](../../configuration.md) — complete environment variable
   reference.

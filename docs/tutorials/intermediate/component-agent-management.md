@@ -2,14 +2,12 @@
 
 The calendar agent has an **optional** management plane that answers
 three additional request kinds — `monitor`, `config-get`, and
-`config-set` — on the same broker connection that carries calendar
+`config-set` — on the same agent-comm connection that carries calendar
 instructions.  This tutorial shows you how to enable it and use each
 kind.
 
-**Prerequisites:** The brokered agent from the
-[Brokered Service](brokered-service.md) tutorial should be running (or
-the in-process setup from [Your First Agent](../basic/first-agent.md) —
-both work).
+**Prerequisites:** The in-process setup from
+[Your First Agent](../basic/first-agent.md) should be running.
 
 ---
 
@@ -38,7 +36,7 @@ directly and pass it via the calendar agent constructor.  The
 presumed satisfied (see the environment variables above).
 
 ```python
-from robotsix_calendar_agent.brokered_entrypoint import ComponentAgentResponder
+from robotsix_calendar_agent.entrypoint import ComponentAgentResponder
 from robotsix_calendar_agent.settings import Settings
 
 settings = Settings()
@@ -110,7 +108,7 @@ for key, desc in response.body["descriptors"].items():
     print(f"{key}: type={desc['type']}, settable={desc['settable']}")
 ```
 
-Secret values (`radicale_password`, `broker_agent_token`,
+Secret values (`radicale_password`,
 `component_agent_token`) are replaced with the sentinel `"***"`.
 Real secrets are never exposed through the management API.
 
@@ -170,7 +168,7 @@ from robotsix_agent_comm.sdk import Agent
 from robotsix_agent_comm.transport import Registry
 
 from robotsix_calendar_agent import CalendarAgent
-from robotsix_calendar_agent.brokered_entrypoint import ComponentAgentResponder
+from robotsix_calendar_agent.entrypoint import ComponentAgentResponder
 from robotsix_calendar_agent.settings import Settings
 
 settings = Settings()

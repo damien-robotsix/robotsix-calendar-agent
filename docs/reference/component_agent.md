@@ -6,15 +6,15 @@ manageable component.
 
 ## Overview
 
-- **`ComponentAgentResponder`** (`brokered_entrypoint.py`) — dispatches
+- **`ComponentAgentResponder`** (`entrypoint.py`) — dispatches
   `monitor`, `config-get`, and `config-set` request kinds.
 - **`ConfigContract`** (`config_contract.py`) — validates and applies
   config updates with redaction, audit, and live-apply.
 - **`ComponentAgentSettings`** (`settings.py`) — gates the responder
   (disabled by default, token-required-when-enabled).
 
-When enabled, the responder composes onto the **existing**
-`BrokeredAgent` connection (no second agent-id registration).
+When enabled, the responder composes onto the existing in-process agent
+connection (no second agent-id registration).
 
 ## Request Kinds
 
@@ -39,7 +39,7 @@ variables and settable keys.
 
 ## API Reference
 
-::: robotsix_calendar_agent.brokered_entrypoint.ComponentAgentResponder
+::: robotsix_calendar_agent.entrypoint.ComponentAgentResponder
     options:
       members:
         - on_request

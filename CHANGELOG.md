@@ -1,6 +1,8 @@
 ## 0.0.0 (unreleased)
 
 - Move entrypoint tests from `tests/brokered_entrypoint/` (deleted) to `tests/entrypoint/test_entrypoint.py`, dropping broker-specific test classes and updating imports to `robotsix_calendar_agent.entrypoint`.
+- Remove all broker-related documentation: BROKER_* env vars, brokered transport mode, brokered_entrypoint references,
+  and the brokered-service tutorial — replaced with in-process-only docs and entrypoint module reference
 - Remove broker transport: delete `brokered_entrypoint.py`, replace with `entrypoint.py` (in-process only); remove `BROKER_*`/`CALENDAR_AGENT_TRANSPORT`/`CALENDAR_AGENT_ID` fields from `Settings`; remove `agent` parameter from `CalendarAgent.__init__`; drop broker env vars from `docker-compose.yml`.
 - Pin git version in Dockerfile apt-get install to satisfy hadolint DL3008
 - Bump `requires-python` to `>=3.14` and align tooling: ruff `target-version` → `py314`,
