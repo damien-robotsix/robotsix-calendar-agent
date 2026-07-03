@@ -19,7 +19,7 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
-from .add_to_calendar_handler import _event_to_dict
+from .add_to_calendar_handler import _build_resolution_instruction, _event_to_dict
 from .caldav_client import (
     CalDavClient,
     CalendarEvent,
@@ -370,31 +370,20 @@ def _build_add_to_calendar_instruction(payload: dict[str, Any]) -> str:
 
     # No explicit dates — build a resolution instruction so the LLM
     # intent parser can infer start/end from the email context.
-    lines = [
-        "Create a calendar event for the following email.",
-        f"Email subject: {subject}",
-    ]
-    desc = payload.get("description")
-    if desc:
-        lines.append(f"Description: {desc}")
-    loc = payload.get("location")
-    if loc:
-        lines.append(f"Location: {loc}")
-    email_date = payload.get("email_date")
-    if email_date:
-        lines.append(f"Email date: {email_date}")
+    desc = str(payload.get("description") or "")
+    loc = str(payload.get("location") or "")
+    email_date = str(payload.get("email_date") or "")
     extracted = payload.get("extracted_dates")
-    if extracted:
-        lines.append("Date/time references found: " + ", ".join(extracted))
-    body_text = payload.get("body_text")
-    if body_text:
-        lines.append("Email body:")
-        lines.append(str(body_text))
-    lines.append(
-        "Resolve a concrete start and end datetime in ISO 8601. If no end "
-        "time is stated, default the end to one hour after the start."
+    extracted_dates: list[str] = list(extracted) if extracted else []
+    body_text = str(payload.get("body_text") or "")
+    return _build_resolution_instruction(
+        subject,
+        body_text,
+        email_date,
+        extracted_dates,
+        description=desc,
+        location=loc,
     )
-    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------

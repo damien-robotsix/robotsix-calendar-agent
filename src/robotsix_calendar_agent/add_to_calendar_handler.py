@@ -55,6 +55,9 @@ def _build_resolution_instruction(
     body_text: str,
     email_date: str,
     extracted_dates: list[str],
+    *,
+    description: str = "",
+    location: str = "",
 ) -> str:
     """Build a natural-language instruction for the intent parser.
 
@@ -62,11 +65,18 @@ def _build_resolution_instruction(
     date strings) rather than concrete start/end datetimes. This phrases that
     context as a ``create_event`` instruction so the LLM intent parser can
     resolve ISO 8601 ``dtstart``/``dtend`` values.
+
+    Optional *description* and *location* (keyword-only) are appended when
+    non-empty, supporting the agent's richer payload path.
     """
     lines = [
         "Create a calendar event for the following email.",
         f"Email subject: {subject}",
     ]
+    if description:
+        lines.append(f"Description: {description}")
+    if location:
+        lines.append(f"Location: {location}")
     if email_date:
         lines.append(f"Email date: {email_date}")
     if extracted_dates:

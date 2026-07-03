@@ -1018,3 +1018,83 @@ class TestRenderReply:
         result = _render_reply("delete_event", {"deleted": False, "uid": "e1"})
         assert result != "Done — the item was deleted."
         assert "Result:" in result
+
+
+# ---------------------------------------------------------------------------
+# _build_add_to_calendar_instruction
+# ---------------------------------------------------------------------------
+
+
+class TestBuildAddToCalendarInstruction:
+    """Tests for _build_add_to_calendar_instruction — the synthetic
+    instruction builder that bridges structured add_to_calendar payloads
+    to the LLM intent parser."""
+
+    def test_explicit_dates_produce_direct_instruction(self) -> None:
+        from robotsix_calendar_agent.agent import _build_add_to_calendar_instruction
+
+        instruction = _build_add_to_calendar_instruction(
+            {
+                "subject": "Team Lunch",
+                "suggested_dtstart": "2026-06-01T12:00:00",
+                "suggested_dtend": "2026-06-01T13:00:00",
+            }
+        )
+        assert "add event:" in instruction
+        assert "subject=Team Lunch" in instruction
+        assert "dtstart=2026-06-01T12:00:00" in instruction
+        assert "dtend=2026-06-01T13:00:00" in instruction
+        assert "Create a calendar event" not in instruction
+
+    def test_explicit_dates_include_description_and_location(self) -> None:
+        from robotsix_calendar_agent.agent import _build_add_to_calendar_instruction
+
+        instruction = _build_add_to_calendar_instruction(
+            {
+                "subject": "Team Lunch",
+                "suggested_dtstart": "2026-06-01T12:00:00",
+                "suggested_dtend": "2026-06-01T13:00:00",
+                "description": "Monthly sync",
+                "location": "Room A",
+            }
+        )
+        assert "description=Monthly sync" in instruction
+        assert "location=Room A" in instruction
+
+    def test_no_explicit_dates_delegates_to_resolution_instruction(self) -> None:
+        from robotsix_calendar_agent.agent import _build_add_to_calendar_instruction
+
+        instruction = _build_add_to_calendar_instruction(
+            {
+                "subject": "Team Lunch",
+                "body_text": "Let's meet at noon.",
+                "email_date": "2026-03-15",
+                "extracted_dates": ["2026-03-20", "noon"],
+                "description": "Monthly team gathering",
+                "location": "Conference Room B",
+            }
+        )
+        # Should use the resolution instruction pattern, not the "add event:" pattern
+        assert "add event:" not in instruction
+        assert "Create a calendar event for the following email." in instruction
+        assert "Email subject: Team Lunch" in instruction
+        assert "Description: Monthly team gathering" in instruction
+        assert "Location: Conference Room B" in instruction
+        assert "Email date: 2026-03-15" in instruction
+        assert "Date/time references found: 2026-03-20, noon" in instruction
+        assert "Email body:" in instruction
+        assert "Let's meet at noon." in instruction
+        assert "Resolve a concrete start and end datetime in ISO 8601" in instruction
+
+    def test_no_explicit_dates_minimal_payload(self) -> None:
+        from robotsix_calendar_agent.agent import _build_add_to_calendar_instruction
+
+        instruction = _build_add_to_calendar_instruction({"subject": "Quick Call"})
+        assert "Create a calendar event for the following email." in instruction
+        assert "Email subject: Quick Call" in instruction
+        assert "Description:" not in instruction
+        assert "Location:" not in instruction
+        assert "Email date:" not in instruction
+        assert "Date/time references found:" not in instruction
+        assert "Email body:" not in instruction
+        assert "Resolve a concrete start and end datetime in ISO 8601" in instruction
