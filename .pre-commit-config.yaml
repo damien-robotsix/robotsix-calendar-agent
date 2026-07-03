@@ -8,6 +8,8 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-toml
+      - id: check-json
+      - id: detect-private-key
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.20
@@ -36,6 +38,11 @@ repos:
     rev: v1.7.12
     hooks:
       - id: actionlint
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint-docker
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.16.4

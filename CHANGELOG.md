@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add `check-json`, `detect-private-key`, and `hadolint-docker` hooks to `.pre-commit-config.yaml` per 2026-07 robotsix-standards baseline.
 - Bump `requires-python` to `>=3.14` and align tooling: ruff `target-version` → `py314`,
   mypy `python_version` → `3.14`.
 - Update Dockerfile base images to `python:3.14-slim-bookworm` (builder & runtime stages).
