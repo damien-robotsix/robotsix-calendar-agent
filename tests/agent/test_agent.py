@@ -155,30 +155,6 @@ class TestHandleRequest:
                 _mock_agent_comm_transport.Registry.return_value,
             )
 
-    def test_provided_agent_is_used_and_handler_wired(self) -> None:
-        # The brokered service passes a pre-built agent (a BrokeredAgent); the
-        # CalendarAgent wires its request handler onto it instead of building
-        # its own Agent.
-        setup_mocks()
-
-        os.environ["RADICALE_URL"] = "https://x.com"
-        os.environ["RADICALE_USERNAME"] = "u"
-        os.environ["RADICALE_PASSWORD"] = "p"
-
-        provided = MagicMock(name="brokered_agent")
-        _mock_agent_comm_sdk.Agent.reset_mock()
-
-        with (
-            patch("robotsix_calendar_agent.agent.CalDavClient"),
-            patch("robotsix_calendar_agent.agent.IntentParser"),
-        ):
-            from robotsix_calendar_agent.agent import CalendarAgent
-
-            cal = CalendarAgent("robotsix-calendar", agent=provided)
-
-            _mock_agent_comm_sdk.Agent.assert_not_called()
-            provided.on_request.assert_called_once_with(cal._handle_request)
-
     def test_unexpected_exception_returns_internal_error(
         self, calendar_agent: MagicMock
     ) -> None:

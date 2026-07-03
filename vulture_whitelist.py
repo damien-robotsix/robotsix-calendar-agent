@@ -20,9 +20,6 @@ DELETE_CONTACT
 original_text
 
 # Pydantic field-validator methods — invoked by the framework, not dead code
-_normalize_transport
-_validate_port
-_empty_str_to_none
 _normalize_log_level
 _token_required_when_enabled
 cls

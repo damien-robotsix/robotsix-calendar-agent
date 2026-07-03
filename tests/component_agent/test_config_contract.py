@@ -30,10 +30,6 @@ def _settings(**overrides: Any) -> Settings:
         "RADICALE_USERNAME": "user",
         "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
         "RADICALE_DEFAULT_CALENDAR": "TestCal",
-        "CALENDAR_AGENT_TRANSPORT": "inprocess",
-        "CALENDAR_AGENT_ID": "test-calendar",
-        "BROKER_HOST": "broker.example.com",
-        "BROKER_AGENT_TOKEN": "broker-secret",
     }
     env.update(overrides)
     with patch.dict(os.environ, env, clear=True):
@@ -53,22 +49,15 @@ class TestGetConfigSnapshot:
         assert snap["radicale_url"] == "https://rad.example.com"
         assert snap["radicale_username"] == "user"
         assert snap["radicale_default_calendar"] == "TestCal"
-        assert snap["calendar_agent_transport"] == "inprocess"
-        assert snap["calendar_agent_id"] == "test-calendar"
-        assert snap["broker_host"] == "broker.example.com"
-        assert snap["broker_port"] == 9090
-        assert snap["broker_scheme"] == "https"
 
     def test_secrets_are_redacted(self) -> None:
         s = _settings()
         snap = get_config_snapshot(s)
         assert snap["radicale_password"] == "***"
-        assert snap["broker_agent_token"] == "***"
         # Real values must never leak
         for val in snap.values():
             if isinstance(val, str):
                 assert val != "secret"
-                assert val != "broker-secret"
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +78,6 @@ class TestDescribeConfig:
         assert keys["radicale_url"]["settable"] is False
         assert keys["radicale_password"]["secret"] is True
         assert keys["radicale_password"]["value"] == "***"
-        assert keys["broker_agent_token"]["secret"] is True
 
     def test_secret_values_never_appear(self) -> None:
         s = _settings()
@@ -174,7 +162,6 @@ class TestApplyConfigUpdate:
         )
 
         assert _is_secret_field("radicale_password") is True
-        assert _is_secret_field("broker_agent_token") is True
         assert _is_secret_field("radicale_url") is False
 
 
@@ -190,15 +177,9 @@ class TestSettableKeys:
             "radicale_url",
             "radicale_username",
             "radicale_password",
-            "calendar_agent_transport",
-            "calendar_agent_id",
-            "broker_host",
-            "broker_port",
-            "broker_scheme",
-            "broker_agent_token",
-            "broker_tls_ca",
-            "broker_client_cert",
-            "broker_client_key",
+            "component_agent_enabled",
+            "component_agent_token",
+            "component_agent_id",
         }
         assert SETTABLE_KEYS.isdisjoint(unsafe)
 

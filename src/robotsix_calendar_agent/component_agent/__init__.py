@@ -2,7 +2,7 @@
 
 Provides the config contract and settings for the ``monitor`` /
 ``config-get`` / ``config-set`` management kinds.  The responder itself
-lives in :mod:`~robotsix_calendar_agent.brokered_entrypoint`.
+lives in :mod:`~robotsix_calendar_agent.entrypoint`.
 """
 
 from __future__ import annotations

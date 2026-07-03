@@ -34,7 +34,7 @@ classifiers = [
 ]
 
 [project.scripts]
-calendar-agent = "robotsix_calendar_agent.brokered_entrypoint:main"
+calendar-agent = "robotsix_calendar_agent.entrypoint:main"
 
 [project.urls]
 Homepage = "https://github.com/damien-robotsix/robotsix-calendar-agent"
