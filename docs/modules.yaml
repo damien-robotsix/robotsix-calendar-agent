@@ -72,7 +72,8 @@ modules:
     paths:
       - src/robotsix_calendar_agent/entrypoint.py
     test_paths:
-      - tests/brokered_entrypoint/test_brokered_entrypoint.py
+      - tests/entrypoint/__init__.py
+      - tests/entrypoint/test_entrypoint.py
     doc_paths:
       - docs/reference/brokered_entrypoint.md
       - docs/tutorials/intermediate/brokered-service.md
