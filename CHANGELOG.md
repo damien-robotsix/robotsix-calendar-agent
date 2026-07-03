@@ -1,5 +1,10 @@
 ## 0.0.0 (unreleased)
 
+- Bump `requires-python` to `>=3.14` and align tooling: ruff `target-version` → `py314`,
+  mypy `python_version` → `3.14`.
+- Update Dockerfile base images to `python:3.14-slim-bookworm` (builder & runtime stages).
+- Add `pre-commit` and `docker` ecosystems to Dependabot configuration for automated
+  hook pin and base-image digest updates.
 - Deduplicate `__all__` between `__init__.py` and `agent.py`: `__init__.py` now imports
   `__all__` from `agent` and extends it with `__version__`, eliminating the manual
   duplicate list that could drift.

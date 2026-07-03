@@ -211,7 +211,7 @@ def _parse_and_validate_iso_dates(
     try:
         dtstart = datetime.datetime.fromisoformat(dtstart_str)
         dtend = datetime.datetime.fromisoformat(dtend_str)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return Response.to(
             request,
             body=_build_error_body(

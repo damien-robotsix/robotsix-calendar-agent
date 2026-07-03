@@ -7,7 +7,7 @@ name = "robotsix-calendar-agent"
 version = "0.1.0"
 description = "Agent-comm calendar and contacts agent for Radicale"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 license = { text = "MIT" }
 authors = [{ name = "Damien Robotsix", email = "damien.robotsix@gmail.com" }]
 dependencies = [
@@ -70,7 +70,7 @@ packages = ["src/robotsix_calendar_agent"]
 known_first_party = ["robotsix_calendar_agent"]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py314"
 line-length = 88
 
 [tool.ruff.lint]
@@ -83,7 +83,7 @@ ignore = ["S101"]
 "tests/**/*.py" = ["S105", "S106", "S603"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14"
 strict = true
 exclude = ["vulture_whitelist.py"]
 

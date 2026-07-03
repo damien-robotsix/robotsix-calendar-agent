@@ -37,7 +37,7 @@ _mock_caldav.lib.error.AuthorizationError = _mock_caldav.error.AuthorizationErro
 
 
 @pytest.fixture(autouse=True)
-def reset_mock_caldav() -> Generator[MagicMock, None, None]:
+def reset_mock_caldav() -> Generator[MagicMock]:
     """Replace caldav in sys.modules with mock, reset between tests.
 
     Saves and restores the real caldav module so that integration

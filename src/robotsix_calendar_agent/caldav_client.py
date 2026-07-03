@@ -219,11 +219,11 @@ class CalDavClient:
             s = s.strip()
             try:
                 return datetime.datetime.fromisoformat(s)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 pass
             try:
                 return datetime.date.fromisoformat(s)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return s
 
         return _parse(start), _parse(end)
@@ -461,7 +461,7 @@ class CalDavClient:
         if "T" in s:
             try:
                 dt = datetime.datetime.fromisoformat(s)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 dt = None
             if dt is not None:
                 if dt.tzinfo is not None:
@@ -472,7 +472,7 @@ class CalDavClient:
             try:
                 d = datetime.date.fromisoformat(s)
                 return f"{name};VALUE=DATE:{d.strftime('%Y%m%d')}"
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 pass
         # Unparseable — pass through (server will reject if truly invalid).
         return f"{name}:{s}"
