@@ -9,7 +9,7 @@ instructions to a Radicale CalDAV/CardDAV server. Entry points:
 
 | Entry point | Module | Description |
 |---|---|---|
-| Long-lived brokered service | `brokered_entrypoint.main` | Connects to a secured TLS broker, blocks until SIGTERM/SIGINT |
+| Long-lived in-process service | `entrypoint.main` | Blocks until SIGTERM/SIGINT |
 | In-process agent | `agent.CalendarAgent` | Constructs its own in-process `Agent` (used in tests / single-process mode) |
 
 **No local data persistence** — there is no `data_dir_audit` and no
@@ -46,8 +46,6 @@ to prevent env-var leakage.
 | CalDAV library (`caldav`) | `sys.modules["caldav"]` | `tests/caldav_client/test_caldav_client.py` — `reset_mock_caldav` autouse fixture swaps in a `MagicMock` |
 | LLM (`robotsix_llmio`) | `unittest.mock.patch` on `IntentParser` | `tests/conftest.py` — `calendar_agent` fixture patches `IntentParser` with `autospec=True` |
 | Agent-comm transport | `sys.modules["robotsix_agent_comm"]` (and submodules) | `tests/conftest.py` — module-level `MagicMock` injection before any import |
-| HTTP / broker I/O | Never constructed in tests | Broker entrypoint (`_build_brokered_agent`) is never called from tests |
-
 **Test layout mirrors source modules** — one test directory per source
 module under `tests/` (e.g. `tests/agent/`, `tests/caldav_client/`).
 Shared fixtures and the `robotsix_agent_comm` sys.modules mock live in
@@ -88,7 +86,7 @@ src/robotsix_calendar_agent/
 ├── __init__.py
 ├── agent.py                    # CalendarAgent — wires everything together
 ├── add_to_calendar_handler.py  # Structured handler for auto-mail "add_to_calendar" payloads
-├── brokered_entrypoint.py      # main() — selects transport, starts service
+├── entrypoint.py               # main() — long-lived in-process service
 ├── caldav_client.py            # CalDavClient — typed CalDAV/CardDAV wrapper with tenacity retries
 ├── intent_parser.py            # IntentParser — llmio-based NL → ParsedIntent
 ├── py.typed                    # PEP 561 marker
