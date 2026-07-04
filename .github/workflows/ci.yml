@@ -44,6 +44,17 @@ jobs:
       - run: uv lock --check
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
+  modules-validate:
+    name: Module manifest validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
+      - run: uv run --frozen robotsix-modules-validate docs/modules.yaml
+
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   vulture:
     name: Vulture dead code check
     runs-on: ubuntu-latest

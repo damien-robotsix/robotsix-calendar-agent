@@ -4,6 +4,10 @@
 - Replace custom `logging_config` module with `robotsix_llmio.logging.setup_logging()`
   in `entrypoint.py`, removing the duplicated `JsonFormatter` and
   `configure_logging()` implementation.
+- Adopt `robotsix-modules` for automated module-manifest drift detection:
+  - Add `robotsix-modules` as a dev dependency.
+  - Add `modules-validate` CI job (`robotsix-modules-validate docs/modules.yaml`).
+  - Fix missing `paths` entry for the `agent` module.
 - Move `agent` module docs to per-module layout: `docs/reference/agent.md` → `docs/agent/reference.md`, `docs/tutorials/basic/manage-events.md` → `docs/agent/tutorials/manage-events.md`; update `mkdocs.yml` nav and cross-references.
 - Classify `docs/reference/component_agent.md` and `docs/tutorials/intermediate/component-agent-management.md` under the `agent` module's `doc_paths` in `docs/modules.yaml`.
 - Move `healthcheck.py` from repo root into the installable package as `robotsix_calendar_agent.healthcheck`, registered as the `calendar-agent-healthcheck` console_scripts entrypoint. The Dockerfile HEALTHCHECK now uses the entrypoint directly instead of a standalone script copy.

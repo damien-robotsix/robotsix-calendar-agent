@@ -22,6 +22,8 @@ modules:
 
   - name: agent
     path: src/robotsix_calendar_agent/agent.py
+    paths:
+      - src/robotsix_calendar_agent/agent.py
     test_paths:
       - tests/agent/test_agent.py
     doc_paths:
