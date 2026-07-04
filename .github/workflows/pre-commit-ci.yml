@@ -8,9 +8,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pre-commit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # hand-rolled: no shared pre-commit workflow in robotsix-github-workflows
 jobs:
   pre-commit:
+    name: Pre-commit hooks
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
