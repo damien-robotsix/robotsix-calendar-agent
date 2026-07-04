@@ -33,7 +33,13 @@ modules:
       - intent_parser
 
   - name: caldav_client
-    path: src/robotsix_calendar_agent/caldav_client.py
+    path: src/robotsix_calendar_agent/caldav_client/__init__.py
+    paths:
+      - src/robotsix_calendar_agent/caldav_client/__init__.py
+      - src/robotsix_calendar_agent/caldav_client/_shared.py
+      - src/robotsix_calendar_agent/caldav_client/calendar_ops.py
+      - src/robotsix_calendar_agent/caldav_client/contact_ops.py
+      - src/robotsix_calendar_agent/caldav_client/task_ops.py
     depends_on: []
     test_paths:
       - tests/caldav_client/test_caldav_client.py
