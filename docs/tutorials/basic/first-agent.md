@@ -58,7 +58,6 @@ agent = CalendarAgent()
 with agent:
     calendars = agent._caldav.list_calendars()
     print("Your calendars:", calendars)
-```    requester.stop()
 ```
 
 Run it:

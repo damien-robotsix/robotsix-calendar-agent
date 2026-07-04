@@ -1,24 +1,23 @@
 # robotsix-calendar-agent
 
-An agent-comm agent that manages a Radicale server's calendars (CalDAV) and
-contacts (CardDAV) — full read-write including delete — driven entirely by
-the `robotsix-agent-comm` messaging system.
+An in-process agent that manages a Radicale server's calendars (CalDAV) and
+contacts (CardDAV) — full read-write including delete.
 
 ## Architecture
 
 ```
-agent-comm Request → CalendarAgent → IntentParser (llmio)
-                                   → CalDavClient (caldav) → Radicale
-                                   ← Response / Error
+Caller → CalendarAgent → IntentParser (llmio)
+                       → CalDavClient (caldav) → Radicale
 ```
 
-1. A natural-language instruction arrives as an agent-comm `Request`.
-2. `CalendarAgent` passes the instruction to `IntentParser`, which uses
-   `robotsix-llmio` to classify it into one of 10 operations and extract
+1. The caller sends a natural-language instruction (or a structured
+   ``add_to_calendar`` payload) to the agent.
+2. `CalendarAgent` passes NL instructions to `IntentParser`, which uses
+   `robotsix-llmio` to classify them into one of 10 operations and extract
    structured parameters.
 3. The parsed intent is dispatched to `CalDavClient`, which wraps the
    `caldav` library to perform CRUD operations against the Radicale server.
-4. The result is returned as a correlated `Response` (or `Error` on failure).
+4. The result is returned to the caller.
 
 ## Getting started
 

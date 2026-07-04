@@ -93,7 +93,7 @@ src/robotsix_calendar_agent/
 
 ## Dependencies
 
-- **`robotsix-agent-comm`** — agent messaging (Agent, BrokeredAgent, Registry, protocol messages)
+
 - **`robotsix-llmio[openrouter-deepseek,tracing]`** — LLM intent parsing + Langfuse OTLP export
 - **`caldav`** — CalDAV/CardDAV client library
 - **`pydantic` / `pydantic-settings`** — configuration & data models

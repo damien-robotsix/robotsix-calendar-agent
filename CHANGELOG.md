@@ -1,6 +1,6 @@
 ## 0.0.0 (unreleased)
 
-- Remove `robotsix-agent-comm` dependency (broker decommissioned fleet-wide)
+
 - Remove ``robotsix-agent-comm`` dependency and all broker client/responder
   code.  The ``CalendarAgent`` no longer creates an agent-comm transport;
   the ``ComponentAgentResponder`` and component-agent management kinds

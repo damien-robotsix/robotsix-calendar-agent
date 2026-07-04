@@ -19,7 +19,7 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
-from .add_to_calendar_handler import _build_resolution_instruction, _event_to_dict
+from .add_to_calendar_handler import _event_to_dict
 from .caldav_client import (
     CalDavClient,
     CalendarEvent,
@@ -182,52 +182,6 @@ class CalendarAgent:
 
     def __exit__(self, *args: Any) -> None:
         self.stop()
-
-
-# ---------------------------------------------------------------------------
-# add-to-calendar synthetic instruction builder
-# ---------------------------------------------------------------------------
-
-
-def _build_add_to_calendar_instruction(payload: dict[str, Any]) -> str:
-    """Convert a structured ``add_to_calendar`` payload into a natural-language
-    instruction that the intent parser can consume.
-
-    When the payload carries explicit ``suggested_dtstart``/``suggested_dtend``
-    ISO strings they are embedded directly.  Otherwise a resolution instruction
-    is built from the email context so the LLM intent parser can infer dates.
-    """
-    subject = str(payload.get("subject", ""))
-    ds = payload.get("suggested_dtstart")
-    de = payload.get("suggested_dtend")
-
-    if isinstance(ds, str) and ds and isinstance(de, str) and de:
-        parts = [f"add event: subject={subject}", f"dtstart={ds}", f"dtend={de}"]
-        desc = payload.get("description")
-        if desc:
-            parts.append(f"description={desc}")
-        loc = payload.get("location")
-        if loc:
-            parts.append(f"location={loc}")
-        return " ".join(parts)
-
-    # No explicit dates — build a resolution instruction so the LLM
-    # intent parser can infer start/end from the email context.
-    desc = str(payload.get("description") or "")
-    loc = str(payload.get("location") or "")
-    email_date = str(payload.get("email_date") or "")
-    extracted = payload.get("extracted_dates")
-    extracted_dates: list[str] = list(extracted) if extracted else []
-    body_text = str(payload.get("body_text") or "")
-    return _build_resolution_instruction(
-        subject,
-        body_text,
-        email_date,
-        extracted_dates,
-        description=desc,
-        location=loc,
-    )
-
 
 # ---------------------------------------------------------------------------
 # dispatch infrastructure
