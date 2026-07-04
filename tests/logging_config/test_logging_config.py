@@ -6,6 +6,7 @@ import json
 import logging
 
 import pytest
+
 from robotsix_calendar_agent.logging_config import setup_logging
 
 # ---------------------------------------------------------------------------

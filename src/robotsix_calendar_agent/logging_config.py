@@ -54,12 +54,12 @@ def setup_logging(
         stream: Target stream.  Defaults to :data:`sys.stdout`.
     """
     resolved_level: int = (
-        level if isinstance(level, int)
+        level
+        if isinstance(level, int)
         else logging.getLevelNamesMapping().get(str(level).upper(), logging.INFO)
     )
     formatter: logging.Formatter = (
-        _JsonFormatter() if fmt == "json"
-        else logging.Formatter(_CONSOLE_FORMAT)
+        _JsonFormatter() if fmt == "json" else logging.Formatter(_CONSOLE_FORMAT)
     )
     target_stream = stream if stream is not None else sys.stdout
 
