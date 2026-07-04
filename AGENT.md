@@ -45,11 +45,9 @@ to prevent env-var leakage.
 |---|---|---|
 | CalDAV library (`caldav`) | `sys.modules["caldav"]` | `tests/caldav_client/test_caldav_client.py` — `reset_mock_caldav` autouse fixture swaps in a `MagicMock` |
 | LLM (`robotsix_llmio`) | `unittest.mock.patch` on `IntentParser` | `tests/conftest.py` — `calendar_agent` fixture patches `IntentParser` with `autospec=True` |
-| Agent-comm transport | `sys.modules["robotsix_agent_comm"]` (and submodules) | `tests/conftest.py` — module-level `MagicMock` injection before any import |
 **Test layout mirrors source modules** — one test directory per source
 module under `tests/` (e.g. `tests/agent/`, `tests/caldav_client/`).
-Shared fixtures and the `robotsix_agent_comm` sys.modules mock live in
-`tests/conftest.py`.
+Shared fixtures live in `tests/conftest.py`.
 
 **Integration test**: `tests/caldav_client/test_caldav_integration.py`
 uses a session-scoped `caldav_client` fixture from
@@ -95,7 +93,7 @@ src/robotsix_calendar_agent/
 
 ## Dependencies
 
-- **`robotsix-agent-comm`** — agent messaging (Agent, BrokeredAgent, Registry, protocol messages)
+
 - **`robotsix-llmio[openrouter-deepseek,tracing]`** — LLM intent parsing + Langfuse OTLP export
 - **`caldav`** — CalDAV/CardDAV client library
 - **`pydantic` / `pydantic-settings`** — configuration & data models

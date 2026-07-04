@@ -1,9 +1,8 @@
-"""robotsix_calendar_agent — agent-comm calendar and contacts agent for Radicale.
+"""robotsix_calendar_agent — calendar and contacts agent for Radicale.
 
-This package provides a calendar and contacts management agent driven by
-the ``robotsix-agent-comm`` messaging system.  It parses natural-language
-instructions via ``robotsix-llmio`` and executes CalDAV/CardDAV operations
-against a Radicale server.
+This package provides a calendar and contacts management agent.  It parses
+natural-language instructions via ``robotsix-llmio`` and executes
+CalDAV/CardDAV operations against a Radicale server.
 """
 
 from __future__ import annotations

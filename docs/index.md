@@ -1,24 +1,23 @@
 # robotsix-calendar-agent
 
-An agent-comm agent that manages a Radicale server's calendars (CalDAV) and
-contacts (CardDAV) — full read-write including delete — driven entirely by
-the `robotsix-agent-comm` messaging system.
+An in-process agent that manages a Radicale server's calendars (CalDAV) and
+contacts (CardDAV) — full read-write including delete.
 
 ## Architecture
 
 ```
-agent-comm Request → CalendarAgent → IntentParser (llmio)
-                                   → CalDavClient (caldav) → Radicale
-                                   ← Response / Error
+Caller → CalendarAgent → IntentParser (llmio)
+                       → CalDavClient (caldav) → Radicale
 ```
 
-1. A natural-language instruction arrives as an agent-comm `Request`.
-2. `CalendarAgent` passes the instruction to `IntentParser`, which uses
-   `robotsix-llmio` to classify it into one of 10 operations and extract
+1. The caller sends a natural-language instruction (or a structured
+   ``add_to_calendar`` payload) to the agent.
+2. `CalendarAgent` passes NL instructions to `IntentParser`, which uses
+   `robotsix-llmio` to classify them into one of 10 operations and extract
    structured parameters.
 3. The parsed intent is dispatched to `CalDavClient`, which wraps the
    `caldav` library to perform CRUD operations against the Radicale server.
-4. The result is returned as a correlated `Response` (or `Error` on failure).
+4. The result is returned to the caller.
 
 ## Getting started
 
@@ -49,38 +48,36 @@ agent = CalendarAgent()
 agent.start()
 ```
 
-### 4. Send a request via agent-comm
+### 4. Use the agent directly
 
-```python
-from robotsix_agent_comm.sdk import Agent
-from robotsix_agent_comm.transport import Registry
-from robotsix_agent_comm.protocol import Request, Metadata
-
-registry = Registry()
-# The calendar agent has already registered itself on this registry.
-# Create a requester agent to send a message:
-requester = Agent("requester", registry)
-requester.start()
-
-# Send a request to the calendar agent:
-response = requester.send_request(
-    "calendar",
-    {"instruction": "list events this week"},
-)
-print(response.body)
-```
-
-## Deployment
-
-The agent runs in-process via an in-memory
-`robotsix_agent_comm.transport.Registry`. This is the zero-config path
-used by tests and single-process deployments where a requester and the
-calendar agent live in the same process:
+The agent provides a :class:`CalDavClient` for calendar operations
+and an :class:`IntentParser` for natural-language instruction parsing.
+Callers interact with these components directly:
 
 ```python
 from robotsix_calendar_agent import CalendarAgent
 
-agent = CalendarAgent()  # transport=None → in-process Registry
+agent = CalendarAgent()
+agent.start()
+
+# List calendars
+calendars = agent._caldav.list_calendars()
+print(calendars)
+
+# Parse a natural-language instruction
+parsed = agent._intent_parser.parse("create event Team Lunch tomorrow at noon")
+print(parsed)
+```
+
+## Deployment
+
+The agent runs in-process.  Start it and work with the CalDAV client
+and intent parser directly:
+
+```python
+from robotsix_calendar_agent import CalendarAgent
+
+agent = CalendarAgent()
 agent.start()
 ```
 
@@ -117,7 +114,7 @@ reference.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `agent_id` | `str` | `"calendar"` | Agent-comm agent ID |
+| `agent_id` | `str` | `"calendar"` | Agent identifier |
 | `radicale_url` | `str \| None` | `None` | Radicale URL (falls back to env) |
 | `radicale_username` | `str \| None` | `None` | Radicale username (falls back to env) |
 | `radicale_password` | `str \| None` | `None` | Radicale password (falls back to env) |

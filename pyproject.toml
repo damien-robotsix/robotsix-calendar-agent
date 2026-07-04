@@ -5,13 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "robotsix-calendar-agent"
 version = "0.1.0"
-description = "Agent-comm calendar and contacts agent for Radicale"
+description = "Calendar and contacts agent for Radicale"
 readme = "README.md"
 requires-python = ">=3.14"
 license = { text = "MIT" }
 authors = [{ name = "Damien Robotsix", email = "damien.robotsix@gmail.com" }]
 dependencies = [
-    "robotsix-agent-comm",
     # The intent parser uses llmio's default provider (openrouter); the
     # provider extra must be installed or get_provider() raises ImportError. The
     # tracing extra pulls the OpenTelemetry/OTLP deps setup_langfuse_tracing()
@@ -60,7 +59,6 @@ docs = [
 ]
 
 [tool.uv.sources]
-robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "c46db6a937172db3c06cd40e96f0de027b644206" }  # pragma: allowlist secret
 robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "555b633624775c5cb4727f265a6659c953a3e992" }  # pragma: allowlist secret
 
 [tool.hatch.build.targets.wheel]

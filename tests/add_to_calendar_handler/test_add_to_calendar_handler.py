@@ -9,14 +9,17 @@ from robotsix_calendar_agent.add_to_calendar_handler import (
     ERROR_INVALID_DATES,
     ERROR_MISSING_DATES,
     ERROR_MISSING_SUBJECT,
+    Response,
     _build_error_body,
     _build_resolution_instruction,
     _event_to_dict,
     _resolve_dates_via_llm,
     handle_add_to_calendar,
 )
-from robotsix_calendar_agent.caldav_client import CalendarEvent, OperationError
-from tests.conftest import _mock_agent_comm_protocol
+from robotsix_calendar_agent.caldav_client import (
+    CalendarEvent,
+    OperationError,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers (no fixtures needed — pure functions + MagicMock)
@@ -156,10 +159,8 @@ class TestParseAndValidateIsoDates:
             "corr-2",
             request,
         )
-        assert not isinstance(result, tuple)
-        # It's a Response; verify the body through the call args on the mock
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        assert isinstance(result, Response)
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
         assert body["correlation_id"] == "corr-2"
 
@@ -175,9 +176,8 @@ class TestParseAndValidateIsoDates:
             "corr-3",
             request,
         )
-        assert not isinstance(result, tuple)
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        assert isinstance(result, Response)
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_before_dtstart_returns_error_response(self) -> None:
@@ -192,9 +192,8 @@ class TestParseAndValidateIsoDates:
             "corr-4",
             request,
         )
-        assert not isinstance(result, tuple)
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        assert isinstance(result, Response)
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_equal_to_dtstart_returns_error_response(self) -> None:
@@ -209,9 +208,8 @@ class TestParseAndValidateIsoDates:
             "corr-5",
             request,
         )
-        assert not isinstance(result, tuple)
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        assert isinstance(result, Response)
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_type_error_parsing_returns_error_response(self) -> None:
@@ -226,9 +224,8 @@ class TestParseAndValidateIsoDates:
             "corr-6",
             request,
         )
-        assert not isinstance(result, tuple)
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        assert isinstance(result, Response)
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
 
@@ -262,11 +259,11 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(correlation_id="corr-succ")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
         caldav_client.create_event.assert_called_once()
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["correlation_id"] == "corr-succ"
         assert body["result"]["status"] == "created"
         assert body["result"]["event"]["uid"] == "evt-1"
@@ -279,10 +276,10 @@ class TestHandleAddToCalendar:
         caldav_client = MagicMock()
         request = MagicMock()
 
-        handle_add_to_calendar(caldav_client, request, ["not", "a", "dict"])  # type: ignore[arg-type]
+        result = handle_add_to_calendar(caldav_client, request, ["not", "a", "dict"])  # type: ignore[arg-type]
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == "internal_error"
         assert "must be a dictionary" in body["error"]["message"]
         assert body["correlation_id"] == ""
@@ -291,10 +288,10 @@ class TestHandleAddToCalendar:
         caldav_client = MagicMock()
         request = MagicMock()
 
-        handle_add_to_calendar(caldav_client, request, {})
+        result = handle_add_to_calendar(caldav_client, request, {})
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_SUBJECT
         assert body["correlation_id"] == ""  # no correlation_id in empty dict
 
@@ -305,10 +302,10 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(subject="", correlation_id="corr-ms")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_SUBJECT
         assert body["correlation_id"] == "corr-ms"
 
@@ -317,10 +314,10 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(subject="   \t  ", correlation_id="corr-ws")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_SUBJECT
 
     def test_subject_missing_key_returns_error(self) -> None:
@@ -329,10 +326,10 @@ class TestHandleAddToCalendar:
         payload = _make_payload()
         del payload["subject"]
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_SUBJECT
 
     def test_subject_not_a_string_returns_error(self) -> None:
@@ -340,10 +337,10 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(subject=12345, correlation_id="corr-ns")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_SUBJECT
 
     # -- missing dates -------------------------------------------------
@@ -357,10 +354,10 @@ class TestHandleAddToCalendar:
             correlation_id="corr-md",
         )
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
         assert body["correlation_id"] == "corr-md"
 
@@ -369,10 +366,10 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(suggested_dtstart="", correlation_id="corr-ds")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_dates_missing_keys_returns_error(self) -> None:
@@ -382,10 +379,10 @@ class TestHandleAddToCalendar:
         del payload["suggested_dtstart"]
         del payload["suggested_dtend"]
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_dates_not_strings_return_error(self) -> None:
@@ -397,10 +394,10 @@ class TestHandleAddToCalendar:
             correlation_id="corr-ns2",
         )
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     # -- invalid dates -------------------------------------------------
@@ -413,10 +410,10 @@ class TestHandleAddToCalendar:
             correlation_id="corr-id",
         )
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_before_dtstart_returns_invalid_dates(self) -> None:
@@ -428,10 +425,10 @@ class TestHandleAddToCalendar:
             correlation_id="corr-bo",
         )
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_dtend_equal_to_dtstart_returns_invalid_dates(self) -> None:
@@ -443,10 +440,10 @@ class TestHandleAddToCalendar:
             correlation_id="corr-eq",
         )
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     # -- CalDAV OperationError -----------------------------------------
@@ -459,10 +456,10 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(correlation_id="corr-oe")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == "auth_failed"
         assert body["error"]["message"] == "Authentication failed"
         assert body["correlation_id"] == "corr-oe"
@@ -475,10 +472,10 @@ class TestHandleAddToCalendar:
         request = MagicMock()
         payload = _make_payload(correlation_id="corr-ue")
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == "internal_error"
         assert "boom" in body["error"]["message"]
         assert body["correlation_id"] == "corr-ue"
@@ -505,10 +502,10 @@ class TestHandleAddToCalendar:
             correlation_id="my-custom-id",
         )
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["correlation_id"] == "my-custom-id"
 
     def test_missing_correlation_id_echoes_empty_string(self) -> None:
@@ -531,10 +528,10 @@ class TestHandleAddToCalendar:
         )
         del payload["correlation_id"]
 
-        handle_add_to_calendar(caldav_client, request, payload)
+        result = handle_add_to_calendar(caldav_client, request, payload)
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["correlation_id"] == ""
 
 
@@ -863,9 +860,10 @@ class TestHandleAddToCalendarLlm:
         payload = self._make_llm_payload()
         intent_parser = self._make_successful_parser()
 
-        handle_add_to_calendar(
+        result = handle_add_to_calendar(
             caldav_client, request, payload, intent_parser=intent_parser
         )
+        assert isinstance(result, Response)
 
         # Verify the parser was called with an instruction containing payload context
         intent_parser.parse.assert_called_once()
@@ -880,8 +878,7 @@ class TestHandleAddToCalendarLlm:
         assert event_arg.dtend == "2026-06-01T13:00:00"
 
         # Verify success response
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["correlation_id"] == "corr-llm"
         assert body["result"]["status"] == "created"
         assert body["result"]["event"]["uid"] == "evt-llm-1"
@@ -897,12 +894,12 @@ class TestHandleAddToCalendarLlm:
         parsed.params = {}
         intent_parser.parse.return_value = parsed
 
-        handle_add_to_calendar(
+        result = handle_add_to_calendar(
             caldav_client, request, payload, intent_parser=intent_parser
         )
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
         assert body["correlation_id"] == "corr-llm"
 
@@ -914,12 +911,12 @@ class TestHandleAddToCalendarLlm:
         intent_parser = MagicMock()
         intent_parser.parse.side_effect = RuntimeError("LLM down")
 
-        handle_add_to_calendar(
+        result = handle_add_to_calendar(
             caldav_client, request, payload, intent_parser=intent_parser
         )
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_missing_dtstart_in_params_falls_back_to_missing_dates(self) -> None:
@@ -933,12 +930,12 @@ class TestHandleAddToCalendarLlm:
         parsed.params = {"dtend": "2026-06-01T13:00:00"}
         intent_parser.parse.return_value = parsed
 
-        handle_add_to_calendar(
+        result = handle_add_to_calendar(
             caldav_client, request, payload, intent_parser=intent_parser
         )
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_intent_parser_none_without_explicit_dates_returns_missing_dates(
@@ -949,10 +946,12 @@ class TestHandleAddToCalendarLlm:
         payload = self._make_llm_payload()
 
         # Explicitly pass intent_parser=None (the default)
-        handle_add_to_calendar(caldav_client, request, payload, intent_parser=None)
+        result = handle_add_to_calendar(
+            caldav_client, request, payload, intent_parser=None
+        )
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_MISSING_DATES
 
     def test_llm_dates_still_validated_for_iso_and_ordering(self) -> None:
@@ -971,12 +970,12 @@ class TestHandleAddToCalendarLlm:
         }
         intent_parser.parse.return_value = parsed
 
-        handle_add_to_calendar(
+        result = handle_add_to_calendar(
             caldav_client, request, payload, intent_parser=intent_parser
         )
+        assert isinstance(result, Response)
 
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
     def test_llm_resolution_with_explicit_dates_skips_llm(self) -> None:
@@ -997,11 +996,11 @@ class TestHandleAddToCalendarLlm:
 
         intent_parser = MagicMock()
         # intent_parser.parse should never be called
-        handle_add_to_calendar(
+        result = handle_add_to_calendar(
             caldav_client, request, payload, intent_parser=intent_parser
         )
+        assert isinstance(result, Response)
 
         intent_parser.parse.assert_not_called()
-        call_args = _mock_agent_comm_protocol.Response.to.call_args
-        body = call_args[1]["body"]
+        body = result.body
         assert body["result"]["status"] == "created"

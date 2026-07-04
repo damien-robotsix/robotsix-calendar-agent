@@ -49,36 +49,15 @@ full reference of every supported variable, see
 Create `hello_calendar.py`:
 
 ```python
-from robotsix_agent_comm.sdk import Agent
-from robotsix_agent_comm.transport import Registry
-
 from robotsix_calendar_agent import CalendarAgent
 
-# -- create a shared in-memory transport --------------------------------
-registry = Registry()
-
 # -- instantiate the calendar agent -------------------------------------
-# CalendarAgent wires itself onto `agent` and will handle requests
-# addressed to `"calendar"`.
-calendar_comm = Agent("calendar", registry)
-agent = CalendarAgent(agent=calendar_comm)
+agent = CalendarAgent()
 
-# -- create a requester agent on the same transport ---------------------
-requester = Agent("requester", registry)
-
+# -- list calendars -----------------------------------------------------
 with agent:
-    requester.start()
-
-    response = requester.send_request(
-        "calendar",
-        {"instruction": "list events this week"},
-    )
-
-    print(response.body["reply"])
-    for event in response.body.get("result", []):
-        print(f"  - {event['summary']} ({event['dtstart']})")
-
-    requester.stop()
+    calendars = agent._caldav.list_calendars()
+    print("Your calendars:", calendars)
 ```
 
 Run it:
@@ -91,37 +70,22 @@ uv run python hello_calendar.py
 
 ## 4. What just happened?
 
-1. **Shared transport** — both the calendar agent and the requester
-   share one in-memory `Registry`, so messages flow between them
-   without any network hop.
+1. **Direct API** — the calendar agent runs in-process with no broker
+   transport.  The CalDAV client and intent parser are accessed
+   directly through the agent instance.
 
 2. **`with agent:`** — the context manager calls `agent.start()` on
    entry and `agent.stop()` on exit.  You can replace the `with` block
    with explicit `start()` / `stop()` calls if you prefer.
 
-3. **`send_request`** — `requester.send_request("calendar", body)`
-   delivers a dict to the calendar agent.  The only required key in
-   the body is `"instruction"` — a free-form natural-language string.
-
-4. **Parsing & dispatch** — the agent passes your instruction through
-   an LLM-based intent parser that classifies it (e.g. `list_events`)
-   and extracts structured parameters (date range, calendar, …), then
-   dispatches to the CalDAV client.
-
-5. **Response** — the returned response has two important keys:
-
-   | Key | Description |
-   |---|---|
-   | `reply` | Human-readable summary string |
-   | `result` | Structured data (a list of event dicts for list operations, a single dict with `uid`/`summary`/`dtstart`/`dtend` for creates and updates, `{"deleted": true}` for deletes) |
+3. **CalDAV client** — `agent._caldav` provides typed methods for
+   calendar, contact, and task operations against your Radicale server.
 
 ---
 
 ## 5. Next steps
 
 - [Managing Calendar Events](manage-events.md) — create, update, and delete
-  events with natural language.
-- [Component-Agent Management](../intermediate/component-agent-management.md) —
-  monitor, inspect, and reconfigure the agent at runtime.
+  events.
 - [Configuration](../../configuration.md) — complete environment variable
   reference.

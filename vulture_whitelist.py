@@ -29,3 +29,11 @@ format
 
 # Refactored out of agent.py; still covered by dedicated unit tests
 handle_add_to_calendar
+
+# CalendarAgent attributes/methods — used by removed broker integration;
+# kept as public API / still exercised in unit tests
+_settings
+_intent_parser
+_dispatch
+monitor_snapshot
+_render_reply

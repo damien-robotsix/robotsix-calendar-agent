@@ -18,6 +18,26 @@ from .caldav_client import CalendarEvent, OperationError
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
+# Local protocol stand-in (was robotsix_agent_comm.protocol.Response)
+# ---------------------------------------------------------------------------
+
+
+class Response:
+    """Local stand-in for agent-comm ``Response`` messages.
+
+    Carries a ``body`` dict; ``Response.to(request, body=...)`` is the
+    canonical factory.
+    """
+
+    def __init__(self, body: dict[str, Any]) -> None:
+        self.body = body
+
+    @staticmethod
+    def to(request: Any, body: dict[str, Any]) -> Response:
+        return Response(body)
+
+
+# ---------------------------------------------------------------------------
 # Error codes used in validation responses — shared with tests.
 # ---------------------------------------------------------------------------
 ERROR_MISSING_SUBJECT = "missing_subject"
@@ -143,15 +163,12 @@ def _resolve_dates_via_llm(
 def _validate_add_to_calendar_payload(
     payload: dict[str, Any],
     request: Any,
-) -> tuple[str, str, str, str] | Any:
+) -> tuple[str, str, str, str] | Response:
     """Validate the add-to-calendar payload and extract core fields.
 
     Returns ``(subject, description, location, correlation_id)`` on success,
-    or a :class:`~robotsix_agent_comm.protocol.Response` on validation
-    failure.
+    or a :class:`Response` on validation failure.
     """
-    from robotsix_agent_comm.protocol import Response
-
     if not isinstance(payload, dict):
         return Response.to(
             request,
@@ -198,16 +215,13 @@ def _parse_and_validate_iso_dates(
     dtend_str: str,
     correlation_id: str,
     request: Any,
-) -> tuple[datetime.datetime, datetime.datetime] | Any:
+) -> tuple[datetime.datetime, datetime.datetime] | Response:
     """Parse ISO 8601 date strings and assert *dtend* > *dtstart*.
 
-    Returns ``(dtstart, dtend)`` on success, or a
-    :class:`~robotsix_agent_comm.protocol.Response` with
+    Returns ``(dtstart, dtend)`` on success, or a :class:`Response` with
     ``ERROR_INVALID_DATES`` when either string is unparseable or
     *dtend* is not strictly after *dtstart*.
     """
-    from robotsix_agent_comm.protocol import Response
-
     try:
         dtstart = datetime.datetime.fromisoformat(dtstart_str)
         dtend = datetime.datetime.fromisoformat(dtend_str)
@@ -243,14 +257,12 @@ def _create_calendar_event(
     dtstart_str: str,
     dtend_str: str,
     correlation_id: str,
-) -> tuple[Any, Any | None]:
+) -> tuple[Any, Response | None]:
     """Create a calendar event via the CalDAV client.
 
     Returns ``(created_event, None)`` on success, or
     ``(None, error_response)`` when creation fails.
     """
-    from robotsix_agent_comm.protocol import Response
-
     event = CalendarEvent(
         summary=subject,
         description=description,
@@ -292,7 +304,7 @@ def handle_add_to_calendar(
     payload: dict[str, Any],
     *,
     intent_parser: Any | None = None,
-) -> Any:
+) -> Response:
     """Handle a structured add-to-calendar request from auto-mail.
 
     Validates the payload, creates a :class:`CalendarEvent` via
@@ -306,8 +318,6 @@ def handle_add_to_calendar(
     (when provided) resolves concrete start/end datetimes from the subject,
     body, and extracted date references.
     """
-    from robotsix_agent_comm.protocol import Response
-
     # -- validation ---------------------------------------------------
 
     result = _validate_add_to_calendar_payload(payload, request)

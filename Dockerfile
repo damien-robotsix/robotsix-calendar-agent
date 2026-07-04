@@ -6,8 +6,7 @@ FROM python:3.14-slim-bookworm AS builder
 # Install uv from the official image.
 COPY --from=ghcr.io/astral-sh/uv:0.11.21 /uv /uvx /bin/
 
-# git is required: robotsix-agent-comm and robotsix-llmio are git dependencies
-# that uv fetches at build time.
+# git is required: robotsix-llmio is a git dependency that uv fetches at build time.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update \
