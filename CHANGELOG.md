@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Move `agent` module docs to per-module layout: `docs/reference/agent.md` → `docs/agent/reference.md`, `docs/tutorials/basic/manage-events.md` → `docs/agent/tutorials/manage-events.md`; update `mkdocs.yml` nav and cross-references.
 - Classify `docs/reference/component_agent.md` and `docs/tutorials/intermediate/component-agent-management.md` under the `agent` module's `doc_paths` in `docs/modules.yaml`.
 - Move `healthcheck.py` from repo root into the installable package as `robotsix_calendar_agent.healthcheck`, registered as the `calendar-agent-healthcheck` console_scripts entrypoint. The Dockerfile HEALTHCHECK now uses the entrypoint directly instead of a standalone script copy.
 - Added docstrings to the three public error-code constants (`ERROR_MISSING_SUBJECT`, `ERROR_MISSING_DATES`, `ERROR_INVALID_DATES`) in `add_to_calendar_handler.py`.
