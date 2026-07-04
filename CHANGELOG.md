@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Clarify that `langfuse_cleanup` is a framework-level periodic workflow (does not require a per-repo presence file). Remove it from the repo-specific "Periodic workflows" key-list in AGENT.md.
 - Migrated secret scanning from detect-secrets to Betterleaks in pre-commit hooks.
 - Remove stale `CALENDAR_AGENT_TRANSPORT=brokered` env var from Dockerfile. The broker transport was removed in a past refactor; the env var was silently ignored.
 - Removed stale broker-transport and component-agent configuration
