@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -25,11 +29,12 @@ jobs:
   docker-pr-scan:
     permissions:
       contents: read
-      security-events: write
+      security-events: write  # needed to upload SARIF results to code scanning
     uses: damien-robotsix/robotsix-github-workflows/.github/workflows/docker-pr-scan.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   lockfile-check:
+    name: Lockfile check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
@@ -40,6 +45,7 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   vulture:
+    name: Vulture dead code check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
@@ -50,6 +56,7 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   dependency-audit:
+    name: Dependency audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -67,11 +74,12 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   dependency-review:
+    name: Dependency review
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: write  # needed to comment dependency review findings on PRs
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
         with:
@@ -82,10 +90,11 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   workflow-audit:
+    name: Workflow audit (zizmor)
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write
+      security-events: write  # needed to upload SARIF results from zizmor
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
         with:
@@ -99,6 +108,7 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   actionlint:
+    name: Actionlint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
@@ -108,6 +118,7 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   commitizen-check:
+    name: Commitizen check
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -128,7 +139,7 @@ jobs:
         python-version: ["3.14"]
     permissions:
       contents: read
-      security-events: write
+      security-events: write  # needed to upload SARIF results from Python CI
     uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-ci.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
     with:
       python-version: ${{ matrix.python-version }}
@@ -139,12 +150,13 @@ jobs:
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   coverage-report:
+    name: Coverage report
     if: ${{ !cancelled() }}
     needs: [ci]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write  # needed to write coverage badge to the repo
+      pull-requests: write  # needed to post coverage comment on PRs
     steps:
       - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
         with:
