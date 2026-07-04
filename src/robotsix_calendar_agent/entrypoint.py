@@ -39,8 +39,7 @@ def _serve_blocking(agent: CalendarAgent) -> None:
 
 def main() -> None:
     """Run the calendar agent as a long-lived in-process service."""
-    from robotsix_llmio.logging import setup_logging
-
+    from .logging_config import setup_logging
     from .settings import Settings
 
     settings = Settings()
