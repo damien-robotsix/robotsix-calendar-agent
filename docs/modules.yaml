@@ -102,5 +102,3 @@ modules:
     doc_paths:
       - docs/reference/logging_config.md
     depends_on: []
-
-
