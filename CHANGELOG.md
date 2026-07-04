@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Remove stale `CALENDAR_AGENT_TRANSPORT=brokered` env var from Dockerfile. The broker transport was removed in a past refactor; the env var was silently ignored.
 - Removed stale broker-transport and component-agent configuration
   entries from `.env.example` and `docs/configuration.md`.  The
   removed variables (`BROKER_HOST`, `COMPONENT_AGENT_ENABLED`, etc.)

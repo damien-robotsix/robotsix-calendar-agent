@@ -43,7 +43,6 @@ COPY --from=builder --chown=app:app /app/src /app/src
 COPY --from=builder --chown=app:app /app/healthcheck.py /app/healthcheck.py
 
 # Runtime configuration.
-ENV CALENDAR_AGENT_TRANSPORT=brokered
 ENV PATH="/app/.venv/bin:${PATH}"
 
 USER app
