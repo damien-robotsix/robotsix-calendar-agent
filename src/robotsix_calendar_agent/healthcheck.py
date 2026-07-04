@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Docker HEALTHCHECK probe — validates CalDAV reachability.
 
 Loads credentials from the same environment variables the agent uses,
