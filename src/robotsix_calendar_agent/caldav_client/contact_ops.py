@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ._shared import Contact, OperationError, _unescape_text, _wrap_caldav_op
 
@@ -16,6 +16,12 @@ class _ContactOpsMixin:
 
     Mixed into :class:`CalDavClient` alongside the other domain mixins.
     """
+
+    if TYPE_CHECKING:
+        # Provided by CalDavClient at runtime; declared here so mypy
+        # understands the mixin contract without circular imports.
+        def _escape_text(self, value: str) -> str: ...
+        def _get_addressbook(self, addressbook_id: str = "") -> Any: ...
 
     # ------------------------------------------------------------------
     # helpers

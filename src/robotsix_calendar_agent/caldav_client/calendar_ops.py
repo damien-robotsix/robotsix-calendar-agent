@@ -4,9 +4,15 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from ._shared import CalendarEvent, OperationError, _comp_dt, _comp_text, _wrap_caldav_op
+from ._shared import (
+    CalendarEvent,
+    OperationError,
+    _comp_dt,
+    _comp_text,
+    _wrap_caldav_op,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +22,14 @@ class _CalendarOpsMixin:
 
     Mixed into :class:`CalDavClient` alongside the other domain mixins.
     """
+
+    if TYPE_CHECKING:
+        # Provided by CalDavClient at runtime; declared here so mypy
+        # understands the mixin contract without circular imports.
+        def _escape_text(self, value: str) -> str: ...
+        def _ical_dt(self, name: str, value: str) -> str: ...
+        def _iter_calendars(self, calendar_id: str = "") -> list[Any]: ...
+        def _get_calendar(self, calendar_id: str = "") -> Any: ...
 
     # ------------------------------------------------------------------
     # helpers

@@ -18,10 +18,11 @@ from ._shared import (
     _wrap_caldav_op,
 )
 
-logger = logging.getLogger(__name__)
 from .calendar_ops import _CalendarOpsMixin
 from .contact_ops import _ContactOpsMixin
 from .task_ops import _TaskOpsMixin
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "CalDavClient",

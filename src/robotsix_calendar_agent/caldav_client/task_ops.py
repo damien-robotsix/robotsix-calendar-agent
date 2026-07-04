@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ._shared import Task, _comp_dt, _comp_text, _wrap_caldav_op
 
@@ -15,6 +15,11 @@ class _TaskOpsMixin:
 
     Mixed into :class:`CalDavClient` alongside the other domain mixins.
     """
+
+    if TYPE_CHECKING:
+        # Provided by CalDavClient at runtime; declared here so mypy
+        # understands the mixin contract without circular imports.
+        def _iter_calendars(self, calendar_id: str = "") -> list[Any]: ...
 
     # ------------------------------------------------------------------
     # helpers
