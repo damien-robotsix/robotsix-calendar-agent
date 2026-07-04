@@ -20,7 +20,7 @@ dependencies with `uv sync --frozen`. When you change dependencies in
 result. **Never hand-edit `uv.lock`.**
 
 Note that this repository is **not** stdlib-only — it requires runtime
-dependencies (`robotsix-agent-comm`, `robotsix-llmio`, `caldav`) declared
+dependencies (`robotsix-llmio`, `caldav`) declared
 in `pyproject.toml`.
 
 ## Checks
