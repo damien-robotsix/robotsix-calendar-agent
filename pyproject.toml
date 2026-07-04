@@ -52,7 +52,6 @@ dev = [
     "vulture",
     "radicale",
     "hypothesis>=6.155.2",
-    "robotsix-modules",
 ]
 docs = [
     "mkdocs",
