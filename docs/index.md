@@ -49,38 +49,36 @@ agent = CalendarAgent()
 agent.start()
 ```
 
-### 4. Send a request via agent-comm
+### 4. Use the agent directly
 
-```python
-from robotsix_agent_comm.sdk import Agent
-from robotsix_agent_comm.transport import Registry
-from robotsix_agent_comm.protocol import Request, Metadata
-
-registry = Registry()
-# The calendar agent has already registered itself on this registry.
-# Create a requester agent to send a message:
-requester = Agent("requester", registry)
-requester.start()
-
-# Send a request to the calendar agent:
-response = requester.send_request(
-    "calendar",
-    {"instruction": "list events this week"},
-)
-print(response.body)
-```
-
-## Deployment
-
-The agent runs in-process via an in-memory
-`robotsix_agent_comm.transport.Registry`. This is the zero-config path
-used by tests and single-process deployments where a requester and the
-calendar agent live in the same process:
+The agent provides a :class:`CalDavClient` for calendar operations
+and an :class:`IntentParser` for natural-language instruction parsing.
+Callers interact with these components directly:
 
 ```python
 from robotsix_calendar_agent import CalendarAgent
 
-agent = CalendarAgent()  # transport=None → in-process Registry
+agent = CalendarAgent()
+agent.start()
+
+# List calendars
+calendars = agent._caldav.list_calendars()
+print(calendars)
+
+# Parse a natural-language instruction
+parsed = agent._intent_parser.parse("create event Team Lunch tomorrow at noon")
+print(parsed)
+```
+
+## Deployment
+
+The agent runs in-process.  Start it and work with the CalDAV client
+and intent parser directly:
+
+```python
+from robotsix_calendar_agent import CalendarAgent
+
+agent = CalendarAgent()
 agent.start()
 ```
 

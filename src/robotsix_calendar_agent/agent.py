@@ -1,7 +1,7 @@
-"""CalendarAgent — agent-comm entry point for calendar/contacts management.
+"""CalendarAgent — calendar/contacts management agent.
 
-Wires together :class:`IntentParser`, :class:`CalDavClient`, and the
-agent-comm messaging layer into a single runnable agent.
+Wires together :class:`IntentParser`, :class:`CalDavClient` into a
+single runnable agent.
 """
 
 from __future__ import annotations
@@ -55,15 +55,14 @@ __all__ = [
 
 
 class CalendarAgent:
-    """Top-level agent that processes calendar/contact instructions.
+    """Top-level agent that provides calendar/contact operations.
 
-    Creates a :class:`CalDavClient`, :class:`IntentParser`, and an
-    agent-comm :class:`Agent`, then registers an ``on_request`` handler
-    that parses intent, dispatches to CalDAV/CardDAV, and returns a
-    correlated response.
+    Creates a :class:`CalDavClient` and :class:`IntentParser`.  The
+    dispatch table (:func:`_dispatch`) maps parsed intents to CalDAV
+    operations; callers can use it directly.
 
     Args:
-        agent_id: Agent-comm agent ID (default ``"calendar"``).
+        agent_id: Agent ID (default ``"calendar"``).
         radicale_url: Radicale server URL (falls back to env
             ``RADICALE_URL``).
         radicale_username: Radicale username (falls back to env
@@ -72,11 +71,6 @@ class CalendarAgent:
             ``RADICALE_PASSWORD``).
         llm_model_config: Forwarded to :class:`IntentParser` for llmio
             model selection.
-        component_responder: Optional :class:`ComponentAgentResponder`
-            wired into the request dispatch for management-kind handling
-            (``monitor``, ``config-get``, ``config-set``). Built by
-            :func:`entrypoint.main` and passed here; ``None`` when the
-            component-agent feature is disabled.
 
     Raises:
         ValueError: If Radicale credentials are missing after
@@ -91,7 +85,6 @@ class CalendarAgent:
         radicale_username: str | None = None,
         radicale_password: str | None = None,
         llm_model_config: dict[str, Any] | None = None,
-        component_responder: Any | None = None,
     ) -> None:
         from .settings import Settings
 
@@ -118,155 +111,12 @@ class CalendarAgent:
         )
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
-        from robotsix_agent_comm.sdk import Agent as AgentCommAgent
-        from robotsix_agent_comm.transport import Registry
-
-        agent = AgentCommAgent(agent_id, Registry())
-
-        self._agent = agent
-        self._agent.on_request(self._handle_request)
-
         # -- telemetry -------------------------------------------------
         self._started_at: float = time.monotonic()
         self._request_count: int = 0
         self._error_count: int = 0
         self._last_request_ts: float | None = None
         self._in_flight: int = 0
-
-        # -- optional component-agent responder ------------------------
-        self._component_responder = component_responder
-        if self._component_responder is not None:
-            self._component_responder.set_agent(self)
-
-    # ------------------------------------------------------------------
-    # request handler
-    # ------------------------------------------------------------------
-
-    def _handle_request(self, request: Any) -> Any:
-        """Handle an incoming agent-comm request.
-
-        Extracts the ``"instruction"`` from the request body, parses
-        intent, dispatches to the CalDAV/CardDAV client, and returns
-        a correlated response or error.
-
-        When a :class:`ComponentAgentResponder` is wired, management
-        kinds (``monitor``, ``config-get``, ``config-set``) are
-        delegated to it before instruction handling.
-        """
-        from robotsix_agent_comm.protocol import (
-            Error,
-            Response,
-        )
-
-        body: dict[str, Any] = request.body or {}
-
-        # -- telemetry --------------------------------------------------
-        self._request_count += 1
-        self._last_request_ts = time.monotonic()
-        self._in_flight += 1
-        try:
-            result = self._handle_request_impl(request, body, Error, Response)
-            # Treat protocol-level Error responses as errors for telemetry.
-            # Use duck-typing: an Error has a ``type`` attr named ``ERROR``.
-            if (
-                hasattr(result, "type")
-                and hasattr(result.type, "name")
-                and result.type.name == "ERROR"
-            ):
-                self._error_count += 1
-            return result
-        except Exception:
-            self._error_count += 1
-            raise
-        finally:
-            self._in_flight = max(0, self._in_flight - 1)
-
-    def _handle_request_impl(
-        self,
-        request: Any,
-        body: dict[str, Any],
-        Error: Any,
-        Response: Any,
-    ) -> Any:
-        """Core request handling after telemetry bookkeeping."""
-
-        # -- component-agent dispatch ----------------------------------
-        if self._component_responder is not None:
-            kind = body.get("kind")
-            if kind in ("monitor", "config-get", "config-set"):
-                try:
-                    return self._component_responder.on_request(request)
-                except Exception as exc:
-                    logger.exception(
-                        "Component responder error for kind=%r: %s", kind, exc
-                    )
-                    return Error.to(
-                        request,
-                        code="internal_error",
-                        message=str(exc),
-                    )
-
-        instruction: str | None
-        if "add_to_calendar" in body:
-            instruction = _build_add_to_calendar_instruction(body["add_to_calendar"])
-        else:
-            instruction = body.get("instruction")
-        if not instruction:
-            logger.error("Request missing 'instruction' key: %s", body)
-            return Error.to(
-                request,
-                code="missing_instruction",
-                message="Request body must contain an 'instruction' key.",
-            )
-
-        logger.info("Processing instruction: %s", instruction)
-
-        try:
-            parsed: ParsedIntent = self._intent_parser.parse(instruction)
-        except IntentParseError as exc:
-            logger.exception("Intent parse error for '%s': %s", instruction, exc)
-            return Error.to(request, code="parse_error", message=str(exc))
-
-        # Hardening: add_to_calendar must always resolve to create_event.
-        if "add_to_calendar" in body and parsed.operation != "create_event":
-            logger.error(
-                "add_to_calendar resolved to %r instead of create_event",
-                parsed.operation,
-            )
-            return Error.to(
-                request,
-                code="unexpected_operation",
-                message=(
-                    f"add_to_calendar requests must create an event, "
-                    f"but parser returned '{parsed.operation}'."
-                ),
-            )
-
-        try:
-            result = self._dispatch(parsed)
-            return Response.to(
-                request,
-                body={
-                    "result": result,
-                    "reply": _render_reply(parsed.operation, result),
-                },
-            )
-        except OperationError as exc:
-            logger.exception(
-                "Operation error for '%s' (op=%s): %s",
-                instruction,
-                parsed.operation,
-                exc,
-            )
-            return Error.to(request, code=exc.code, message=exc.message)
-        except Exception as exc:
-            logger.exception(
-                "Internal error for '%s' (op=%s): %s",
-                instruction,
-                parsed.operation,
-                exc,
-            )
-            return Error.to(request, code="internal_error", message=str(exc))
 
     # ------------------------------------------------------------------
     # dispatch
@@ -298,8 +148,7 @@ class CalendarAgent:
         """Return a real-time snapshot of agent telemetry.
 
         Includes live counters, timestamps, calendar/runtime facts, and a
-        CalDAV health probe.  Called by the component-agent responder on
-        every ``monitor`` request — never cached.
+        CalDAV health probe.
         """
         uptime = time.monotonic() - self._started_at
         health = self._caldav.health()
@@ -320,14 +169,12 @@ class CalendarAgent:
     # ------------------------------------------------------------------
 
     def start(self) -> None:
-        """Start the agent-comm transport and register the endpoint."""
+        """Start the agent (no-op; the broker transport has been removed)."""
         logger.info("Starting CalendarAgent (agent_id=%r)", self._agent_id)
-        self._agent.start()
 
     def stop(self) -> None:
-        """Stop the agent-comm transport and unregister."""
+        """Stop the agent (no-op; the broker transport has been removed)."""
         logger.info("Stopping CalendarAgent (agent_id=%r)", self._agent_id)
-        self._agent.stop()
 
     def __enter__(self) -> CalendarAgent:
         self.start()
@@ -633,7 +480,7 @@ def _summarize_item(item: dict[str, Any]) -> str:
 def _render_reply(operation: str, result: Any) -> str:
     """Render a human-readable reply string from a dispatch *result*.
 
-    Generic agent-comm consumers (e.g. robotsix-chat) read the reply via
+    Generic consumers (e.g. robotsix-chat) read the reply via
     ``reply_text``, which looks for the ``"reply"`` key; the structured
     ``"result"`` is retained for programmatic consumers. Without this, those
     consumers see an empty reply and fall back to their default message.

@@ -72,15 +72,11 @@ modules:
     paths:
       - src/robotsix_calendar_agent/entrypoint.py
       - src/robotsix_calendar_agent/__main__.py
-    test_paths:
-      - tests/entrypoint/__init__.py
-      - tests/entrypoint/test_entrypoint.py
     doc_paths:
       - docs/reference/entrypoint.md
     depends_on:
       - agent
       - settings
-      - component_agent
       - logging_config
 
   - name: settings
@@ -104,17 +100,4 @@ modules:
       - docs/reference/logging_config.md
     depends_on: []
 
-  - name: component_agent
-    path: src/robotsix_calendar_agent/component_agent/
-    paths:
-      - src/robotsix_calendar_agent/component_agent/__init__.py
-      - src/robotsix_calendar_agent/component_agent/settings.py
-      - src/robotsix_calendar_agent/component_agent/config_contract.py
-    test_paths:
-      - tests/component_agent/__init__.py
-      - tests/component_agent/test_config_contract.py
-    doc_paths:
-      - docs/reference/component_agent.md
-      - docs/tutorials/intermediate/component-agent-management.md
-    depends_on:
-      - settings
+

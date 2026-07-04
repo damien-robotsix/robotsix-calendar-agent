@@ -1,5 +1,12 @@
 ## 0.0.0 (unreleased)
 
+- Remove ``robotsix-agent-comm`` dependency and all broker client/responder
+  code.  The ``CalendarAgent`` no longer creates an agent-comm transport;
+  the ``ComponentAgentResponder`` and component-agent management kinds
+  (``monitor``, ``config-get``, ``config-set``) are removed.  The
+  ``add_to_calendar_handler`` retains its business logic with a local
+  ``Response`` stand-in.  Broker integration will be reimplemented via
+  central-deploy in a future release.
 - Add ``__main__.py`` to support ``python -m robotsix_calendar_agent`` invocation, following the Uvicorn pattern.
 - Move entrypoint tests from `tests/brokered_entrypoint/` (deleted) to `tests/entrypoint/test_entrypoint.py`, dropping broker-specific test classes and updating imports to `robotsix_calendar_agent.entrypoint`.
 - Remove all broker-related documentation: BROKER_* env vars, brokered transport mode, brokered_entrypoint references,

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -14,60 +13,8 @@ import pytest
 from tests.caldav_client.caldav_test_server import caldav_client  # noqa: F401
 
 # ---------------------------------------------------------------------------
-# Mock robotsix_agent_comm in sys.modules before anything imports it
-# ---------------------------------------------------------------------------
-
-_mock_agent_comm = MagicMock()
-_mock_agent_comm_sdk = MagicMock()
-_mock_agent_comm_protocol = MagicMock()
-_mock_agent_comm_transport = MagicMock()
-
-
-class _MockConfigContractError(Exception):
-    """Stand-in for ``robotsix_agent_comm.protocol.ConfigContractError``
-    used in tests so ``pytest.raises`` can match it natively."""
-
-    def __init__(self, code: str, message: str, details: Any = None) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-        self.details = details
-
-
-_mock_agent_comm_protocol.ConfigContractError = _MockConfigContractError
-
-sys.modules["robotsix_agent_comm"] = _mock_agent_comm
-sys.modules["robotsix_agent_comm.sdk"] = _mock_agent_comm_sdk
-sys.modules["robotsix_agent_comm.protocol"] = _mock_agent_comm_protocol
-sys.modules["robotsix_agent_comm.transport"] = _mock_agent_comm_transport
-
-
-# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def setup_mocks() -> tuple[MagicMock, MagicMock, MagicMock, MagicMock]:
-    """Configure the mocked robotsix_agent_comm modules and return key mocks."""
-    mock_registry = MagicMock()
-    mock_agent = MagicMock()
-
-    _mock_agent_comm_transport.Registry.return_value = mock_registry
-    _mock_agent_comm_sdk.Agent.return_value = mock_agent
-
-    # Use MagicMock for Response.to and Error.to so we can inspect call_args
-    mock_response_to = MagicMock(return_value=MagicMock())
-    mock_error_to = MagicMock(return_value=MagicMock())
-    # Make the returned Error mock duck-type as an Error for telemetry
-    mock_error_to.return_value.type = MagicMock()
-    mock_error_to.return_value.type.name = "ERROR"
-    # Make the returned Response mock duck-type as a Response
-    mock_response_to.return_value.type = MagicMock()
-    mock_response_to.return_value.type.name = "RESPONSE"
-    _mock_agent_comm_protocol.Response.to = mock_response_to
-    _mock_agent_comm_protocol.Error.to = mock_error_to
-
-    return mock_registry, mock_agent, mock_response_to, mock_error_to
 
 
 def make_request(body: dict[str, Any] | None) -> MagicMock:
@@ -137,11 +84,9 @@ def clean_env() -> None:
 def calendar_agent() -> Any:
     """Create a CalendarAgent with all external deps mocked.
 
-    The returned agent has ``_mock_parser``, ``_mock_caldav``, and
-    ``_mock_agent_comm`` attributes attached for test assertions.
+    The returned agent has ``_mock_parser`` and ``_mock_caldav``
+    attributes attached for test assertions.
     """
-    setup_mocks()
-
     with (
         patch(
             "robotsix_calendar_agent.agent.CalDavClient",
@@ -164,7 +109,6 @@ def calendar_agent() -> Any:
         agent = CalendarAgent()
         agent._mock_parser = mock_parser  # type: ignore[attr-defined]
         agent._mock_caldav = mock_caldav.return_value  # type: ignore[attr-defined]
-        agent._mock_agent_comm = _mock_agent_comm_sdk.Agent.return_value  # type: ignore[attr-defined]
 
         yield agent
 
@@ -176,7 +120,6 @@ def make_add_to_calendar_request() -> Any:
     Usage::
 
         req = make_add_to_calendar_request(subject="Lunch", correlation_id="c1")
-        calendar_agent._handle_request(req)
     """
     from robotsix_calendar_agent.add_to_calendar_handler import (
         ERROR_INVALID_DATES,
