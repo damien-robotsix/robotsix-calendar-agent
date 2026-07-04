@@ -1,6 +1,11 @@
 ## 0.0.0 (unreleased)
 
 
+- Removed stale broker-transport and component-agent configuration
+  entries from `.env.example` and `docs/configuration.md`.  The
+  removed variables (`BROKER_HOST`, `COMPONENT_AGENT_ENABLED`, etc.)
+  no longer exist in `settings.py` — see
+  `docs/reference/component_agent.md` for the removal notice.
 - Restore non-broker entrypoint tests (`TestMain`, `TestServeBlocking`) that were
   incorrectly removed alongside broker-specific tests
 - Remove stale "Agent-comm" language from `pyproject.toml` description and
