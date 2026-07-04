@@ -88,6 +88,14 @@ modules:
       - settings
       - logging_config
 
+  - name: healthcheck
+    path: src/robotsix_calendar_agent/healthcheck.py
+    paths:
+      - src/robotsix_calendar_agent/healthcheck.py
+    depends_on:
+      - settings
+      - caldav_client
+
   - name: settings
     path: src/robotsix_calendar_agent/settings.py
     paths:
