@@ -36,7 +36,8 @@ event = CalendarEvent(
     dtend="2026-06-09T16:00:00",
 )
 created = agent._caldav.create_event(event)
-print(f"Created: {created.summary} — uid={created.uid}")
+uid = created.uid
+print(f"Created: {created.summary} — uid={uid}")
 ```
 
 ---

@@ -1,6 +1,11 @@
 ## 0.0.0 (unreleased)
 
 
+- Restore non-broker entrypoint tests (`TestMain`, `TestServeBlocking`) that were
+  incorrectly removed alongside broker-specific tests
+- Remove stale "Agent-comm" language from `pyproject.toml` description and
+  `docs/index.md` `agent_id` parameter doc
+- Fix undefined `uid` variable in `docs/tutorials/basic/manage-events.md`
 - Remove ``robotsix-agent-comm`` dependency and all broker client/responder
   code.  The ``CalendarAgent`` no longer creates an agent-comm transport;
   the ``ComponentAgentResponder`` and component-agent management kinds

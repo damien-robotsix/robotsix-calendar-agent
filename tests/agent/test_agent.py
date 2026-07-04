@@ -329,6 +329,3 @@ class TestRenderReply:
         result = _render_reply("delete_event", {"deleted": False, "uid": "e1"})
         assert result != "Done — the item was deleted."
         assert "Result:" in result
-
-
-

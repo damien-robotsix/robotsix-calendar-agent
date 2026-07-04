@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "robotsix-calendar-agent"
 version = "0.1.0"
-description = "Agent-comm calendar and contacts agent for Radicale"
+description = "Calendar and contacts agent for Radicale"
 readme = "README.md"
 requires-python = ">=3.14"
 license = { text = "MIT" }

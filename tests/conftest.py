@@ -61,5 +61,3 @@ def calendar_agent() -> Any:
         agent._mock_caldav = mock_caldav.return_value  # type: ignore[attr-defined]
 
         yield agent
-
-

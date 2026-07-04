@@ -72,6 +72,9 @@ modules:
     paths:
       - src/robotsix_calendar_agent/entrypoint.py
       - src/robotsix_calendar_agent/__main__.py
+    test_paths:
+      - tests/entrypoint/__init__.py
+      - tests/entrypoint/test_entrypoint.py
     doc_paths:
       - docs/reference/entrypoint.md
     depends_on:
