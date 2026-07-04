@@ -17,7 +17,6 @@ from ._shared import (
     _unescape_text,
     _wrap_caldav_op,
 )
-
 from .calendar_ops import _CalendarOpsMixin
 from .contact_ops import _ContactOpsMixin
 from .task_ops import _TaskOpsMixin
