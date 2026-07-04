@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Move `healthcheck.py` from repo root into the installable package as `robotsix_calendar_agent.healthcheck`, registered as the `calendar-agent-healthcheck` console_scripts entrypoint. The Dockerfile HEALTHCHECK now uses the entrypoint directly instead of a standalone script copy.
 - Split `caldav_client.py` (864 lines) into a package with domain-specific
   modules: `calendar_ops.py`, `contact_ops.py`, `task_ops.py`, and shared
   infrastructure in `_shared.py`. The `CalDavClient` class in `__init__.py`
