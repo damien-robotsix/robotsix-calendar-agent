@@ -1,4 +1,4 @@
-"""Tests for :mod:`robotsix_calendar_agent.logging_config`."""
+"""Tests for logging setup via :func:`robotsix_llmio.logging.setup_logging`."""
 
 from __future__ import annotations
 
@@ -6,114 +6,72 @@ import json
 import logging
 
 import pytest
-
-from robotsix_calendar_agent.logging_config import JsonFormatter, configure_logging
+from robotsix_llmio.logging import setup_logging
 
 # ---------------------------------------------------------------------------
-# JsonFormatter
+# setup_logging integration
 # ---------------------------------------------------------------------------
 
 
-def test_json_formatter_produces_valid_json() -> None:
-    """A formatted record must be parseable JSON with expected keys."""
-    fmt = JsonFormatter()
-    record = logging.LogRecord(
-        name="test.logger",
-        level=logging.INFO,
-        pathname=__file__,
-        lineno=42,
-        msg="hello %s",
-        args=("world",),
-        exc_info=None,
-    )
-    output = fmt.format(record)
-    obj = json.loads(output)
-    assert obj["name"] == "test.logger"
-    assert obj["level"] == "INFO"
-    assert obj["message"] == "hello world"
-    assert "time" in obj
+def _clear_calendar_agent_logger() -> logging.Logger:
+    """Reset the calendar-agent logger so each test starts clean."""
+    logger = logging.getLogger("robotsix_calendar_agent")
+    logger.handlers.clear()
+    logger.propagate = True
+    return logger
 
 
-def test_json_formatter_includes_exc_info() -> None:
-    """Exception info must be serialised into the output."""
-    fmt = JsonFormatter()
-    try:
-        raise ValueError("boom")
-    except ValueError:
-        exc_info = None
-        import sys
+class TestSetupLogging:
+    def test_sets_level(self) -> None:
+        logger = _clear_calendar_agent_logger()
+        setup_logging(level="DEBUG", fmt="console", loggers=("robotsix_calendar_agent",))
+        assert logger.level == logging.DEBUG
 
-        exc_info = sys.exc_info()
+    def test_json_format_produces_valid_json(self) -> None:
+        logger = _clear_calendar_agent_logger()
+        setup_logging(level="INFO", fmt="json", loggers=("robotsix_calendar_agent",))
+        assert logger.handlers
+        handler = logger.handlers[0]
+
         record = logging.LogRecord(
-            name="t",
-            level=logging.ERROR,
+            name="robotsix_calendar_agent.test",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=42,
+            msg="hello %s",
+            args=("world",),
+            exc_info=None,
+        )
+        output = handler.format(record)
+        obj = json.loads(output)
+        assert obj["name"] == "robotsix_calendar_agent.test"
+        assert obj["level"] == "INFO"
+        assert obj["message"] == "hello world"
+
+    def test_console_format_contains_message(self) -> None:
+        logger = _clear_calendar_agent_logger()
+        setup_logging(level="INFO", fmt="console", loggers=("robotsix_calendar_agent",))
+        assert logger.handlers
+        handler = logger.handlers[0]
+
+        record = logging.LogRecord(
+            name="robotsix_calendar_agent.test",
+            level=logging.INFO,
             pathname=__file__,
             lineno=1,
-            msg="fail",
+            msg="hello world",
             args=(),
-            exc_info=exc_info,
+            exc_info=None,
         )
-    output = fmt.format(record)
-    obj = json.loads(output)
-    assert "exc_info" in obj
-    assert "ValueError" in obj["exc_info"]
+        output = handler.format(record)
+        assert "hello world" in output
 
-
-# ---------------------------------------------------------------------------
-# configure_logging
-# ---------------------------------------------------------------------------
-
-
-def test_configure_logging_sets_level() -> None:
-    """Calling configure_logging must set the root logger level."""
-    import robotsix_calendar_agent.logging_config as lc
-
-    root = logging.getLogger()
-    original = root.level
-    lc._configured = False
-    try:
-        configure_logging("DEBUG", json_logs=False)
-        assert root.level == logging.DEBUG
-    finally:
-        root.setLevel(original)
-        lc._configured = False
-
-
-def test_configure_logging_json_logs_adds_handler() -> None:
-    """With json_logs=True a handler with JsonFormatter must be added."""
-    root = logging.getLogger()
-    before = len(root.handlers)
-    # configure_logging is idempotent; reset the guard for this test.
-    import robotsix_calendar_agent.logging_config as lc
-
-    lc._configured = False
-    try:
-        configure_logging("WARNING", json_logs=True)
-        assert len(root.handlers) == before + 1
-        handler = root.handlers[-1]
-        assert isinstance(handler.formatter, JsonFormatter)
-    finally:
-        if len(root.handlers) > before:
-            root.removeHandler(root.handlers[-1])
-        lc._configured = False
-
-
-def test_configure_logging_idempotent() -> None:
-    """Calling configure_logging twice must not add duplicate handlers."""
-    import robotsix_calendar_agent.logging_config as lc
-
-    lc._configured = False
-    root = logging.getLogger()
-    before = len(root.handlers)
-    try:
-        configure_logging("INFO", json_logs=False)
-        after_first = len(root.handlers)
-        configure_logging("DEBUG", json_logs=False)
-        assert len(root.handlers) == after_first
-    finally:
-        if len(root.handlers) > before:
-            root.removeHandler(root.handlers[-1])
-        lc._configured = False
+    def test_idempotent(self) -> None:
+        logger = _clear_calendar_agent_logger()
+        setup_logging(level="INFO", fmt="console", loggers=("robotsix_calendar_agent",))
+        count = len(logger.handlers)
+        setup_logging(level="DEBUG", fmt="json", loggers=("robotsix_calendar_agent",))
+        assert len(logger.handlers) == count
 
 
 # ---------------------------------------------------------------------------

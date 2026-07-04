@@ -21,7 +21,7 @@ class TestMain:
             patch("robotsix_calendar_agent.entrypoint.CalendarAgent") as mock_cal,
             patch("robotsix_calendar_agent.entrypoint._serve_blocking") as mock_serve,
             patch("robotsix_calendar_agent.settings.Settings"),
-            patch("robotsix_calendar_agent.logging_config.configure_logging"),
+            patch("robotsix_llmio.logging.setup_logging"),
         ):
             entrypoint.main()
 
