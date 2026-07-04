@@ -41,8 +41,11 @@ class Response:
 # Error codes used in validation responses — shared with tests.
 # ---------------------------------------------------------------------------
 ERROR_MISSING_SUBJECT = "missing_subject"
+"""Payload did not include a non-empty subject string."""
 ERROR_MISSING_DATES = "missing_dates"
+"""Event start/end datetimes could not be determined from the payload."""
 ERROR_INVALID_DATES = "invalid_dates"
+"""One or both ISO 8601 date strings were unparseable or dtend <= dtstart."""
 
 
 # ---------------------------------------------------------------------------
