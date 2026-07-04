@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Classify `docs/reference/component_agent.md` and `docs/tutorials/intermediate/component-agent-management.md` under the `agent` module's `doc_paths` in `docs/modules.yaml`.
 - Move `healthcheck.py` from repo root into the installable package as `robotsix_calendar_agent.healthcheck`, registered as the `calendar-agent-healthcheck` console_scripts entrypoint. The Dockerfile HEALTHCHECK now uses the entrypoint directly instead of a standalone script copy.
 - Split `caldav_client.py` (864 lines) into a package with domain-specific
   modules: `calendar_ops.py`, `contact_ops.py`, `task_ops.py`, and shared
