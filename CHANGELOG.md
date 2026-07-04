@@ -1,6 +1,12 @@
 ## 0.0.0 (unreleased)
 
 
+- Split `caldav_client.py` (864 lines) into a package with domain-specific
+  modules: `calendar_ops.py`, `contact_ops.py`, `task_ops.py`, and shared
+  infrastructure in `_shared.py`. The `CalDavClient` class in `__init__.py`
+  inherits from mixin classes in each domain module. All public API symbols
+  (`CalDavClient`, `CalendarEvent`, `Contact`, `OperationError`, `Task`)
+  remain importable from `robotsix_calendar_agent.caldav_client` unchanged.
 - Clarify that `langfuse_cleanup` is a framework-level periodic workflow (does not require a per-repo presence file). Remove it from the repo-specific "Periodic workflows" key-list in AGENT.md.
 - Migrated secret scanning from detect-secrets to Betterleaks in pre-commit hooks.
 - Remove stale `CALENDAR_AGENT_TRANSPORT=brokered` env var from Dockerfile. The broker transport was removed in a past refactor; the env var was silently ignored.
