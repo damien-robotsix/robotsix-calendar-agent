@@ -20,8 +20,19 @@ modules:
       - docs/modules.yaml
       - docs/tutorials/basic/first-agent.md
 
+  - name: dispatch
+    path: src/robotsix_calendar_agent/dispatch.py
+    paths:
+      - src/robotsix_calendar_agent/dispatch.py
+    depends_on:
+      - add_to_calendar_handler
+      - caldav_client
+      - intent_parser
+
   - name: agent
     path: src/robotsix_calendar_agent/agent.py
+    paths:
+      - src/robotsix_calendar_agent/agent.py
     test_paths:
       - tests/agent/test_agent.py
     doc_paths:
@@ -30,7 +41,7 @@ modules:
       - docs/agent/tutorials/manage-events.md
       - docs/tutorials/intermediate/component-agent-management.md
     depends_on:
-      - add_to_calendar_handler
+      - dispatch
       - caldav_client
       - intent_parser
 
