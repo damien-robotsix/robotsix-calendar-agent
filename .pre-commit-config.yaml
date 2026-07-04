@@ -25,11 +25,10 @@ repos:
           - pydantic
           - pydantic-settings
 
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
+  - repo: https://github.com/betterleaks/betterleaks
+    rev: v1.6.0
     hooks:
-      - id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
+      - id: betterleaks
         exclude: '^uv\.lock$|^package-lock\.json$|.*\.lock$'
 
   - repo: https://github.com/rhysd/actionlint
