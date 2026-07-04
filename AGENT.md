@@ -72,8 +72,8 @@ extra provides the required OTLP dependencies.
 
 Two periodic workflows operate on tracing data:
 
-- **`langfuse_cleanup`** — prunes stale trace sessions.
-- **`trace_review`** — surfaces anomalous traces for human review.
+- **`trace_review`** — surfaces anomalous traces for human review (repo-specific, see `.robotsix-mill/periodic/trace_review.yaml`).
+- **`langfuse_cleanup`** — prunes stale trace sessions (framework-level; does not require a per-repo presence file).
 
 Both are active and must not be disabled without coordination.
 
@@ -105,7 +105,6 @@ This repo is targeted by **15 periodic agent workflows** (second-highest
 in the fleet). Key ones referenced above:
 
 - `env_doc_sync` — enforces `docs/configuration.md` ↔ `settings.py` consistency
-- `langfuse_cleanup` — prunes stale Langfuse trace sessions
 - `trace_review` — surfaces anomalous traces
 
 When making changes, consider whether any periodic workflow's
