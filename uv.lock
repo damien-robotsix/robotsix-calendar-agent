@@ -1485,7 +1485,7 @@ requires-dist = [
     { name = "caldav" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "robotsix-llmio", extras = ["openrouter", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992" },
+    { name = "robotsix-llmio", extras = ["openrouter", "tracing"], git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=73f2d555caa21de47a3732824d776e04719b3011" },
     { name = "tenacity", specifier = ">=9.0,<10" },
 ]
 
@@ -1510,7 +1510,7 @@ docs = [
 [[package]]
 name = "robotsix-llmio"
 version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=555b633624775c5cb4727f265a6659c953a3e992#555b633624775c5cb4727f265a6659c953a3e992" }
+source = { git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=73f2d555caa21de47a3732824d776e04719b3011#73f2d555caa21de47a3732824d776e04719b3011" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-ai-slim" },

@@ -24,7 +24,9 @@ def _clear_calendar_agent_logger() -> logging.Logger:
 class TestSetupLogging:
     def test_sets_level(self) -> None:
         logger = _clear_calendar_agent_logger()
-        setup_logging(level="DEBUG", fmt="console", loggers=("robotsix_calendar_agent",))
+        setup_logging(
+            level="DEBUG", fmt="console", loggers=("robotsix_calendar_agent",)
+        )
         assert logger.level == logging.DEBUG
 
     def test_json_format_produces_valid_json(self) -> None:
