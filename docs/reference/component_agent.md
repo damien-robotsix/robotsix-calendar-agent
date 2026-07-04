@@ -6,4 +6,4 @@
     will be reimplemented via the central-deploy system in a future release.
 
     See the [agent reference](agent.md) for the remaining
-    :meth:`~robotsix_calendar_agent.agent.CalendarAgent.monitor_snapshot` method.
+    :class:`~robotsix_calendar_agent.agent.CalendarAgent` class.

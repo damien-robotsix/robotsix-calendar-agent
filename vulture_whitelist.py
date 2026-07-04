@@ -35,5 +35,4 @@ handle_add_to_calendar
 _settings
 _intent_parser
 _dispatch
-monitor_snapshot
 _render_reply
