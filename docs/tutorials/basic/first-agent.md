@@ -85,7 +85,7 @@ uv run python hello_calendar.py
 
 ## 5. Next steps
 
-- [Managing Calendar Events](manage-events.md) — create, update, and delete
+- [Managing Calendar Events](../../agent/tutorials/manage-events.md) — create, update, and delete
   events.
 - [Configuration](../../configuration.md) — complete environment variable
   reference.

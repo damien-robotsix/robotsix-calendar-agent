@@ -24,13 +24,13 @@ nav:
       - Overview: tutorials/index.md
       - Basic:
           - Your First Agent: tutorials/basic/first-agent.md
-          - Managing Calendar Events: tutorials/basic/manage-events.md
+          - Managing Calendar Events: agent/tutorials/manage-events.md
       - Intermediate:
           - Component-Agent Management: tutorials/intermediate/component-agent-management.md
   - Configuration: configuration.md
   - Code Reference:
       - reference/index.md
-      - reference/agent.md
+      - agent/reference.md
       - reference/intent_parser.md
       - reference/caldav_client.md
       - reference/settings.md

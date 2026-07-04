@@ -25,9 +25,9 @@ modules:
     test_paths:
       - tests/agent/test_agent.py
     doc_paths:
-      - docs/reference/agent.md
+      - docs/agent/reference.md
       - docs/reference/component_agent.md
-      - docs/tutorials/basic/manage-events.md
+      - docs/agent/tutorials/manage-events.md
       - docs/tutorials/intermediate/component-agent-management.md
     depends_on:
       - add_to_calendar_handler
