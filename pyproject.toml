@@ -60,7 +60,7 @@ docs = [
 ]
 
 [tool.uv.sources]
-robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "555b633624775c5cb4727f265a6659c953a3e992" }  # pragma: allowlist secret
+robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "73f2d555caa21de47a3732824d776e04719b3011" }  # pragma: allowlist secret
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/robotsix_calendar_agent"]
