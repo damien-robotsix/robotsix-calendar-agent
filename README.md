@@ -16,9 +16,9 @@
 | src/robotsix\_calendar\_agent/entrypoint.py                   |       27 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/healthcheck.py                  |       34 |       34 |       10 |        0 |      0% |     12-73 |
 | src/robotsix\_calendar\_agent/intent\_parser.py               |       56 |        0 |        2 |        0 |    100% |           |
-| src/robotsix\_calendar\_agent/logging\_config.py              |       24 |        0 |        6 |        0 |    100% |           |
+| src/robotsix\_calendar\_agent/logging\_config.py              |       32 |        1 |        6 |        1 |     95% |        33 |
 | src/robotsix\_calendar\_agent/settings.py                     |       19 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                                                     |  **811** |  **101** |  **186** |   **10** | **87%** |           |
+| **TOTAL**                                                     |  **819** |  **102** |  **186** |   **11** | **87%** |           |
 
 
 ## Setup coverage badge
