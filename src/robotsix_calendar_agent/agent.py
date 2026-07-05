@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from collections.abc import Callable
 from typing import Any
 
@@ -111,13 +110,6 @@ class CalendarAgent:
         )
         self._intent_parser = IntentParser(model_config=llm_model_config)
 
-        # -- telemetry -------------------------------------------------
-        self._started_at: float = time.monotonic()
-        self._request_count: int = 0
-        self._error_count: int = 0
-        self._last_request_ts: float | None = None
-        self._in_flight: int = 0
-
     # ------------------------------------------------------------------
     # dispatch
     # ------------------------------------------------------------------
@@ -139,30 +131,6 @@ class CalendarAgent:
         if handler in _CREATE_UPDATE_HANDLERS:
             return handler(self._caldav, params, op)
         return handler(self._caldav, params)
-
-    # ------------------------------------------------------------------
-    # telemetry
-    # ------------------------------------------------------------------
-
-    def monitor_snapshot(self) -> dict[str, Any]:
-        """Return a real-time snapshot of agent telemetry.
-
-        Includes live counters, timestamps, calendar/runtime facts, and a
-        CalDAV health probe.
-        """
-        uptime = time.monotonic() - self._started_at
-        health = self._caldav.health()
-        return {
-            "agent_id": self._agent_id,
-            "uptime_seconds": round(uptime, 3),
-            "request_count": self._request_count,
-            "error_count": self._error_count,
-            "in_flight": self._in_flight,
-            "last_request_ts": self._last_request_ts,
-            "caldav_url": self._caldav._url,
-            "default_calendar": self._caldav._default_calendar,
-            "caldav_health": health,
-        }
 
     # ------------------------------------------------------------------
     # lifecycle

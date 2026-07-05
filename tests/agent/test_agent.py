@@ -85,40 +85,6 @@ class TestDispatchEnumSync:
 
 
 # ---------------------------------------------------------------------------
-# Telemetry counters
-# ---------------------------------------------------------------------------
-
-
-class TestTelemetry:
-    def test_counters_initialise_to_zero(self, calendar_agent: MagicMock) -> None:
-        assert calendar_agent._request_count == 0
-        assert calendar_agent._error_count == 0
-        assert calendar_agent._in_flight == 0
-        assert calendar_agent._started_at is not None
-        assert calendar_agent._last_request_ts is None
-
-    def test_monitor_snapshot_contains_live_counters(
-        self, calendar_agent: MagicMock
-    ) -> None:
-        calendar_agent._mock_caldav.health.return_value = {
-            "connected": True,
-            "calendar_count": 1,
-        }
-        calendar_agent._mock_caldav._url = "https://rad.example.com"
-        calendar_agent._mock_caldav._default_calendar = "TestCal"
-
-        snap = calendar_agent.monitor_snapshot()
-        assert snap["agent_id"] == "calendar"
-        assert snap["request_count"] == 0
-        assert snap["error_count"] == 0
-        assert snap["in_flight"] == 0
-        assert isinstance(snap["uptime_seconds"], float)
-        assert snap["uptime_seconds"] >= 0
-        assert snap["caldav_health"]["connected"] is True
-        assert snap["caldav_health"]["calendar_count"] == 1
-
-
-# ---------------------------------------------------------------------------
 # _summarize_item unit tests
 # ---------------------------------------------------------------------------
 

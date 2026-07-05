@@ -16,6 +16,7 @@
   remain importable from `robotsix_calendar_agent.caldav_client` unchanged.
 - Clarify that `langfuse_cleanup` is a framework-level periodic workflow (does not require a per-repo presence file). Remove it from the repo-specific "Periodic workflows" key-list in AGENT.md.
 - Migrated secret scanning from detect-secrets to Betterleaks in pre-commit hooks.
+- Removed dead telemetry counters (`_request_count`, `_error_count`, `_last_request_ts`, `_in_flight`, `_started_at`) and `monitor_snapshot()` from `CalendarAgent`. These were left over from the removed broker transport and were never incremented.
 - Remove stale `CALENDAR_AGENT_TRANSPORT=brokered` env var from Dockerfile. The broker transport was removed in a past refactor; the env var was silently ignored.
 - Removed stale broker-transport and component-agent configuration
   entries from `.env.example` and `docs/configuration.md`.  The
