@@ -87,7 +87,6 @@ modules:
       - docs/reference/entrypoint.md
     depends_on:
       - agent
-      - settings
 
   - name: healthcheck
     path: src/robotsix_calendar_agent/healthcheck.py
