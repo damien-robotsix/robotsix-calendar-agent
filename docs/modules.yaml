@@ -92,6 +92,9 @@ modules:
     path: src/robotsix_calendar_agent/healthcheck.py
     paths:
       - src/robotsix_calendar_agent/healthcheck.py
+    test_paths:
+      - tests/healthcheck/__init__.py
+      - tests/healthcheck/test_healthcheck.py
     depends_on:
       - settings
       - caldav_client
