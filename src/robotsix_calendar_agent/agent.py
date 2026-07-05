@@ -150,6 +150,3 @@ class CalendarAgent:
 
     def __exit__(self, *args: Any) -> None:
         self.stop()
-
-
-
