@@ -107,6 +107,7 @@ modules:
       - docs/reference/settings.md
     depends_on: []
 
+# docs/modules.yaml (lines 106-110)
   - name: logging_config
     test_paths:
       - tests/logging_config/__init__.py
