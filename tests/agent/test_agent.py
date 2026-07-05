@@ -82,6 +82,8 @@ class TestDispatchEnumSync:
             f"Mismatch: extra in dict={dispatch_keys - enum_values}, "
             f"missing={enum_values - dispatch_keys}"
         )
+
+
 # ---------------------------------------------------------------------------
 # _summarize_item unit tests
 # ---------------------------------------------------------------------------
