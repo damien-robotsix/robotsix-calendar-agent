@@ -14,7 +14,6 @@ from ._shared import (
     Contact,
     OperationError,
     Task,
-    _unescape_text,
     _wrap_caldav_op,
 )
 from .calendar_ops import _CalendarOpsMixin
@@ -77,12 +76,6 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
                 code="caldav_error",
                 message=f"Failed to connect to Radicale: {exc}",
             ) from exc
-
-    # ------------------------------------------------------------------
-    # shared helpers (some re-exported from _shared for backward compat)
-    # ------------------------------------------------------------------
-
-    _unescape_text = staticmethod(_unescape_text)
 
     def _get_calendar(self, calendar_id: str = "") -> Any:
         """Return a caldav calendar object by name, or the default.
