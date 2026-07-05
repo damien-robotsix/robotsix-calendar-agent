@@ -1,6 +1,9 @@
 ## 0.0.0 (unreleased)
 
 
+- Add dedicated unit test suite for the `healthcheck.py` module covering
+  missing-credentials validation, successful health probes, transient
+  failure retries, all-retries-exhausted, and exception handling.
 - docs/modules.yaml: Added `path`, `paths`, and `doc_paths` fields to `logging_config` entry, matching the pattern of all other module entries.
 - Replace custom `logging_config` module with `robotsix_llmio.logging.setup_logging()`
   in `entrypoint.py`, removing the duplicated `JsonFormatter` and
