@@ -107,9 +107,12 @@ modules:
       - docs/reference/settings.md
     depends_on: []
 
-# docs/modules.yaml (lines 106-110)
   - name: logging_config
+    path: src/robotsix_calendar_agent/logging_config.py
+    paths:
+      - src/robotsix_calendar_agent/logging_config.py
     test_paths:
       - tests/logging_config/__init__.py
       - tests/logging_config/test_logging_config.py
+    doc_paths: []
     depends_on: []
