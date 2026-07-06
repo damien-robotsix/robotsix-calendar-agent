@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Deactivate all periodic mill workflows (remove `.robotsix-mill/periodic/*.yaml`) to pause auto-generated tickets while the board backlog is cleared.
 - Reorganize `entrypoint` module docs: move `docs/reference/entrypoint.md` to `docs/entrypoint/reference.md`, consistent with per-module doc layout.
 - Moved settings documentation from `docs/reference/settings.md` to `docs/settings/reference.md`, standardizing on per-module doc directories.
 - Moved `intent_parser` documentation from `docs/reference/intent_parser.md` to `docs/intent_parser/reference.md` for per-module doc layout consistency.
