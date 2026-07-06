@@ -31,7 +31,7 @@ nav:
   - Code Reference:
       - reference/index.md
       - agent/reference.md
-      - reference/intent_parser.md
+      - intent_parser/reference.md
       - caldav_client/reference.md
       - reference/settings.md
       - reference/entrypoint.md

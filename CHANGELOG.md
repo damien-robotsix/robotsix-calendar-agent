@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Moved `intent_parser` documentation from `docs/reference/intent_parser.md` to `docs/intent_parser/reference.md` for per-module doc layout consistency.
 - Move `docs/reference/caldav_client.md` to `docs/caldav_client/reference.md` to align with per-module doc layout already used by the `agent` module.
 - Add test coverage and reference documentation for the `healthcheck` module.
   - New test file `tests/healthcheck/test_healthcheck.py` covering credential-missing exit, success path, failure exhaustion, and retry logic.

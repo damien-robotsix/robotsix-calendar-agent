@@ -71,7 +71,7 @@ modules:
       - tests/intent_parser/test_intent_parser.py
       - tests/intent_parser/test_intent_parser_contract.py
     doc_paths:
-      - docs/reference/intent_parser.md
+      - docs/intent_parser/reference.md
     depends_on:
       - robotsix-llmio
 
