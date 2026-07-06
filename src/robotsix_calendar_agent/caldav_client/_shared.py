@@ -14,12 +14,15 @@ from dataclasses import dataclass
 from typing import Any, TypeVar, cast
 
 import tenacity
+from opentelemetry import trace
 from tenacity import (
     retry_if_exception,
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
+
+_tracer = trace.get_tracer(__name__)
 
 _F = TypeVar("_F", bound=Callable[..., Any])
 
@@ -200,36 +203,56 @@ def _wrap_caldav_op(op_name: str) -> Callable[[_F], _F]:
 
         @functools.wraps(func)
         def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
-            try:
-                return retrying_func(self, *args, **kwargs)
-            except OperationError:
-                raise
-            except self._caldav.lib.error.NotFoundError as exc:
-                raise OperationError(
-                    code="not_found",
-                    message=f"{op_name}: {exc}",
-                ) from exc
-            except self._caldav.lib.error.RateLimitError as exc:
-                raise OperationError(
-                    code="rate_limited",
-                    message=f"{op_name}: {exc}",
-                ) from exc
-            except self._caldav.lib.error.EtagMismatchError as exc:
-                raise OperationError(
-                    code="conflict",
-                    message=f"{op_name}: {exc}",
-                ) from exc
-            except self._caldav.lib.error.AuthorizationError as exc:
-                raise OperationError(
-                    code="auth_failed",
-                    message=f"{op_name}: {exc}",
-                ) from exc
-            except Exception as exc:
-                logger.exception("%s failed: %s", func.__name__, exc)
-                raise OperationError(
-                    code="caldav_error",
-                    message=f"Failed to {op_name}: {exc}",
-                ) from exc
+            with _tracer.start_as_current_span(f"caldav.{op_name}") as span:
+                span.set_attribute("caldav.op", op_name)
+                try:
+                    return retrying_func(self, *args, **kwargs)
+                except OperationError as exc:
+                    span.set_attribute("caldav.error_code", exc.code)
+                    span.set_attribute("error", True)
+                    span.record_exception(exc)
+                    raise
+                except self._caldav.lib.error.NotFoundError as exc:
+                    span.set_attribute("caldav.error_code", "not_found")
+                    span.set_attribute("error", True)
+                    span.record_exception(exc)
+                    raise OperationError(
+                        code="not_found",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except self._caldav.lib.error.RateLimitError as exc:
+                    span.set_attribute("caldav.error_code", "rate_limited")
+                    span.set_attribute("error", True)
+                    span.record_exception(exc)
+                    raise OperationError(
+                        code="rate_limited",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except self._caldav.lib.error.EtagMismatchError as exc:
+                    span.set_attribute("caldav.error_code", "conflict")
+                    span.set_attribute("error", True)
+                    span.record_exception(exc)
+                    raise OperationError(
+                        code="conflict",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except self._caldav.lib.error.AuthorizationError as exc:
+                    span.set_attribute("caldav.error_code", "auth_failed")
+                    span.set_attribute("error", True)
+                    span.record_exception(exc)
+                    raise OperationError(
+                        code="auth_failed",
+                        message=f"{op_name}: {exc}",
+                    ) from exc
+                except Exception as exc:
+                    span.set_attribute("caldav.error_code", "caldav_error")
+                    span.set_attribute("error", True)
+                    span.record_exception(exc)
+                    logger.exception("%s failed: %s", func.__name__, exc)
+                    raise OperationError(
+                        code="caldav_error",
+                        message=f"Failed to {op_name}: {exc}",
+                    ) from exc
 
         return cast(_F, wrapper)
 

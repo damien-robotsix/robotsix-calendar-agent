@@ -11,6 +11,8 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
+from opentelemetry import trace
+
 try:
     from robotsix_llmio.core import setup_langfuse_tracing  # pragma: no cover
 
@@ -36,6 +38,8 @@ from .intent_parser import (
 )
 
 logger = logging.getLogger(__name__)
+
+_tracer = trace.get_tracer(__name__)
 
 __all__ = [
     "CalDavClient",
@@ -128,9 +132,12 @@ class CalendarAgent:
                 message=f"Unknown operation: {op}",
             )
 
-        if handler in _CREATE_UPDATE_HANDLERS:
-            return handler(self._caldav, params, op)
-        return handler(self._caldav, params)
+        with _tracer.start_as_current_span("agent.dispatch") as span:
+            span.set_attribute("agent.operation", op)
+            span.set_attribute("agent.agent_id", self._agent_id)
+            if handler in _CREATE_UPDATE_HANDLERS:
+                return handler(self._caldav, params, op)
+            return handler(self._caldav, params)
 
     # ------------------------------------------------------------------
     # lifecycle

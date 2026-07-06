@@ -14,11 +14,15 @@ from __future__ import annotations
 import sys
 import time
 
+from opentelemetry import trace
+
 from robotsix_calendar_agent.caldav_client import CalDavClient
 from robotsix_calendar_agent.settings import Settings
 
 RETRIES = 3
 RETRY_DELAY_SECONDS = 2
+
+_tracer = trace.get_tracer(__name__)
 
 
 def main() -> None:
@@ -40,20 +44,27 @@ def main() -> None:
 
     for attempt in range(1, RETRIES + 1):
         try:
-            client = CalDavClient(
-                url=url,
-                username=username,
-                password=password,
-                default_calendar=default_calendar,
-            )
-            result = client.health()
+            with _tracer.start_as_current_span("healthcheck.probe") as span:
+                client = CalDavClient(
+                    url=url,
+                    username=username,
+                    password=password,
+                    default_calendar=default_calendar,
+                )
+                result = client.health()
         except Exception as exc:
             last_error = str(exc)
+            span.set_attribute("healthcheck.result", "error")
+            span.set_attribute("error", True)
+            span.record_exception(exc)
         else:
             if result.get("connected"):
+                span.set_attribute("healthcheck.result", "ok")
                 print(f"healthcheck OK: {result}")
                 sys.exit(0)
             last_error = result.get("error", "unknown error")
+            span.set_attribute("healthcheck.result", "failed")
+            span.set_attribute("error", True)
 
         if attempt < RETRIES:
             print(
