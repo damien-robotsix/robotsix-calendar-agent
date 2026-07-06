@@ -1,6 +1,10 @@
 ## 0.0.0 (unreleased)
 
 
+- Add test coverage and reference documentation for the `healthcheck` module.
+  - New test file `tests/healthcheck/test_healthcheck.py` covering credential-missing exit, success path, failure exhaustion, and retry logic.
+  - New reference doc `docs/reference/healthcheck.md`.
+  - Updated `docs/modules.yaml` to register test and doc paths.
 - Removed unused backward-compatibility re-export of `_unescape_text` on `CalDavClient`; the canonical import from `._shared` via `contact_ops.py` is unaffected.
 - docs/modules.yaml: Added `path`, `paths`, and `doc_paths` fields to `logging_config` entry, matching the pattern of all other module entries.
 - Replace custom `logging_config` module with `robotsix_llmio.logging.setup_logging()`
