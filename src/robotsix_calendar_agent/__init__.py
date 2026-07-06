@@ -7,6 +7,7 @@ CalDAV/CardDAV operations against a Radicale server.
 
 from __future__ import annotations
 
+from .add_to_calendar_handler import handle_add_to_calendar
 from .agent import (  # noqa: F401 — re-exports for package namespace
     CalDavClient,
     CalendarAgent,
@@ -23,6 +24,6 @@ from .agent import (  # noqa: F401 — re-exports for package namespace
 )
 from .agent import __all__ as _agent_all
 
-__all__ = [*_agent_all, "__version__"]
+__all__ = [*_agent_all, "handle_add_to_calendar", "__version__"]
 
 __version__ = "0.1.0"
