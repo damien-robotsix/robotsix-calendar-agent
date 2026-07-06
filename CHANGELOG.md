@@ -2,6 +2,7 @@
 
 
 - Reorganize `entrypoint` module docs: move `docs/reference/entrypoint.md` to `docs/entrypoint/reference.md`, consistent with per-module doc layout.
+- Moved settings documentation from `docs/reference/settings.md` to `docs/settings/reference.md`, standardizing on per-module doc directories.
 - Moved `intent_parser` documentation from `docs/reference/intent_parser.md` to `docs/intent_parser/reference.md` for per-module doc layout consistency.
 - Move `docs/reference/caldav_client.md` to `docs/caldav_client/reference.md` to align with per-module doc layout already used by the `agent` module.
 - Moved `docs/reference/add_to_calendar_handler.md` to `docs/add_to_calendar_handler/reference.md` for per-module doc layout consistency with the `agent` module.

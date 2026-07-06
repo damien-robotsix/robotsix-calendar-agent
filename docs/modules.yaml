@@ -108,7 +108,7 @@ modules:
     test_paths:
       - tests/settings/test_settings.py
     doc_paths:
-      - docs/reference/settings.md
+      - docs/settings/reference.md
     depends_on: []
 
   - name: logging_config
