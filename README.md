@@ -4,7 +4,7 @@
 
 | Name                                                          |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |-------------------------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
-| src/robotsix\_calendar\_agent/\_\_init\_\_.py                 |        5 |        0 |        0 |        0 |    100% |           |
+| src/robotsix\_calendar\_agent/\_\_init\_\_.py                 |        6 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/\_\_main\_\_.py                 |        4 |        4 |        2 |        0 |      0% |       3-8 |
 | src/robotsix\_calendar\_agent/add\_to\_calendar\_handler.py   |      112 |        0 |       32 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/agent.py                        |      134 |       40 |       36 |        1 |     70% |123-140, 169, 181, 191, 202, 231-244, 260-268, 275, 289, 302, 318, 325, 334, 345, 360, 390-\>392 |
@@ -18,7 +18,7 @@
 | src/robotsix\_calendar\_agent/intent\_parser.py               |       56 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/logging\_config.py              |       32 |        1 |        6 |        1 |     95% |        33 |
 | src/robotsix\_calendar\_agent/settings.py                     |       19 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                                                     |  **847** |   **72** |  **188** |   **12** | **91%** |           |
+| **TOTAL**                                                     |  **848** |   **72** |  **188** |   **12** | **91%** |           |
 
 
 ## Setup coverage badge
