@@ -35,4 +35,4 @@ nav:
       - caldav_client/reference.md
       - reference/settings.md
       - reference/entrypoint.md
-      - reference/add_to_calendar_handler.md
+      - add_to_calendar_handler/reference.md

@@ -59,7 +59,7 @@ modules:
     test_paths:
       - tests/add_to_calendar_handler/test_add_to_calendar_handler.py
     doc_paths:
-      - docs/reference/add_to_calendar_handler.md
+      - docs/add_to_calendar_handler/reference.md
     depends_on:
       - caldav_client
 
