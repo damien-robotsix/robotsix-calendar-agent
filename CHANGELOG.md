@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Replace fragile substring matching in `_render_reply` with explicit `_OPERATION_NOUN` / `_OPERATION_VERB` mappings derived from the operation enum values.
 - Export `handle_add_to_calendar` from the package namespace so external
   consumers can discover and import the auto-mail add-to-calendar handler.
 - docs/modules.yaml: fixed broken duplicate `intent_parser` entry — removed placeholder block and set real entry's `depends_on: []`
