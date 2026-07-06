@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- docs/modules.yaml: fixed broken duplicate `intent_parser` entry — removed placeholder block and set real entry's `depends_on: []`
 - Enable 15 core periodic mill workflows (audit, health, agent_check, bc_check, changelog_autofill, completeness_check, copy_paste, module_curator, security_posture, state_sync, survey, test_gap, trace_review, triage_boilerplate, repo_description_sync)
 - Deactivate all periodic mill workflows (remove `.robotsix-mill/periodic/*.yaml`) to pause auto-generated tickets while the board backlog is cleared.
 - Reorganize `entrypoint` module docs: move `docs/reference/entrypoint.md` to `docs/entrypoint/reference.md`, consistent with per-module doc layout.

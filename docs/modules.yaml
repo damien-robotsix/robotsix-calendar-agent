@@ -72,8 +72,7 @@ modules:
       - tests/intent_parser/test_intent_parser_contract.py
     doc_paths:
       - docs/intent_parser/reference.md
-    depends_on:
-      - robotsix-llmio
+    depends_on: []
 
   - name: entrypoint
     path: src/robotsix_calendar_agent/entrypoint.py
