@@ -43,8 +43,9 @@ def main() -> None:
     last_error: str | None = None
 
     for attempt in range(1, RETRIES + 1):
-        try:
-            with _tracer.start_as_current_span("healthcheck.probe") as span:
+        ok = False
+        with _tracer.start_as_current_span("healthcheck.probe") as span:
+            try:
                 client = CalDavClient(
                     url=url,
                     username=username,
@@ -52,19 +53,23 @@ def main() -> None:
                     default_calendar=default_calendar,
                 )
                 result = client.health()
-        except Exception as exc:
-            last_error = str(exc)
-            span.set_attribute("healthcheck.result", "error")
-            span.set_attribute("error", True)
-            span.record_exception(exc)
-        else:
-            if result.get("connected"):
-                span.set_attribute("healthcheck.result", "ok")
-                print(f"healthcheck OK: {result}")
-                sys.exit(0)
-            last_error = result.get("error", "unknown error")
-            span.set_attribute("healthcheck.result", "failed")
-            span.set_attribute("error", True)
+            except Exception as exc:
+                last_error = str(exc)
+                span.set_attribute("healthcheck.result", "error")
+                span.set_attribute("error", True)
+                span.record_exception(exc)
+            else:
+                if result.get("connected"):
+                    span.set_attribute("healthcheck.result", "ok")
+                    ok = True
+                else:
+                    last_error = result.get("error", "unknown error")
+                    span.set_attribute("healthcheck.result", "failed")
+                    span.set_attribute("error", True)
+
+        if ok:
+            print(f"healthcheck OK: {result}")
+            sys.exit(0)
 
         if attempt < RETRIES:
             print(
