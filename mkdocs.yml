@@ -32,7 +32,7 @@ nav:
       - reference/index.md
       - agent/reference.md
       - reference/intent_parser.md
-      - reference/caldav_client.md
+      - caldav_client/reference.md
       - reference/settings.md
       - reference/entrypoint.md
       - reference/add_to_calendar_handler.md
