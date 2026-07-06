@@ -407,6 +407,23 @@ def _summarize_item(item: dict[str, Any]) -> str:
     return json.dumps(item, default=str)
 
 
+# Maps each operation to the human-readable noun used in "No <noun> found." replies.
+_OPERATION_NOUN: dict[str, str] = {
+    "list_events": "events",
+    "list_calendars": "calendars",
+    "list_tasks": "tasks",
+    "list_contacts": "contacts",
+}
+
+# Maps each operation to the human-readable verb used in "<Verb>: …" replies.
+_OPERATION_VERB: dict[str, str] = {
+    "create_event": "Created",
+    "create_contact": "Created",
+    "update_event": "Updated",
+    "update_contact": "Updated",
+}
+
+
 def _render_reply(operation: str, result: Any) -> str:
     """Render a human-readable reply string from a dispatch *result*.
 
@@ -419,28 +436,12 @@ def _render_reply(operation: str, result: Any) -> str:
         return "Done — the item was deleted."
     if isinstance(result, list):
         if not result:
-            noun = (
-                "events"
-                if "event" in operation
-                else "calendars"
-                if "calendar" in operation
-                else "tasks"
-                if "task" in operation
-                else "contacts"
-                if "contact" in operation
-                else "items"
-            )
+            noun = _OPERATION_NOUN.get(operation, "items")
             return f"No {noun} found."
         lines = "\n".join(f"- {_summarize_item(i)}" for i in result)
         return f"Found {len(result)}:\n{lines}"
     if isinstance(result, dict):
-        verb = (
-            "Updated"
-            if operation.startswith("update")
-            else "Created"
-            if operation.startswith("create")
-            else "Result"
-        )
+        verb = _OPERATION_VERB.get(operation, "Result")
         return f"{verb}: {_summarize_item(result)}"
     return str(result)
 
