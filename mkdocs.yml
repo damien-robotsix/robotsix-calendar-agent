@@ -34,5 +34,5 @@ nav:
       - intent_parser/reference.md
       - caldav_client/reference.md
       - reference/settings.md
-      - reference/entrypoint.md
+      - entrypoint/reference.md
       - add_to_calendar_handler/reference.md
