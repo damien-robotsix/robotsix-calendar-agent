@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add missing `healthcheck/reference.md` and `reference/logging_config.md` entries to the Code Reference nav in `mkdocs.yml`.
 - Add Google-style docstring to `healthcheck.main()` documenting exit codes,
   retry behavior, and credential requirements. Add docstrings to `RETRIES` and
   `RETRY_DELAY_SECONDS` module-level constants.
