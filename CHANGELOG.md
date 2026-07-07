@@ -1,6 +1,9 @@
 ## 0.0.0 (unreleased)
 
 
+- Add Google-style docstring to `healthcheck.main()` documenting exit codes,
+  retry behavior, and credential requirements. Add docstrings to `RETRIES` and
+  `RETRY_DELAY_SECONDS` module-level constants.
 - New boilerplate: `doc-recommendation-only-boilerplate.md` — documents the pattern for when the doc agent classifies a change as user-facing but determines no documentation edits are needed.
 - Fix two broken relative cross-references in docs (`docs/agent/tutorials/manage-events.md` and `docs/reference/component_agent.md`) introduced when agent module docs were moved to per-module layout.
 - Fix `init` module `depends_on` in `docs/modules.yaml` to match actual module-level imports: add `add_to_calendar_handler`, remove `caldav_client` and `intent_parser` (transitive via `agent`).
