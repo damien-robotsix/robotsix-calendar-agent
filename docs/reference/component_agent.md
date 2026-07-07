@@ -5,5 +5,5 @@
     ``robotsix-agent-comm`` broker decommissioning.  The management plane
     will be reimplemented via the central-deploy system in a future release.
 
-    See the [agent reference](agent.md) for the remaining
+    See the [agent reference](../agent/reference.md) for the remaining
     :class:`~robotsix_calendar_agent.agent.CalendarAgent` class.
