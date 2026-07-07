@@ -94,6 +94,7 @@ modules:
     test_paths:
       - tests/healthcheck/__init__.py
       - tests/healthcheck/test_healthcheck.py
+      - tests/healthcheck/conftest.py
     doc_paths:
       - docs/reference/healthcheck.md
     depends_on:
