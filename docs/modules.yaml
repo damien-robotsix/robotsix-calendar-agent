@@ -96,7 +96,7 @@ modules:
       - tests/healthcheck/test_healthcheck.py
       - tests/healthcheck/conftest.py
     doc_paths:
-      - docs/reference/healthcheck.md
+      - docs/healthcheck/reference.md
     depends_on:
       - settings
       - caldav_client

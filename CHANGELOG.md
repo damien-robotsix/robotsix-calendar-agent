@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Moved `docs/reference/healthcheck.md` to `docs/healthcheck/reference.md` for per-module doc layout consistency.
 - Add reference documentation page for `logging_config` module (`docs/reference/logging_config.md`).
 - Replace fragile substring matching in `_render_reply` with explicit `_OPERATION_NOUN` / `_OPERATION_VERB` mappings derived from the operation enum values.
 - Export `handle_add_to_calendar` from the package namespace so external
@@ -15,7 +16,7 @@
 - Moved `docs/reference/add_to_calendar_handler.md` to `docs/add_to_calendar_handler/reference.md` for per-module doc layout consistency with the `agent` module.
 - Add test coverage and reference documentation for the `healthcheck` module.
   - New test file `tests/healthcheck/test_healthcheck.py` covering credential-missing exit, success path, failure exhaustion, and retry logic.
-  - New reference doc `docs/reference/healthcheck.md`.
+  - New reference doc `docs/healthcheck/reference.md`.
   - Updated `docs/modules.yaml` to register test and doc paths.
 - Added manual OpenTelemetry spans to CalDAV operations, agent dispatch, and healthcheck
   probe for improved observability of infrastructure calls.
