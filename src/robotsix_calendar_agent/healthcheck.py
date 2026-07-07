@@ -20,12 +20,30 @@ from robotsix_calendar_agent.caldav_client import CalDavClient
 from robotsix_calendar_agent.settings import Settings
 
 RETRIES = 3
+"""Number of health-check retry attempts before giving up."""
+
 RETRY_DELAY_SECONDS = 2
+"""Seconds to wait between health-check retry attempts."""
 
 _tracer = trace.get_tracer(__name__)
 
 
 def main() -> None:
+    """Run the Docker HEALTHCHECK probe.
+
+    Validates CalDAV reachability using credentials from the environment.
+    Sets OpenTelemetry spans for each attempt. Exits with code 0 on success
+    or 1 if all retry attempts fail.
+
+    Exit codes:
+        0: CalDAV server is reachable and responsive.
+        1: Health probe failed after all retry attempts.
+
+    The probe retries up to :data:`RETRIES` times (3 attempts) with
+    :data:`RETRY_DELAY_SECONDS` (2 seconds) between attempts. Requires
+    ``RADICALE_URL``, ``RADICALE_USERNAME``, and ``RADICALE_PASSWORD`` to
+    be set in the environment.
+    """
     settings = Settings()
     url = settings.RADICALE_URL
     username = settings.RADICALE_USERNAME
