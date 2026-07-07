@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Fix `init` module `depends_on` in `docs/modules.yaml` to match actual module-level imports: add `add_to_calendar_handler`, remove `caldav_client` and `intent_parser` (transitive via `agent`).
 - Moved `docs/reference/healthcheck.md` to `docs/healthcheck/reference.md` for per-module doc layout consistency.
 - Add reference documentation page for `logging_config` module (`docs/reference/logging_config.md`).
 - Replace fragile substring matching in `_render_reply` with explicit `_OPERATION_NOUN` / `_OPERATION_VERB` mappings derived from the operation enum values.
