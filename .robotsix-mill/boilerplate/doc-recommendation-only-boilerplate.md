@@ -55,3 +55,6 @@ Do NOT use this template when:
 ### Relationship to `doc-classifier-boilerplate.md`
 
 This template fills the gap noted in `doc-classifier-boilerplate.md`'s "Edge cases" section, which described this pattern but provided no dedicated template, examples, or decision criteria. The parent boilerplate remains the authoritative source for the `user-facing` vs `internal-only` classification decision; this file covers what happens when the classification is `user-facing` but the doc agent's deliverable is a no-op.
+
+<!-- triage_boilerplate-gap-id: doc-recommendation-only-boilerplate -->
+<!-- triage_boilerplate-gap-id: doc-recommendation-only-boilerplate -->
