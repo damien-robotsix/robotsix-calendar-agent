@@ -17,8 +17,8 @@
 | src/robotsix\_calendar\_agent/healthcheck.py                  |       48 |        1 |       12 |        1 |     97% |       107 |
 | src/robotsix\_calendar\_agent/intent\_parser.py               |       56 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/logging\_config.py              |       32 |        1 |        6 |        1 |     95% |        33 |
-| src/robotsix\_calendar\_agent/settings.py                     |       19 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                                                     |  **852** |   **71** |  **188** |   **11** | **91%** |           |
+| src/robotsix\_calendar\_agent/settings.py                     |       25 |        0 |        2 |        0 |    100% |           |
+| **TOTAL**                                                     |  **858** |   **71** |  **188** |   **11** | **91%** |           |
 
 
 ## Setup coverage badge
