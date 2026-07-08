@@ -17,6 +17,8 @@ plugins:
             docstring_style: google
             filters: ["!^_"]
             merge_init_into_class: true
+            extensions:
+              - griffe_pydantic
 
 nav:
   - Home: index.md

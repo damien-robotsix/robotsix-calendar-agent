@@ -24,13 +24,23 @@ class Settings(BaseSettings):
 
     # -- Radicale credentials ------------------------------------------------
     RADICALE_URL: str = ""
+    """Radicale server URL (e.g. https://radicale.example.com)."""
+
     RADICALE_USERNAME: str = ""
+    """Radicale username for authentication."""
+
     RADICALE_PASSWORD: SecretStr = SecretStr("")
+    """Radicale password for authentication."""
+
     RADICALE_DEFAULT_CALENDAR: str = "Robotsix"
+    """Default calendar name when no calendar_id is provided."""
 
     # -- Logging -------------------------------------------------------------
     LOG_LEVEL: str = "INFO"
+    """Log level - one of DEBUG, INFO, WARNING, ERROR, CRITICAL."""
+
     JSON_LOGS: bool = False
+    """When True, emit logs as JSON for structured-log ingestion."""
 
     # -- Validators ----------------------------------------------------------
 

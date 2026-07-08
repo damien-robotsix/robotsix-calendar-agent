@@ -57,6 +57,7 @@ docs = [
     "mkdocs",
     "mkdocs-material",
     "mkdocstrings[python]",
+    "griffe-pydantic",
 ]
 
 [tool.uv.sources]
