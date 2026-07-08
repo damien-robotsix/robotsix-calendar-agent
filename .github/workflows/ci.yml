@@ -19,6 +19,25 @@ jobs:
       trufflehog-pr-diff: true
       trufflehog-extra-args: "--results=verified,unknown"
 
+  # hand-rolled: CodeQL taint-tracking SAST covers injection vulnerabilities
+  # (command injection, SSRF, LDAP injection, SSTI) that Bandit/ruff can't catch.
+  codeql:
+    name: CodeQL (Python)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # needed to upload SARIF results from CodeQL
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9  # v4
+        with:
+          languages: python
+          build-mode: none
+          queries: security-and-quality
+      - uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9  # v4
+
   baseline:
     permissions:
       contents: read

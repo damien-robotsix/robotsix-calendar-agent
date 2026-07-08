@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add CodeQL (Python) taint-tracking SAST job to CI pipeline for injection-vulnerability detection (command injection, SSRF, LDAP injection, SSTI).
 - Add missing `healthcheck/reference.md` and `reference/logging_config.md` entries to the Code Reference nav in `mkdocs.yml`.
 - Add trailing docstrings to all `Settings` fields so mkdocstrings can
   render descriptions automatically; enable `griffe-pydantic` extension
