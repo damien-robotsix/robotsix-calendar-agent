@@ -2,6 +2,9 @@
 
 
 - Add missing `healthcheck/reference.md` and `reference/logging_config.md` entries to the Code Reference nav in `mkdocs.yml`.
+- Add trailing docstrings to all `Settings` fields so mkdocstrings can
+  render descriptions automatically; enable `griffe-pydantic` extension
+  and replace the hand-written config table with auto-generated docs.
 - Add Google-style docstring to `healthcheck.main()` documenting exit codes,
   retry behavior, and credential requirements. Add docstrings to `RETRIES` and
   `RETRY_DELAY_SECONDS` module-level constants.
