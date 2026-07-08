@@ -37,7 +37,7 @@ jobs:
     name: Lockfile check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
@@ -48,7 +48,7 @@ jobs:
     name: Vulture dead code check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
@@ -81,7 +81,7 @@ jobs:
       contents: read
       pull-requests: write  # needed to comment dependency review findings on PRs
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: false
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
@@ -96,7 +96,7 @@ jobs:
       contents: read
       security-events: write  # needed to upload SARIF results from zizmor
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
@@ -111,7 +111,7 @@ jobs:
     name: Actionlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: false
       - uses: rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca  # v1.7.12
@@ -122,7 +122,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -158,7 +158,7 @@ jobs:
       contents: write  # needed to write coverage badge to the repo
       pull-requests: write  # needed to post coverage comment on PRs
     steps:
-      - uses: actions/checkout@d914b262ffc244530a203ab40decab34c3abf34d  # v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           persist-credentials: true
       - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
