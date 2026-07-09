@@ -1,7 +1,8 @@
 """CalDAV/CardDAV client wrapper for Radicale.
 
 Typed, self-contained module wrapping the ``caldav`` library.
-All caldav-specific exceptions are converted to :class:`OperationError`.
+All caldav-specific exceptions are converted to typed
+:class:`CalendarError` subclasses.
 """
 
 from __future__ import annotations
@@ -12,21 +13,37 @@ from typing import Any, cast
 from ._shared import (
     CalendarEvent,
     Contact,
-    OperationError,
     Task,
     _wrap_caldav_op,
 )
 from .calendar_ops import _CalendarOpsMixin
 from .contact_ops import _ContactOpsMixin
+from .exceptions import (
+    AgentLogicError,
+    AuthError,
+    CalDAVError,
+    CalendarError,
+    ConflictError,
+    NotFoundError,
+    OperationError,
+    RateLimitError,
+)
 from .task_ops import _TaskOpsMixin
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
+    "AgentLogicError",
+    "AuthError",
+    "CalDAVError",
     "CalDavClient",
+    "CalendarError",
     "CalendarEvent",
+    "ConflictError",
     "Contact",
+    "NotFoundError",
     "OperationError",
+    "RateLimitError",
     "Task",
 ]
 
@@ -34,8 +51,8 @@ __all__ = [
 class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
     """Typed wrapper around ``caldav.DAVClient`` for Radicale.
 
-    All operations convert caldav/requests exceptions to
-    :class:`OperationError` with appropriate codes.
+    All operations convert caldav/requests exceptions to typed
+    :class:`CalendarError` subclasses.
 
     Args:
         url: Radicale server URL.
@@ -43,7 +60,8 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
         password: Radicale password.
 
     Raises:
-        OperationError: If authentication fails.
+        AuthError: If authentication fails.
+        CalDAVError: If connection to Radicale fails.
     """
 
     def __init__(
@@ -66,15 +84,13 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
             logger.info("CalDavClient connected to %s as %s", url, username)
         except self._caldav.error.AuthorizationError as exc:
             logger.exception("CalDAV auth failed for %s as %s: %s", url, username, exc)
-            raise OperationError(
-                code="auth_failed",
-                message=f"Authentication failed: {exc}",
+            raise AuthError(
+                f"Authentication failed: {exc}",
             ) from exc
         except Exception as exc:
             logger.exception("Failed to connect to Radicale at %s: %s", url, exc)
-            raise OperationError(
-                code="caldav_error",
-                message=f"Failed to connect to Radicale: {exc}",
+            raise CalDAVError(
+                f"Failed to connect to Radicale: {exc}",
             ) from exc
 
     def _get_calendar(self, calendar_id: str = "") -> Any:
@@ -86,26 +102,23 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
         """
         calendars = self._principal.calendars()
         if not calendars:
-            raise OperationError(
-                code="not_found",
-                message="No calendars found on the server.",
+            raise NotFoundError(
+                "No calendars found on the server.",
             )
         if calendar_id:
             for cal in calendars:
                 if cal.name == calendar_id:
                     return cal
-            raise OperationError(
-                code="not_found",
-                message=f"Calendar {calendar_id!r} not found.",
+            raise NotFoundError(
+                f"Calendar {calendar_id!r} not found.",
             )
         # Resolve the configured default calendar by name.
         if self._default_calendar:
             for cal in calendars:
                 if cal.name == self._default_calendar:
                     return cal
-            raise OperationError(
-                code="not_found",
-                message=(f"Default calendar {self._default_calendar!r} not found."),
+            raise NotFoundError(
+                f"Default calendar {self._default_calendar!r} not found.",
             )
         # Last-resort fallback: first calendar (preserves legacy behavior).
         return calendars[0]
@@ -121,9 +134,8 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
             return [self._get_calendar(calendar_id)]
         calendars = self._principal.calendars()
         if not calendars:
-            raise OperationError(
-                code="not_found",
-                message="No calendars found on the server.",
+            raise NotFoundError(
+                "No calendars found on the server.",
             )
         return cast(list[Any], calendars)
 
@@ -131,17 +143,15 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
         """Return a caldav addressbook object by name, or the default."""
         addressbooks = self._principal.addressbooks()
         if not addressbooks:
-            raise OperationError(
-                code="not_found",
-                message="No address books found on the server.",
+            raise NotFoundError(
+                "No address books found on the server.",
             )
         if addressbook_id:
             for ab in addressbooks:
                 if ab.name == addressbook_id:
                     return ab
-            raise OperationError(
-                code="not_found",
-                message=f"Address book {addressbook_id!r} not found.",
+            raise NotFoundError(
+                f"Address book {addressbook_id!r} not found.",
             )
         return addressbooks[0]
 

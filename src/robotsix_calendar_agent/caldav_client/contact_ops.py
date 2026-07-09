@@ -6,7 +6,8 @@ import logging
 import uuid
 from typing import TYPE_CHECKING, Any
 
-from ._shared import Contact, OperationError, _unescape_text, _wrap_caldav_op
+from ._shared import Contact, _unescape_text, _wrap_caldav_op
+from .exceptions import NotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +165,7 @@ class _ContactOpsMixin:
         """Update the contact identified by *uid*; return the updated contact.
 
         Raises:
-            OperationError: If the UID doesn't exist (code ``"not_found"``).
+            NotFoundError: If the UID doesn't exist.
         """
         logger.debug(
             "update_contact uid=%r addressbook_id=%r full_name=%r",
@@ -176,9 +177,8 @@ class _ContactOpsMixin:
         # Fetch to confirm existence — caldav addressbook search by UID
         existing = ab.search(f"UID:{uid}")
         if not existing:
-            raise OperationError(
-                code="not_found",
-                message=f"Contact with UID {uid!r} not found.",
+            raise NotFoundError(
+                f"Contact with UID {uid!r} not found.",
             )
         # Delete the old vcard and create a new one
         existing[0].delete()

@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING, Any
 
 from ._shared import (
     CalendarEvent,
-    OperationError,
     _comp_dt,
     _comp_text,
     _wrap_caldav_op,
 )
+from .exceptions import NotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +179,7 @@ class _CalendarOpsMixin:
         *calendar_id* is given, only that single calendar is searched.
 
         Raises:
-            OperationError: If the UID doesn't exist (code ``"not_found"``).
+            NotFoundError: If the UID doesn't exist.
         """
         logger.debug(
             "update_event uid=%r calendar_id=%r summary=%r",
@@ -191,16 +191,14 @@ class _CalendarOpsMixin:
             cal = self._get_calendar(calendar_id)
             existing = cal.event(uid=uid)
             if existing is None:
-                raise OperationError(
-                    code="not_found",
-                    message=f"Event with UID {uid!r} not found.",
+                raise NotFoundError(
+                    f"Event with UID {uid!r} not found.",
                 )
         else:
             result = self._find_event_by_uid(uid)
             if result is None:
-                raise OperationError(
-                    code="not_found",
-                    message=f"Event with UID {uid!r} not found.",
+                raise NotFoundError(
+                    f"Event with UID {uid!r} not found.",
                 )
             cal, _ = result
         # Build updated iCal with the same UID

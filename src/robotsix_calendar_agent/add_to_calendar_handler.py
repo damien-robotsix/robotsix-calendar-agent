@@ -13,7 +13,7 @@ import datetime
 import logging
 from typing import Any
 
-from .caldav_client import CalendarEvent, OperationError
+from .caldav_client import CalendarError, CalendarEvent
 
 logger = logging.getLogger(__name__)
 
@@ -276,7 +276,7 @@ def _create_calendar_event(
 
     try:
         created = caldav_client.create_event(event)
-    except OperationError as exc:
+    except CalendarError as exc:
         logger.exception("CalDAV error creating event '%s': %s", subject, exc)
         return None, Response.to(
             request,

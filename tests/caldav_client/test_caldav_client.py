@@ -13,12 +13,18 @@ from robotsix_calendar_agent.caldav_client import (
     CalDavClient,
     CalendarEvent,
     Contact,
-    OperationError,
     Task,
 )
 from robotsix_calendar_agent.caldav_client._shared import (
     _is_transient_exception,
     _unescape_text,
+)
+from robotsix_calendar_agent.caldav_client.exceptions import (
+    AuthError,
+    CalDAVError,
+    ConflictError,
+    NotFoundError,
+    RateLimitError,
 )
 
 # Mock object prepared at module level but NOT yet injected into
@@ -225,7 +231,7 @@ class TestUpdateEvent:
         cal = client._principal.calendars.return_value[0]
         cal.event.return_value = None
 
-        with pytest.raises(OperationError, match="not found"):
+        with pytest.raises(NotFoundError, match="not found"):
             client.update_event("unknown", _make_event())
 
 
@@ -293,7 +299,7 @@ class TestUpdateContact:
         ab = client._principal.addressbooks.return_value[0]
         ab.search.return_value = []
 
-        with pytest.raises(OperationError, match="not found"):
+        with pytest.raises(NotFoundError, match="not found"):
             client.update_contact("unknown", Contact(full_name="X"))
 
 
@@ -327,7 +333,7 @@ class TestAuthFailure:
             "bad creds"
         )
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(AuthError) as exc_info:
             CalDavClient("https://x.com", "user", "wrong")
         assert exc_info.value.code == "auth_failed"
 
@@ -339,7 +345,7 @@ class TestTransportFailure:
         cal = client._principal.calendars.return_value[0]
         cal.search.side_effect = Exception("connection refused")
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.list_events("2026-01-01", "2026-01-31")
         assert exc_info.value.code == "caldav_error"
 
@@ -365,7 +371,7 @@ class TestConnectFailure:
     def test_raises_caldav_error_on_generic_connect_exception(self) -> None:
         _mock_caldav.DAVClient.side_effect = Exception("connection refused")
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             CalDavClient("https://x.com", "user", "pass")
         assert exc_info.value.code == "caldav_error"
 
@@ -379,7 +385,7 @@ class TestGetCalendar:
     def test_no_calendars_raises_not_found(self, client: CalDavClient) -> None:
         client._principal.calendars.return_value = []
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client._get_calendar()
         assert exc_info.value.code == "not_found"
 
@@ -397,7 +403,7 @@ class TestGetCalendar:
         cal_a.name = "work"
         client._principal.calendars.return_value = [cal_a]
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client._get_calendar("missing")
         assert exc_info.value.code == "not_found"
 
@@ -417,7 +423,7 @@ class TestGetCalendar:
         cal.name = "Robotsix"
         client._principal.calendars.return_value = [cal]
 
-        with pytest.raises(OperationError, match="not found"):
+        with pytest.raises(NotFoundError, match="not found"):
             client._get_calendar("")
 
     def test_falls_back_to_first_when_no_default(self) -> None:
@@ -455,7 +461,7 @@ class TestIterCalendars:
     def test_raises_when_no_calendars(self, client: CalDavClient) -> None:
         client._principal.calendars.return_value = []
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client._iter_calendars("")
         assert exc_info.value.code == "not_found"
 
@@ -600,7 +606,7 @@ class TestUpdateEventAcrossCalendars:
         cal_b.event.return_value = None
         client._principal.calendars.return_value = [cal_a, cal_b]
 
-        with pytest.raises(OperationError, match="not found"):
+        with pytest.raises(NotFoundError, match="not found"):
             client.update_event("unknown", _make_event())
 
     def test_explicit_calendar_id_still_works(self, client: CalDavClient) -> None:
@@ -694,7 +700,7 @@ class TestGetAddressbook:
     def test_no_addressbooks_raises_not_found(self, client: CalDavClient) -> None:
         client._principal.addressbooks.return_value = []
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client._get_addressbook()
         assert exc_info.value.code == "not_found"
 
@@ -712,7 +718,7 @@ class TestGetAddressbook:
         ab_a.name = "personal"
         client._principal.addressbooks.return_value = [ab_a]
 
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client._get_addressbook("missing")
         assert exc_info.value.code == "not_found"
 
@@ -1000,26 +1006,26 @@ class TestVcardSerialization:
 class TestOperationErrorPropagation:
     def test_list_events_reraises_operation_error(self, client: CalDavClient) -> None:
         client._principal.calendars.return_value = []
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client.list_events("2026-01-01", "2026-01-31")
         assert exc_info.value.code == "not_found"
 
     def test_list_tasks_reraises_operation_error(self, client: CalDavClient) -> None:
         client._principal.calendars.return_value = []
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client.list_tasks()
         assert exc_info.value.code == "not_found"
 
     def test_create_event_wraps_exception(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.save_event.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "caldav_error"
 
     def test_create_event_reraises_operation_error(self, client: CalDavClient) -> None:
         client._principal.calendars.return_value = []
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "not_found"
 
@@ -1027,7 +1033,7 @@ class TestOperationErrorPropagation:
         self, client: CalDavClient
     ) -> None:
         client._principal.addressbooks.return_value = []
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client.create_contact(Contact(full_name="X"))
         assert exc_info.value.code == "not_found"
 
@@ -1040,14 +1046,14 @@ class TestOperationErrorPropagation:
     def test_update_event_wraps_exception(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.event.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.update_event("evt-1", _make_event())
         assert exc_info.value.code == "caldav_error"
 
     def test_delete_event_wraps_exception(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.event.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.delete_event("evt-1")
         assert exc_info.value.code == "caldav_error"
 
@@ -1060,20 +1066,20 @@ class TestOperationErrorPropagation:
     def test_list_contacts_wraps_exception(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
         ab.search.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.list_contacts()
         assert exc_info.value.code == "caldav_error"
 
     def test_list_contacts_reraises_operation_error(self, client: CalDavClient) -> None:
         client._principal.addressbooks.return_value = []
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client.list_contacts()
         assert exc_info.value.code == "not_found"
 
     def test_create_contact_wraps_exception(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
         ab.save_object.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.create_contact(Contact(full_name="X"))
         assert exc_info.value.code == "caldav_error"
 
@@ -1086,32 +1092,32 @@ class TestOperationErrorPropagation:
     def test_update_contact_wraps_exception(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
         ab.search.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.update_contact("cnt-1", Contact(full_name="X"))
         assert exc_info.value.code == "caldav_error"
 
     def test_delete_contact_wraps_exception(self, client: CalDavClient) -> None:
         ab = client._principal.addressbooks.return_value[0]
         ab.search.side_effect = Exception("boom")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.delete_contact("cnt-1")
         assert exc_info.value.code == "caldav_error"
 
 
 # ---------------------------------------------------------------------------
-# caldav exception → OperationError mapping in _wrap_caldav_op
+# caldav exception → CalendarError subclass mapping in _wrap_caldav_op
 # ---------------------------------------------------------------------------
 
 
 class TestCaldavExceptionMapping:
-    """Verify that caldav-specific exceptions are mapped to distinct codes."""
+    """Verify that caldav-specific exceptions are mapped to distinct types."""
 
     def test_not_found_error_maps_to_not_found(self, client: CalDavClient) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.save_event.side_effect = client._caldav.lib.error.NotFoundError(
             "resource not found"
         )
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(NotFoundError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "not_found"
 
@@ -1120,7 +1126,7 @@ class TestCaldavExceptionMapping:
         cal.save_event.side_effect = client._caldav.lib.error.RateLimitError(
             "too many requests"
         )
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(RateLimitError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "rate_limited"
 
@@ -1129,7 +1135,7 @@ class TestCaldavExceptionMapping:
         cal.save_event.side_effect = client._caldav.lib.error.EtagMismatchError(
             "ETag changed"
         )
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(ConflictError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "conflict"
 
@@ -1140,7 +1146,7 @@ class TestCaldavExceptionMapping:
         cal.save_event.side_effect = client._caldav.lib.error.AuthorizationError(
             "bad credentials"
         )
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(AuthError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "auth_failed"
 
@@ -1149,7 +1155,7 @@ class TestCaldavExceptionMapping:
     ) -> None:
         cal = client._principal.calendars.return_value[0]
         cal.save_event.side_effect = ValueError("something unexpected")
-        with pytest.raises(OperationError) as exc_info:
+        with pytest.raises(CalDAVError) as exc_info:
             client.create_event(_make_event())
         assert exc_info.value.code == "caldav_error"
 

@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Replace flat `OperationError` with a typed exception hierarchy (`CalendarError`, `NotFoundError`, `AuthError`, `RateLimitError`, `ConflictError`, `CalDAVError`, `AgentLogicError`) in `caldav_client.exceptions`. Callers can now `except` on specific error types instead of string-matching `exc.code`. `OperationError` is kept as a backward-compatible alias for `CalendarError`.
 - Add CodeQL (Python) taint-tracking SAST job to CI pipeline for injection-vulnerability detection (command injection, SSRF, LDAP injection, SSTI).
 - Add missing `healthcheck/reference.md` and `reference/logging_config.md` entries to the Code Reference nav in `mkdocs.yml`.
 - Add trailing docstrings to all `Settings` fields so mkdocstrings can
