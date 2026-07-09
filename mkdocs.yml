@@ -39,4 +39,4 @@ nav:
       - entrypoint/reference.md
       - add_to_calendar_handler/reference.md
       - healthcheck/reference.md
-      - reference/logging_config.md
+      - logging_config/reference.md
