@@ -17,7 +17,6 @@ from .agent import (  # noqa: F401 — re-exports for package namespace
     ContactOperation,
     IntentParseError,
     IntentParser,
-    OperationError,
     ParsedIntent,
     Task,
     TaskOperation,

@@ -25,7 +25,6 @@ from .exceptions import (
     CalendarError,
     ConflictError,
     NotFoundError,
-    OperationError,
     RateLimitError,
 )
 from .task_ops import _TaskOpsMixin
@@ -42,7 +41,6 @@ __all__ = [
     "ConflictError",
     "Contact",
     "NotFoundError",
-    "OperationError",
     "RateLimitError",
     "Task",
 ]
