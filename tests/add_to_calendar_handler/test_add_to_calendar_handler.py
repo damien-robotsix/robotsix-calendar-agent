@@ -18,8 +18,8 @@ from robotsix_calendar_agent.add_to_calendar_handler import (
 )
 from robotsix_calendar_agent.caldav_client import (
     CalendarEvent,
-    OperationError,
 )
+from robotsix_calendar_agent.caldav_client.exceptions import AuthError
 
 # ---------------------------------------------------------------------------
 # Helpers (no fixtures needed — pure functions + MagicMock)
@@ -446,12 +446,12 @@ class TestHandleAddToCalendar:
         body = result.body
         assert body["error"]["code"] == ERROR_INVALID_DATES
 
-    # -- CalDAV OperationError -----------------------------------------
+    # -- CalDAV CalendarError -----------------------------------------
 
     def test_operation_error_propagates_code(self) -> None:
         caldav_client = MagicMock()
-        caldav_client.create_event.side_effect = OperationError(
-            code="auth_failed", message="Authentication failed"
+        caldav_client.create_event.side_effect = AuthError(
+            message="Authentication failed"
         )
         request = MagicMock()
         payload = _make_payload(correlation_id="corr-oe")

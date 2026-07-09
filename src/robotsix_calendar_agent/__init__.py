@@ -23,6 +23,15 @@ from .agent import (  # noqa: F401 — re-exports for package namespace
     TaskOperation,
 )
 from .agent import __all__ as _agent_all
+from .caldav_client.exceptions import (  # noqa: F401 — typed exceptions
+    AgentLogicError,
+    AuthError,
+    CalDAVError,
+    CalendarError,
+    ConflictError,
+    NotFoundError,
+    RateLimitError,
+)
 
 __all__ = [*_agent_all, "handle_add_to_calendar", "__version__"]
 

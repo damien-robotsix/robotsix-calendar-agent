@@ -28,6 +28,7 @@ from .caldav_client import (
     OperationError,
     Task,
 )
+from .caldav_client.exceptions import AgentLogicError
 from .intent_parser import (
     CalendarOperation,
     ContactOperation,
@@ -127,9 +128,8 @@ class CalendarAgent:
 
         handler = _DISPATCH.get(op)
         if handler is None:
-            raise OperationError(
-                code="unknown_operation",
-                message=f"Unknown operation: {op}",
+            raise AgentLogicError(
+                f"Unknown operation: {op}",
             )
 
         with _tracer.start_as_current_span("agent.dispatch") as span:
@@ -232,9 +232,8 @@ def _entity_op(
     if operation and operation.startswith("update"):
         uid = params.get("uid", "")
         if not uid:
-            raise OperationError(
-                code="missing_uid",
-                message="A UID is required to update, but none was provided.",
+            raise AgentLogicError(
+                "A UID is required to update, but none was provided.",
             )
         kwargs = {id_key: params.get(id_key, "")}
         result = update_fn(uid, entity, **kwargs)
@@ -259,9 +258,8 @@ def _delete_entity_op(
     """
     uid = params.get("uid", "")
     if not uid:
-        raise OperationError(
-            code="missing_uid",
-            message="A UID is required to delete, but none was provided.",
+        raise AgentLogicError(
+            "A UID is required to delete, but none was provided.",
         )
     kwargs: dict[str, Any] = {id_key: params.get(id_key, "")}
     delete_fn(uid=uid, **kwargs)
