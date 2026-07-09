@@ -121,5 +121,5 @@ modules:
       - tests/logging_config/__init__.py
       - tests/logging_config/test_logging_config.py
     doc_paths:
-      - docs/reference/logging_config.md
+      - docs/logging_config/reference.md
     depends_on: []
