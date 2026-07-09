@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Harmonize `astral-sh/setup-uv` SHA across CI workflows: pin `pre-commit-ci.yml` to `e58605a9` with `# v5.4.2` matching `ci.yml`. Also fix `actions/checkout` annotation from `# v4` to `# v4.3.1`.
 - Replace flat `OperationError` with a typed exception hierarchy (`CalendarError`, `NotFoundError`, `AuthError`, `RateLimitError`, `ConflictError`, `CalDAVError`, `AgentLogicError`) in `caldav_client.exceptions`. Callers can now `except` on specific error types instead of string-matching `exc.code`. `OperationError` is kept as a backward-compatible alias for `CalendarError`.
 - Move `logging_config` docs from pooled `docs/reference/logging_config.md` to per-module `docs/logging_config/reference.md`, completing the per-module documentation layout migration.
 - Add CodeQL (Python) taint-tracking SAST job to CI pipeline for injection-vulnerability detection (command injection, SSRF, LDAP injection, SSTI).
