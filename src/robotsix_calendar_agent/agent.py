@@ -25,7 +25,6 @@ from .caldav_client import (
     CalDavClient,
     CalendarEvent,
     Contact,
-    OperationError,
     Task,
 )
 from .caldav_client.exceptions import AgentLogicError
@@ -51,7 +50,6 @@ __all__ = [
     "ContactOperation",
     "IntentParseError",
     "IntentParser",
-    "OperationError",
     "ParsedIntent",
     "Task",
     "TaskOperation",

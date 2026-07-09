@@ -4,8 +4,6 @@ Modeled on ``caldav/lib/error.py`` — each exception subclass carries a
 static ``_code`` string so callers can ``except`` on type rather than
 string-matching ``exc.code``.
 
-``OperationError`` is kept as a backward-compatible alias for
-``CalendarError``.
 """
 
 from __future__ import annotations
@@ -56,8 +54,3 @@ class AgentLogicError(CalendarError):
     """Agent orchestration logic error (not a server error)."""
 
     _code = "agent_logic_error"
-
-
-# Backward-compatible alias so existing ``except OperationError``
-# clauses still catch all typed subclasses.
-OperationError = CalendarError
