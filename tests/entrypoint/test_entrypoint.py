@@ -130,7 +130,6 @@ class TestMain:
         ):
             entrypoint.main()
 
-        _args, _kwargs = mock_cal.call_args
         mock_serve.assert_called_once_with(mock_cal.return_value)
 
 

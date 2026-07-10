@@ -100,5 +100,3 @@ modules:
     doc_paths:
       - docs/settings/reference.md
     depends_on: []
-
-
