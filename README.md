@@ -6,18 +6,18 @@
 |-------------------------------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/robotsix\_calendar\_agent/\_\_init\_\_.py                 |        6 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/\_\_main\_\_.py                 |        4 |        4 |        2 |        0 |      0% |       3-8 |
-| src/robotsix\_calendar\_agent/agent.py                        |      137 |       40 |       36 |        1 |     71% |122-138, 167, 179, 189, 200, 229-241, 257-264, 271, 285, 298, 314, 321, 330, 341, 356, 386-\>388 |
+| src/robotsix\_calendar\_agent/agent.py                        |      132 |       40 |       36 |        1 |     70% |122-138, 158, 170, 180, 191, 220-232, 248-255, 262, 276, 289, 305, 312, 321, 332, 347, 377-\>379 |
 | src/robotsix\_calendar\_agent/caldav\_client/\_\_init\_\_.py  |       97 |       11 |       34 |        1 |     91% |188-189, 199-202, 232-238 |
 | src/robotsix\_calendar\_agent/caldav\_client/\_shared.py      |      107 |        1 |        8 |        1 |     98% |       150 |
 | src/robotsix\_calendar\_agent/caldav\_client/calendar\_ops.py |       86 |        2 |       20 |        2 |     96% |  194, 231 |
 | src/robotsix\_calendar\_agent/caldav\_client/contact\_ops.py  |      102 |       11 |       32 |        4 |     89% |43, 65-67, 73-75, 82-85 |
 | src/robotsix\_calendar\_agent/caldav\_client/exceptions.py    |       19 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/caldav\_client/task\_ops.py     |       18 |        0 |        2 |        0 |    100% |           |
-| src/robotsix\_calendar\_agent/entrypoint.py                   |       55 |        0 |        6 |        0 |    100% |           |
+| src/robotsix\_calendar\_agent/entrypoint.py                   |       52 |        0 |        6 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/healthcheck.py                  |       48 |        1 |       12 |        1 |     97% |       107 |
 | src/robotsix\_calendar\_agent/intent\_parser.py               |       56 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/settings.py                     |       25 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                                                     |  **760** |   **70** |  **156** |   **10** | **90%** |           |
+| **TOTAL**                                                     |  **752** |   **70** |  **156** |   **10** | **90%** |           |
 
 
 ## Setup coverage badge
