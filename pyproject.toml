@@ -50,6 +50,7 @@ dev = [
     "pytest-cov",
     "pre-commit",
     "vulture",
+    "deptry>=0.20",
     "radicale",
     "hypothesis>=6.155.2",
 ]
