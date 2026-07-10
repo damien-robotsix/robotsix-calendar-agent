@@ -2,6 +2,8 @@
 
 
 - Updated documentation to reference Python 3.14+ instead of Python 3.12+ (CONTRIBUTING.md, docs/tutorials/basic/first-agent.md).
+- Remove stale `Python :: 3.12` and `Python :: 3.13` classifiers from
+  `pyproject.toml` to match `requires-python = ">=3.14"`.
 - Fix `docker-compose.yml` healthcheck to use `calendar-agent-healthcheck` CLI entry point (matching Dockerfile), replacing the non-existent `/app/healthcheck.py` path.
 - Consolidate `add_to_calendar_handler` module: move `_event_to_dict` into `caldav_client/_shared.py`, remove dead `handle_add_to_calendar()` function and its tests, delete the module. The only production caller (`agent.py`) now imports from `caldav_client._shared`.
 - Consolidate `logging_config` module into `entrypoint`: inline `_setup_logging()` and `_JsonFormatter` as private helpers, move tests, remove module registry entry, and delete the standalone module files.
