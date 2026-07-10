@@ -6,7 +6,7 @@ development setup and the conventions this repository follows.
 ## Development setup
 
 This project uses [`uv`](https://docs.astral.sh/uv/) for dependency and
-environment management, and targets Python 3.12+.
+environment management, and targets Python 3.14+.
 
 ```bash
 git clone https://github.com/damien-robotsix/robotsix-calendar-agent.git

@@ -3,7 +3,7 @@
 This tutorial walks you through installing the agent, configuring your
 Radicale credentials, and sending your first natural-language instruction.
 
-**Prerequisites:** Python 3.12+, a running
+**Prerequisites:** Python 3.14+, a running
 [Radicale](https://radicale.org/) CalDAV server, and `uv` (the Python
 package manager used throughout these docs).
 
