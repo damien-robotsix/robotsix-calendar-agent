@@ -38,4 +38,3 @@ nav:
       - settings/reference.md
       - entrypoint/reference.md
       - healthcheck/reference.md
-      - logging_config/reference.md

@@ -2,11 +2,116 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import signal
 from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+# ---------------------------------------------------------------------------
+# _setup_logging integration
+# ---------------------------------------------------------------------------
+
+
+def _clear_calendar_agent_logger() -> logging.Logger:
+    """Reset the calendar-agent logger so each test starts clean."""
+    logger = logging.getLogger("robotsix_calendar_agent")
+    logger.handlers.clear()
+    logger.propagate = True
+    return logger
+
+
+class TestSetupLogging:
+    def test_sets_level(self) -> None:
+        from robotsix_calendar_agent.entrypoint import _setup_logging
+
+        logger = _clear_calendar_agent_logger()
+        _setup_logging(
+            level="DEBUG", fmt="console", loggers=("robotsix_calendar_agent",)
+        )
+        assert logger.level == logging.DEBUG
+
+    def test_json_format_produces_valid_json(self) -> None:
+        from robotsix_calendar_agent.entrypoint import _setup_logging
+
+        logger = _clear_calendar_agent_logger()
+        _setup_logging(level="INFO", fmt="json", loggers=("robotsix_calendar_agent",))
+        assert logger.handlers
+        handler = logger.handlers[0]
+
+        record = logging.LogRecord(
+            name="robotsix_calendar_agent.test",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=42,
+            msg="hello %s",
+            args=("world",),
+            exc_info=None,
+        )
+        output = handler.format(record)
+        obj = json.loads(output)
+        assert obj["name"] == "robotsix_calendar_agent.test"
+        assert obj["level"] == "INFO"
+        assert obj["message"] == "hello world"
+
+    def test_console_format_contains_message(self) -> None:
+        from robotsix_calendar_agent.entrypoint import _setup_logging
+
+        logger = _clear_calendar_agent_logger()
+        _setup_logging(
+            level="INFO", fmt="console", loggers=("robotsix_calendar_agent",)
+        )
+        assert logger.handlers
+        handler = logger.handlers[0]
+
+        record = logging.LogRecord(
+            name="robotsix_calendar_agent.test",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=1,
+            msg="hello world",
+            args=(),
+            exc_info=None,
+        )
+        output = handler.format(record)
+        assert "hello world" in output
+
+    def test_idempotent(self) -> None:
+        from robotsix_calendar_agent.entrypoint import _setup_logging
+
+        logger = _clear_calendar_agent_logger()
+        _setup_logging(
+            level="INFO", fmt="console", loggers=("robotsix_calendar_agent",)
+        )
+        count = len(logger.handlers)
+        _setup_logging(level="DEBUG", fmt="json", loggers=("robotsix_calendar_agent",))
+        assert len(logger.handlers) == count
+
+
+# ---------------------------------------------------------------------------
+# Settings LOG_LEVEL validation
+# ---------------------------------------------------------------------------
+
+
+def test_log_level_validation_rejects_invalid() -> None:
+    """Setting an invalid LOG_LEVEL must raise ValidationError."""
+    from pydantic import ValidationError
+
+    from robotsix_calendar_agent.settings import Settings
+
+    with pytest.raises(ValidationError):
+        Settings(LOG_LEVEL="GARBAGE")
+
+
+def test_log_level_validation_normalises_case() -> None:
+    """LOG_LEVEL must be normalised to uppercase."""
+    from robotsix_calendar_agent.settings import Settings
+
+    s = Settings(LOG_LEVEL="debug")
+    assert s.LOG_LEVEL == "DEBUG"
+
 
 # ---------------------------------------------------------------------------
 # main()
@@ -21,11 +126,10 @@ class TestMain:
             patch("robotsix_calendar_agent.entrypoint.CalendarAgent") as mock_cal,
             patch("robotsix_calendar_agent.entrypoint._serve_blocking") as mock_serve,
             patch("robotsix_calendar_agent.settings.Settings"),
-            patch("robotsix_calendar_agent.logging_config.setup_logging"),
+            patch("robotsix_calendar_agent.entrypoint._setup_logging"),
         ):
             entrypoint.main()
 
-        _args, _kwargs = mock_cal.call_args
         mock_serve.assert_called_once_with(mock_cal.return_value)
 
 

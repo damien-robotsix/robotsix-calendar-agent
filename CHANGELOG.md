@@ -2,6 +2,7 @@
 
 
 - Consolidate `add_to_calendar_handler` module: move `_event_to_dict` into `caldav_client/_shared.py`, remove dead `handle_add_to_calendar()` function and its tests, delete the module. The only production caller (`agent.py`) now imports from `caldav_client._shared`.
+- Consolidate `logging_config` module into `entrypoint`: inline `_setup_logging()` and `_JsonFormatter` as private helpers, move tests, remove module registry entry, and delete the standalone module files.
 - Wire deptry as a CI job to catch unused dependency declarations, and add `deptry>=0.20` to the dev dependency group.
 - Remove `OperationError` backward-compatibility alias — use `CalendarError` directly. The alias was never exercised by any `except`/`raise`/`isinstance` call in the repo.
 - Harmonize `astral-sh/setup-uv` SHA across CI workflows: pin `pre-commit-ci.yml` to `e58605a9` with `# v5.4.2` matching `ci.yml`. Also fix `actions/checkout` annotation from `# v4` to `# v4.3.1`.
