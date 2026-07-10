@@ -1,1 +1,3 @@
 languages: [python]
+env:
+  ROBOTSIX_LLMIO_SKIP_BUILD: "1"
