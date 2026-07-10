@@ -6,6 +6,7 @@ modules:
       - src/robotsix_calendar_agent/py.typed
     depends_on:
       - agent
+      - caldav_client
     test_paths:
       - tests/test_smoke.py
       - tests/__init__.py
