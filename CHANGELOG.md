@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add `caldav_client` to `init.depends_on` in `docs/modules.yaml` to reflect the module-level import of `caldav_client.exceptions` in `__init__.py`.
 - Updated documentation to reference Python 3.14+ instead of Python 3.12+ (CONTRIBUTING.md, docs/tutorials/basic/first-agent.md).
 - Remove stale `Python :: 3.12` and `Python :: 3.13` classifiers from
   `pyproject.toml` to match `requires-python = ">=3.14"`.
