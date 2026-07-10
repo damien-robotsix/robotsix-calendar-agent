@@ -13,8 +13,6 @@ import threading
 from collections.abc import Sequence
 from typing import Any, TextIO
 
-from .agent import CalendarAgent
-
 logger = logging.getLogger(__name__)
 
 __all__ = ["main"]
@@ -91,8 +89,8 @@ def _setup_logging(
         target.addHandler(handler)
 
 
-def _serve_blocking(agent: CalendarAgent) -> None:
-    """Start *agent* and block until ``SIGTERM``/``SIGINT`` (in-process mode)."""
+def _serve_blocking() -> None:
+    """Block until ``SIGTERM``/``SIGINT`` (in-process mode)."""
     stop_event = threading.Event()
 
     def _handle_signal(signum: int, _frame: Any) -> None:
@@ -119,4 +117,4 @@ def main() -> None:
         fmt="json" if settings.JSON_LOGS else "console",
         loggers=("robotsix_calendar_agent",),
     )
-    _serve_blocking(CalendarAgent())
+    _serve_blocking()

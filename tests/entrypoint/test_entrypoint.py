@@ -6,7 +6,7 @@ import json
 import logging
 import signal
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -119,18 +119,17 @@ def test_log_level_validation_normalises_case() -> None:
 
 
 class TestMain:
-    def test_inprocess_builds_calendar_and_blocks(self) -> None:
+    def test_inprocess_blocks(self) -> None:
         from robotsix_calendar_agent import entrypoint
 
         with (
-            patch("robotsix_calendar_agent.entrypoint.CalendarAgent") as mock_cal,
             patch("robotsix_calendar_agent.entrypoint._serve_blocking") as mock_serve,
             patch("robotsix_calendar_agent.settings.Settings"),
             patch("robotsix_calendar_agent.entrypoint._setup_logging"),
         ):
             entrypoint.main()
 
-        mock_serve.assert_called_once_with(mock_cal.return_value)
+        mock_serve.assert_called_once_with()
 
 
 # ---------------------------------------------------------------------------
@@ -148,8 +147,6 @@ class TestServeBlocking:
         def fake_signal(signum: int, handler: Any) -> None:
             handlers[signum] = handler
 
-        agent = MagicMock(name="calendar")
-
         with (
             patch(
                 "robotsix_calendar_agent.entrypoint.signal.signal",
@@ -166,6 +163,6 @@ class TestServeBlocking:
             mock_event = mock_event_cls.return_value
             mock_event.wait.side_effect = wait_side_effect
 
-            entrypoint._serve_blocking(agent)
+            entrypoint._serve_blocking()
 
         mock_event.set.assert_called_once()

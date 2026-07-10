@@ -75,8 +75,7 @@ modules:
       - tests/entrypoint/test_entrypoint.py
     doc_paths:
       - docs/entrypoint/reference.md
-    depends_on:
-      - agent
+    depends_on: []
 
   - name: healthcheck
     path: src/robotsix_calendar_agent/healthcheck.py
