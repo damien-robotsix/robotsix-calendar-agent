@@ -46,11 +46,6 @@ class TestCalendarAgentInit:
 
 
 class TestLifecycle:
-    def test_start_and_stop_are_no_ops(self, calendar_agent: MagicMock) -> None:
-        # start/stop are now no-ops but must not raise
-        calendar_agent.start()
-        calendar_agent.stop()
-
     def test_context_manager(self, calendar_agent: MagicMock) -> None:
         with calendar_agent as ctx:
             assert ctx is calendar_agent

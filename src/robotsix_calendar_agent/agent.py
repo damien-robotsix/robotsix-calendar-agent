@@ -141,20 +141,11 @@ class CalendarAgent:
     # lifecycle
     # ------------------------------------------------------------------
 
-    def start(self) -> None:
-        """Start the agent (no-op; the broker transport has been removed)."""
-        logger.info("Starting CalendarAgent (agent_id=%r)", self._agent_id)
-
-    def stop(self) -> None:
-        """Stop the agent (no-op; the broker transport has been removed)."""
-        logger.info("Stopping CalendarAgent (agent_id=%r)", self._agent_id)
-
     def __enter__(self) -> CalendarAgent:
-        self.start()
         return self
 
     def __exit__(self, *args: Any) -> None:
-        self.stop()
+        pass
 
 
 # ---------------------------------------------------------------------------
