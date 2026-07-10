@@ -37,6 +37,5 @@ nav:
       - caldav_client/reference.md
       - settings/reference.md
       - entrypoint/reference.md
-      - add_to_calendar_handler/reference.md
       - healthcheck/reference.md
       - logging_config/reference.md
