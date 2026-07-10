@@ -1003,7 +1003,7 @@ class TestVcardSerialization:
 # ---------------------------------------------------------------------------
 
 
-class TestOperationErrorPropagation:
+class TestErrorPropagation:
     def test_list_events_reraises_operation_error(self, client: CalDavClient) -> None:
         client._principal.calendars.return_value = []
         with pytest.raises(NotFoundError) as exc_info:
