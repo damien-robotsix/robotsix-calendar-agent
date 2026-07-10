@@ -102,12 +102,10 @@ def _serve_blocking(agent: CalendarAgent) -> None:
     signal.signal(signal.SIGTERM, _handle_signal)
     signal.signal(signal.SIGINT, _handle_signal)
 
-    agent.start()
     logger.info("CalendarAgent service running; awaiting shutdown signal")
     try:
         stop_event.wait()
     finally:
-        agent.stop()
         logger.info("CalendarAgent service stopped")
 
 

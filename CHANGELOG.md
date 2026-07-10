@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Remove no-op `CalendarAgent.start()` and `CalendarAgent.stop()` lifecycle shims, and simplify `__enter__`/`__exit__` to identity pattern.
 - Document `depends_on` convention: module-level internal imports must be recorded in `docs/modules.yaml` via `depends_on` (AGENT.md `## Module layout`).
 - Add `caldav_client` to `init.depends_on` in `docs/modules.yaml` to reflect the module-level import of `caldav_client.exceptions` in `__init__.py`.
 - Updated documentation to reference Python 3.14+ instead of Python 3.12+ (CONTRIBUTING.md, docs/tutorials/basic/first-agent.md).

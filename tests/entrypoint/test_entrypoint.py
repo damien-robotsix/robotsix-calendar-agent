@@ -169,5 +169,3 @@ class TestServeBlocking:
             entrypoint._serve_blocking(agent)
 
         mock_event.set.assert_called_once()
-        agent.start.assert_called_once()
-        agent.stop.assert_called_once()
