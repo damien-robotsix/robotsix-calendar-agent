@@ -31,9 +31,6 @@ format
 # monitor_snapshot was removed but health is kept as public API
 health
 
-# CalDavClient health probe — public API called on-demand by monitor
-health
-
 # CalendarAgent attributes/methods — used by removed broker integration;
 # kept as public API / still exercised in unit tests
 _settings
