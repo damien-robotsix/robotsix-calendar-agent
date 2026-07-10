@@ -90,6 +90,12 @@ src/robotsix_calendar_agent/
 └── settings.py                 # BaseSettings — single source of truth for env vars
 ```
 
+> **Rule:** When adding a module-level import from an internal module to any file under `src/robotsix_calendar_agent/`, ensure the imported module appears in that file's `depends_on` list in `docs/modules.yaml`. Module-level `from .<module> import (...)` statements always require a corresponding `depends_on` entry — this is enforced by the periodic `module_curator` agent and violations will be flagged as draft tickets.
+
+**Rationale:** Tickets such as `20260710T195032Z-...` (added `caldav_client` to `init.depends_on` after `__init__.py` imported `caldav_client.exceptions` at module level) and prior corrections `#255` and `#275` demonstrate that this convention is not obvious and has caused repeated drift in `docs/modules.yaml`.
+
+**Provenance:** proposed by retrospect from 20260710T195032Z-docs-modules-yaml-init-depends-on-missin-7e16
+
 ## Dependencies
 
 
