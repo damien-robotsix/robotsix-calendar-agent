@@ -40,3 +40,11 @@ _settings
 _intent_parser
 _dispatch
 _render_reply
+
+# IntentParser.parse — public API method; the only in-tree consumer
+# (add_to_calendar_handler.py) was removed, but external callers rely on it.
+parse
+
+# CalendarError.code — public attribute set in __init__; the only in-tree
+# consumer (add_to_calendar_handler.py's exc.code check) was removed.
+code

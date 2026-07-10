@@ -83,7 +83,6 @@ Both are active and must not be disabled without coordination.
 src/robotsix_calendar_agent/
 ├── __init__.py
 ├── agent.py                    # CalendarAgent — wires everything together
-├── add_to_calendar_handler.py  # Structured handler for auto-mail "add_to_calendar" payloads
 ├── entrypoint.py               # main() — long-lived in-process service
 ├── caldav_client.py            # CalDavClient — typed CalDAV/CardDAV wrapper with tenacity retries
 ├── intent_parser.py            # IntentParser — llmio-based NL → ParsedIntent

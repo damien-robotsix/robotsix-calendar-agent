@@ -5,7 +5,6 @@ modules:
       - src/robotsix_calendar_agent/__init__.py
       - src/robotsix_calendar_agent/py.typed
     depends_on:
-      - add_to_calendar_handler
       - agent
     test_paths:
       - tests/test_smoke.py
@@ -31,7 +30,6 @@ modules:
       - docs/agent/tutorials/manage-events.md
       - docs/tutorials/intermediate/component-agent-management.md
     depends_on:
-      - add_to_calendar_handler
       - caldav_client
       - intent_parser
 
@@ -51,19 +49,9 @@ modules:
       - tests/caldav_client/caldav_test_server.py
       - tests/caldav_client/test_caldav_integration.py
       - tests/caldav_client/test_hypothesis_roundtrip.py
+      - tests/caldav_client/test_shared.py
     doc_paths:
       - docs/caldav_client/reference.md
-
-  - name: add_to_calendar_handler
-    path: src/robotsix_calendar_agent/add_to_calendar_handler.py
-    paths:
-      - src/robotsix_calendar_agent/add_to_calendar_handler.py
-    test_paths:
-      - tests/add_to_calendar_handler/test_add_to_calendar_handler.py
-    doc_paths:
-      - docs/add_to_calendar_handler/reference.md
-    depends_on:
-      - caldav_client
 
   - name: intent_parser
     path: src/robotsix_calendar_agent/intent_parser.py

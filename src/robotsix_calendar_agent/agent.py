@@ -20,13 +20,13 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
-from .add_to_calendar_handler import _event_to_dict
 from .caldav_client import (
     CalDavClient,
     CalendarEvent,
     Contact,
     Task,
 )
+from .caldav_client._shared import _event_to_dict
 from .caldav_client.exceptions import AgentLogicError
 from .intent_parser import (
     CalendarOperation,
