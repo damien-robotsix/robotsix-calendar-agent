@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Derive `_IntentOutput.operation` Literal type from `CalendarOperation`, `ContactOperation`, and `TaskOperation` enum values using PEP 646 unpacking (`Literal[*CalendarOperation, *ContactOperation, *TaskOperation]`) instead of a manually enumerated union, keeping the type in sync with enum members automatically.
 - Remove no-op `CalendarAgent.start()` and `CalendarAgent.stop()` lifecycle shims, and simplify `__enter__`/`__exit__` to identity pattern.
 - Document `depends_on` convention: module-level internal imports must be recorded in `docs/modules.yaml` via `depends_on` (AGENT.md `## Module layout`).
 - Add `caldav_client` to `init.depends_on` in `docs/modules.yaml` to reflect the module-level import of `caldav_client.exceptions` in `__init__.py`.
