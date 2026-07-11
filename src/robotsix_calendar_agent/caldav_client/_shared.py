@@ -161,6 +161,7 @@ def _event_to_dict(event: CalendarEvent) -> dict[str, Any]:
         "calendar_id": event.calendar_id,
     }
 
+
 def _unescape_text(value: str) -> str:
     """Reverse the escaping applied by ``_escape_text``.
 
