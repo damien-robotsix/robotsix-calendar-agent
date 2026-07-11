@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Callable
+from dataclasses import asdict
 from typing import Any
 
 from opentelemetry import trace
@@ -176,29 +177,6 @@ def _build_contact(params: dict[str, Any]) -> Contact:
     )
 
 
-def _contact_to_dict(contact: Contact) -> dict[str, Any]:
-    return {
-        "uid": contact.uid,
-        "full_name": contact.full_name,
-        "email": contact.email,
-        "phone": contact.phone,
-        "address": contact.address,
-        "addressbook_id": contact.addressbook_id,
-    }
-
-
-def _task_to_dict(task: Task) -> dict[str, Any]:
-    return {
-        "uid": task.uid,
-        "summary": task.summary,
-        "description": task.description,
-        "dtstart": task.dtstart,
-        "due": task.due,
-        "status": task.status,
-        "calendar_id": task.calendar_id,
-    }
-
-
 def _entity_op(
     params: dict[str, Any],
     *,
@@ -274,7 +252,7 @@ def _handle_list_tasks(
     params: dict[str, Any],
 ) -> list[dict[str, Any]]:
     return [
-        _task_to_dict(t)
+        asdict(t)
         for t in client.list_tasks(
             calendar_id=params.get("calendar_id", ""),
         )
@@ -319,7 +297,7 @@ def _handle_list_contacts(
     params: dict[str, Any],
 ) -> list[dict[str, Any]]:
     return [
-        _contact_to_dict(c)
+        asdict(c)
         for c in client.list_contacts(addressbook_id=params.get("addressbook_id", ""))
     ]
 
@@ -332,7 +310,7 @@ def _handle_create_or_update_contact(
     return _entity_op(
         params,
         builder=_build_contact,
-        serializer=_contact_to_dict,
+        serializer=asdict,
         create_fn=client.create_contact,
         update_fn=client.update_contact,
         id_key="addressbook_id",
