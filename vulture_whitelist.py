@@ -19,6 +19,10 @@ DELETE_CONTACT
 # Dataclass field with default
 original_text
 
+# Task dataclass fields with defaults — used via attribute access
+due
+status
+
 # Pydantic field-validator methods — invoked by the framework, not dead code
 _normalize_log_level
 _token_required_when_enabled
