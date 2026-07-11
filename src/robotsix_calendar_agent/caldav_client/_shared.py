@@ -159,8 +159,26 @@ def _event_to_dict(event: CalendarEvent) -> dict[str, Any]:
         "dtstart": event.dtstart,
         "dtend": event.dtend,
         "calendar_id": event.calendar_id,
+def _contact_to_dict(contact: Contact) -> dict[str, Any]:
+    return {
+        "uid": contact.uid,
+        "full_name": contact.full_name,
+        "email": contact.email,
+        "phone": contact.phone,
+        "address": contact.address,
+        "addressbook_id": contact.addressbook_id,
     }
 
+def _task_to_dict(task: Task) -> dict[str, Any]:
+    return {
+        "uid": task.uid,
+        "summary": task.summary,
+        "description": task.description,
+        "dtstart": task.dtstart,
+        "due": task.due,
+        "status": task.status,
+        "calendar_id": task.calendar_id,
+    }
 
 def _unescape_text(value: str) -> str:
     """Reverse the escaping applied by ``_escape_text``.
