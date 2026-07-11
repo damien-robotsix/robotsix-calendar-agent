@@ -112,7 +112,7 @@ class IntentParser:
                 raise IntentParseError(_msg)
 
             result = ParsedIntent(
-                operation=output.operation,  # type: ignore[arg-type]
+                operation=output.operation,
                 params=output.params or {},
                 original_text=text,
             )
@@ -137,17 +137,10 @@ class IntentParser:
 class _IntentOutput(BaseModel):
     """Structured output from the llmio model — not part of the public API."""
 
-    operation: Literal[
-        "list_events",
-        "list_calendars",
-        "create_event",
-        "update_event",
-        "delete_event",
-        "list_tasks",
-        "list_contacts",
-        "create_contact",
-        "update_contact",
-        "delete_contact",
+    operation: Literal[  # type: ignore[valid-type]
+        *CalendarOperation,
+        *ContactOperation,
+        *TaskOperation,
     ]
     params: dict[str, Any] = Field(
         default_factory=dict,
