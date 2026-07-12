@@ -2,82 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 
 from robotsix_calendar_agent.caldav_client import (
     CalDavClient,
-    CalendarEvent,
     Contact,
 )
 from robotsix_calendar_agent.caldav_client.exceptions import (
     CalDAVError,
     NotFoundError,
 )
-
-# ---------------------------------------------------------------------------
-# Helpers (local copies needed by these tests)
-# ---------------------------------------------------------------------------
-
-
-def _make_event(**overrides: str) -> CalendarEvent:
-    defaults: dict[str, str] = {
-        "uid": "",
-        "summary": "Test Event",
-        "description": "desc",
-        "location": "room",
-        "dtstart": "2026-06-15T09:00:00",
-        "dtend": "2026-06-15T10:00:00",
-        "calendar_id": "",
-    }
-    defaults.update(overrides)
-    return CalendarEvent(**defaults)
-
-
-def _mock_vevent(**overrides: Any) -> MagicMock:
-    """Build a mock caldav object exposing ``icalendar_component`` (caldav 2.0)."""
-    import datetime
-
-    values: dict[str, Any] = {
-        "UID": overrides.get("uid", "evt-1"),
-        "SUMMARY": overrides.get("summary", "Test Event"),
-        "DESCRIPTION": overrides.get("description", ""),
-        "LOCATION": overrides.get("location", ""),
-        "DTSTART": MagicMock(
-            dt=overrides.get("dtstart", datetime.datetime(2026, 6, 15, 9, 0, 0))
-        ),
-        "DTEND": MagicMock(
-            dt=overrides.get("dtend", datetime.datetime(2026, 6, 15, 10, 0, 0))
-        ),
-    }
-    comp = MagicMock()
-    comp.get.side_effect = lambda name, default=None: values.get(name, default)
-    obj = MagicMock()
-    obj.icalendar_component = comp
-    return obj
-
-
-def _mock_vcard(**overrides: str) -> MagicMock:
-    """Build a mock caldav object exposing raw vCard ``data`` (caldav 2.0)."""
-    lines = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        f"UID:{overrides.get('uid', 'cnt-1')}",
-        f"FN:{overrides.get('full_name', 'John Doe')}",
-    ]
-    if overrides.get("email"):
-        lines.append(f"EMAIL:{overrides['email']}")
-    if overrides.get("phone"):
-        lines.append(f"TEL:{overrides['phone']}")
-    if overrides.get("address"):
-        lines.append(f"ADR:;;{overrides['address']};;;")
-    lines.append("END:VCARD")
-    obj = MagicMock()
-    obj.data = "\n".join(lines) + "\n"
-    return obj
-
+from tests.caldav_client.conftest import _make_event, _mock_vcard, _mock_vevent
 
 # ---------------------------------------------------------------------------
 # Across-calendar operations

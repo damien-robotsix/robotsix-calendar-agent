@@ -9,33 +9,11 @@ import pytest
 from robotsix_calendar_agent.caldav_client import (
     CalDavClient,
     Contact,
+)
+from robotsix_calendar_agent.caldav_client.exceptions import (
     NotFoundError,
 )
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _mock_vcard(**overrides: str) -> MagicMock:
-    """Build a mock caldav object exposing raw vCard ``data`` (caldav 2.0)."""
-    lines = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        f"UID:{overrides.get('uid', 'cnt-1')}",
-        f"FN:{overrides.get('full_name', 'John Doe')}",
-    ]
-    if overrides.get("email"):
-        lines.append(f"EMAIL:{overrides['email']}")
-    if overrides.get("phone"):
-        lines.append(f"TEL:{overrides['phone']}")
-    if overrides.get("address"):
-        lines.append(f"ADR:;;{overrides['address']};;;")
-    lines.append("END:VCARD")
-    obj = MagicMock()
-    obj.data = "\n".join(lines) + "\n"
-    return obj
-
+from tests.caldav_client.conftest import _mock_vcard
 
 # ---------------------------------------------------------------------------
 # Contacts operations

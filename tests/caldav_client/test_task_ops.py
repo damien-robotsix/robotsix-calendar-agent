@@ -6,32 +6,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 from robotsix_calendar_agent.caldav_client import CalDavClient, Task
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _mock_vtodo(**overrides: Any) -> MagicMock:
-    """Build a mock caldav object for a VTODO exposing ``icalendar_component``."""
-    import datetime
-
-    values: dict[str, Any] = {
-        "UID": overrides.get("uid", "task-1"),
-        "SUMMARY": overrides.get("summary", "Test Task"),
-        "DESCRIPTION": overrides.get("description", ""),
-        "DTSTART": MagicMock(
-            dt=overrides.get("dtstart", datetime.datetime(2026, 6, 20, 8, 0, 0))
-        ),
-        "DUE": MagicMock(dt=overrides.get("due", datetime.date(2026, 6, 21))),
-        "STATUS": overrides.get("status", "NEEDS-ACTION"),
-    }
-    comp = MagicMock()
-    comp.get.side_effect = lambda name, default=None: values.get(name, default)
-    obj = MagicMock()
-    obj.icalendar_component = comp
-    return obj
-
+from tests.caldav_client.conftest import _mock_vtodo
 
 # ---------------------------------------------------------------------------
 # Test classes

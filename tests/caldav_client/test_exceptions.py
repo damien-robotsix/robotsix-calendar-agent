@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
-from unittest.mock import MagicMock
-
 import pytest
 
 from robotsix_calendar_agent.caldav_client import (
     CalDavClient,
-    CalendarEvent,
 )
 from robotsix_calendar_agent.caldav_client.exceptions import (
     AuthError,
@@ -23,49 +19,7 @@ from robotsix_calendar_agent.caldav_client.exceptions import (
 # side_effects directly (TestAuthFailure, TestConnectFailure) operate on
 # the same mock object that the autouse reset_mock_caldav fixture injects
 # into sys.modules.
-from tests.caldav_client.conftest import _mock_caldav
-
-# ---------------------------------------------------------------------------
-# Event helpers
-# ---------------------------------------------------------------------------
-
-
-def _make_event(**overrides: str) -> CalendarEvent:
-    defaults: dict[str, str] = {
-        "uid": "",
-        "summary": "Test Event",
-        "description": "desc",
-        "location": "room",
-        "dtstart": "2026-06-15T09:00:00",
-        "dtend": "2026-06-15T10:00:00",
-        "calendar_id": "",
-    }
-    defaults.update(overrides)
-    return CalendarEvent(**defaults)
-
-
-def _mock_vevent(**overrides: Any) -> MagicMock:
-    """Build a mock caldav object exposing ``icalendar_component`` (caldav 2.0)."""
-    import datetime
-
-    values: dict[str, Any] = {
-        "UID": overrides.get("uid", "evt-1"),
-        "SUMMARY": overrides.get("summary", "Test Event"),
-        "DESCRIPTION": overrides.get("description", ""),
-        "LOCATION": overrides.get("location", ""),
-        "DTSTART": MagicMock(
-            dt=overrides.get("dtstart", datetime.datetime(2026, 6, 15, 9, 0, 0))
-        ),
-        "DTEND": MagicMock(
-            dt=overrides.get("dtend", datetime.datetime(2026, 6, 15, 10, 0, 0))
-        ),
-    }
-    comp = MagicMock()
-    comp.get.side_effect = lambda name, default=None: values.get(name, default)
-    obj = MagicMock()
-    obj.icalendar_component = comp
-    return obj
-
+from tests.caldav_client.conftest import _make_event, _mock_caldav, _mock_vevent
 
 # ---------------------------------------------------------------------------
 # Error propagation
