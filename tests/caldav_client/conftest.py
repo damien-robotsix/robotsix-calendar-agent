@@ -30,13 +30,22 @@ _mock_caldav.lib.error.AuthorizationError = _mock_caldav.error.AuthorizationErro
 
 
 @pytest.fixture(autouse=True)
-def reset_mock_caldav() -> Generator[MagicMock]:
+def reset_mock_caldav(request: pytest.FixtureRequest) -> Generator[MagicMock]:
     """Replace caldav in sys.modules with mock, reset between tests.
 
     Saves and restores the real caldav module so that integration
     tests (which use the same session) can import the real library
     outside of mocked test cases.
+
+    Skips itself for tests marked ``integration`` so that
+    session-scoped fixtures (like ``caldav_client``) and inline
+    ``from caldav.lib.error import DAVError`` resolve against the
+    real caldav package.
     """
+    if request.node.get_closest_marker("integration"):
+        yield _mock_caldav
+        return
+
     original = sys.modules.get("caldav")
     sys.modules["caldav"] = _mock_caldav
     _mock_caldav.reset_mock(return_value=True, side_effect=True)
