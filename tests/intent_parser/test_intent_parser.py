@@ -12,9 +12,7 @@ import pytest
 # Mock robotsix_llmio in sys.modules
 # ---------------------------------------------------------------------------
 
-_mock_llmio = MagicMock()
 _mock_llmio_core = MagicMock()
-sys.modules["robotsix_llmio"] = _mock_llmio
 sys.modules["robotsix_llmio.core"] = _mock_llmio_core
 
 from robotsix_calendar_agent.intent_parser import (  # noqa: E402
