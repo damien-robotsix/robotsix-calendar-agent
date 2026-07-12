@@ -25,7 +25,6 @@ status
 
 # Pydantic field-validator methods — invoked by the framework, not dead code
 _normalize_log_level
-_token_required_when_enabled
 cls
 
 # logging.Formatter subclass — format() called by logging framework internals
