@@ -3,6 +3,7 @@
 
 - Fix pre-existing CodeQL ``py/ineffectual-statement`` and ``py/unnecessary-lambda`` alerts in vulture_whitelist.py, test_hypothesis_roundtrip.py, calendar_ops.py, contact_ops.py, and task_ops.py.
 - Remove dead `_token_required_when_enabled` entry from `vulture_whitelist.py`.
+- Add import-time assert guarding `_OPERATION_NOUN` and `_OPERATION_VERB` dict completeness against `_DISPATCH` keys
 - Replace custom `_setup_logging`/`_JsonFormatter` in `entrypoint` with `robotsix_llmio.logging.setup_logging`, removing ~50 lines of duplicated code and gaining OTel trace-id injection on all log lines.
 - Split `tests/caldav_client/test_caldav_client.py` monolith (104 tests, 1368 lines) into per-module test files: `test_calendar_ops.py`, `test_contact_ops.py`, `test_task_ops.py`, `test_exceptions.py`, with shared fixtures extracted to `conftest.py` and `_shared` helpers moved into `test_shared.py`.
 - Derive `_IntentOutput.operation` Literal type from `CalendarOperation`, `ContactOperation`, and `TaskOperation` enum values using PEP 646 unpacking (`Literal[*CalendarOperation, *ContactOperation, *TaskOperation]`) instead of a manually enumerated union, keeping the type in sync with enum members automatically.
