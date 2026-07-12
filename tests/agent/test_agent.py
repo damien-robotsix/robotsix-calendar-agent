@@ -97,8 +97,7 @@ class TestDispatchNounVerbSync:
 
         missing = dispatch_keys - noun_verb_keys - exempt
         assert not missing, (
-            "_OPERATION_NOUN / _OPERATION_VERB missing entries for: "
-            f"{missing}"
+            f"_OPERATION_NOUN / _OPERATION_VERB missing entries for: {missing}"
         )
 
 
