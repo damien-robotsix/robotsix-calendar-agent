@@ -2,93 +2,11 @@
 
 from __future__ import annotations
 
-import json
-import logging
 import signal
 from typing import Any
 from unittest.mock import patch
 
 import pytest
-
-# ---------------------------------------------------------------------------
-# _setup_logging integration
-# ---------------------------------------------------------------------------
-
-
-def _clear_calendar_agent_logger() -> logging.Logger:
-    """Reset the calendar-agent logger so each test starts clean."""
-    logger = logging.getLogger("robotsix_calendar_agent")
-    logger.handlers.clear()
-    logger.propagate = True
-    return logger
-
-
-class TestSetupLogging:
-    def test_sets_level(self) -> None:
-        from robotsix_calendar_agent.entrypoint import _setup_logging
-
-        logger = _clear_calendar_agent_logger()
-        _setup_logging(
-            level="DEBUG", fmt="console", loggers=("robotsix_calendar_agent",)
-        )
-        assert logger.level == logging.DEBUG
-
-    def test_json_format_produces_valid_json(self) -> None:
-        from robotsix_calendar_agent.entrypoint import _setup_logging
-
-        logger = _clear_calendar_agent_logger()
-        _setup_logging(level="INFO", fmt="json", loggers=("robotsix_calendar_agent",))
-        assert logger.handlers
-        handler = logger.handlers[0]
-
-        record = logging.LogRecord(
-            name="robotsix_calendar_agent.test",
-            level=logging.INFO,
-            pathname=__file__,
-            lineno=42,
-            msg="hello %s",
-            args=("world",),
-            exc_info=None,
-        )
-        output = handler.format(record)
-        obj = json.loads(output)
-        assert obj["name"] == "robotsix_calendar_agent.test"
-        assert obj["level"] == "INFO"
-        assert obj["message"] == "hello world"
-
-    def test_console_format_contains_message(self) -> None:
-        from robotsix_calendar_agent.entrypoint import _setup_logging
-
-        logger = _clear_calendar_agent_logger()
-        _setup_logging(
-            level="INFO", fmt="console", loggers=("robotsix_calendar_agent",)
-        )
-        assert logger.handlers
-        handler = logger.handlers[0]
-
-        record = logging.LogRecord(
-            name="robotsix_calendar_agent.test",
-            level=logging.INFO,
-            pathname=__file__,
-            lineno=1,
-            msg="hello world",
-            args=(),
-            exc_info=None,
-        )
-        output = handler.format(record)
-        assert "hello world" in output
-
-    def test_idempotent(self) -> None:
-        from robotsix_calendar_agent.entrypoint import _setup_logging
-
-        logger = _clear_calendar_agent_logger()
-        _setup_logging(
-            level="INFO", fmt="console", loggers=("robotsix_calendar_agent",)
-        )
-        count = len(logger.handlers)
-        _setup_logging(level="DEBUG", fmt="json", loggers=("robotsix_calendar_agent",))
-        assert len(logger.handlers) == count
-
 
 # ---------------------------------------------------------------------------
 # Settings LOG_LEVEL validation
@@ -125,11 +43,51 @@ class TestMain:
         with (
             patch("robotsix_calendar_agent.entrypoint._serve_blocking") as mock_serve,
             patch("robotsix_calendar_agent.settings.Settings"),
-            patch("robotsix_calendar_agent.entrypoint._setup_logging"),
+            patch("robotsix_llmio.logging.setup_logging"),
         ):
             entrypoint.main()
 
         mock_serve.assert_called_once_with()
+
+    def test_setup_logging_called_with_expected_args(self) -> None:
+        from robotsix_calendar_agent import entrypoint
+
+        with (
+            patch("robotsix_calendar_agent.entrypoint._serve_blocking"),
+            patch("robotsix_calendar_agent.settings.Settings") as mock_settings_cls,
+            patch("robotsix_llmio.logging.setup_logging") as mock_setup,
+        ):
+            mock_settings = mock_settings_cls.return_value
+            mock_settings.LOG_LEVEL = "DEBUG"
+            mock_settings.JSON_LOGS = True
+
+            entrypoint.main()
+
+        mock_setup.assert_called_once_with(
+            level="DEBUG",
+            fmt="json",
+            loggers=("robotsix_calendar_agent",),
+        )
+
+    def test_setup_logging_console_fmt(self) -> None:
+        from robotsix_calendar_agent import entrypoint
+
+        with (
+            patch("robotsix_calendar_agent.entrypoint._serve_blocking"),
+            patch("robotsix_calendar_agent.settings.Settings") as mock_settings_cls,
+            patch("robotsix_llmio.logging.setup_logging") as mock_setup,
+        ):
+            mock_settings = mock_settings_cls.return_value
+            mock_settings.LOG_LEVEL = "INFO"
+            mock_settings.JSON_LOGS = False
+
+            entrypoint.main()
+
+        mock_setup.assert_called_once_with(
+            level="INFO",
+            fmt="console",
+            loggers=("robotsix_calendar_agent",),
+        )
 
 
 # ---------------------------------------------------------------------------
