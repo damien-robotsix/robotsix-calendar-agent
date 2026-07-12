@@ -9,8 +9,8 @@
 | src/robotsix\_calendar\_agent/agent.py                        |      129 |       38 |       36 |        1 |     70% |123-139, 159, 171, 198-210, 226-233, 240, 254, 267, 283, 290, 299, 310, 325, 355-\>357 |
 | src/robotsix\_calendar\_agent/caldav\_client/\_\_init\_\_.py  |       97 |       11 |       34 |        1 |     91% |188-189, 199-202, 232-238 |
 | src/robotsix\_calendar\_agent/caldav\_client/\_shared.py      |      107 |        1 |        8 |        1 |     98% |       150 |
-| src/robotsix\_calendar\_agent/caldav\_client/calendar\_ops.py |       86 |        2 |       20 |        2 |     96% |  194, 231 |
-| src/robotsix\_calendar\_agent/caldav\_client/contact\_ops.py  |      102 |       11 |       32 |        4 |     89% |43, 65-67, 73-75, 82-85 |
+| src/robotsix\_calendar\_agent/caldav\_client/calendar\_ops.py |       86 |        2 |       20 |        2 |     96% |  201, 238 |
+| src/robotsix\_calendar\_agent/caldav\_client/contact\_ops.py  |      102 |       11 |       32 |        4 |     89% |46, 68-70, 76-78, 85-88 |
 | src/robotsix\_calendar\_agent/caldav\_client/exceptions.py    |       19 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/caldav\_client/task\_ops.py     |       18 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/entrypoint.py                   |       24 |        0 |        0 |        0 |    100% |           |
