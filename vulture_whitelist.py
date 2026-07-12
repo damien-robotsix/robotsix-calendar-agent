@@ -2,49 +2,49 @@
 # Add false-positive names one per line (bare names, not strings).
 
 # Set in __init__ and used via self._url
-_url
+_ = _url
 
 # StrEnum members — used via the enum class, invisible to vulture
-LIST_EVENTS
-LIST_CALENDARS
-CREATE_EVENT
-UPDATE_EVENT
-DELETE_EVENT
-LIST_TASKS
-LIST_CONTACTS
-CREATE_CONTACT
-UPDATE_CONTACT
-DELETE_CONTACT
+_ = LIST_EVENTS
+_ = LIST_CALENDARS
+_ = CREATE_EVENT
+_ = UPDATE_EVENT
+_ = DELETE_EVENT
+_ = LIST_TASKS
+_ = LIST_CONTACTS
+_ = CREATE_CONTACT
+_ = UPDATE_CONTACT
+_ = DELETE_CONTACT
 
 # Dataclass field with default
-original_text
+_ = original_text
 
 # Task dataclass fields with defaults — used via attribute access
-due
-status
+_ = due
+_ = status
 
 # Pydantic field-validator methods — invoked by the framework, not dead code
-_normalize_log_level
-cls
+_ = _normalize_log_level
+_ = cls
 
 # logging.Formatter subclass — format() called by logging framework internals
-format
+_ = format
 
 # CalDavClient health probe — public API called on-demand by monitor;
 # monitor_snapshot was removed but health is kept as public API
-health
+_ = health
 
 # CalendarAgent attributes/methods — used by removed broker integration;
 # kept as public API / still exercised in unit tests
-_settings
-_intent_parser
-_dispatch
-_render_reply
+_ = _settings
+_ = _intent_parser
+_ = _dispatch
+_ = _render_reply
 
 # IntentParser.parse — public API method; the only in-tree consumer
 # (add_to_calendar_handler.py) was removed, but external callers rely on it.
-parse
+_ = parse
 
 # CalendarError.code — public attribute set in __init__; the only in-tree
 # consumer (add_to_calendar_handler.py's exc.code check) was removed.
-code
+_ = code

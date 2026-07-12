@@ -26,10 +26,17 @@ class _CalendarOpsMixin:
     if TYPE_CHECKING:
         # Provided by CalDavClient at runtime; declared here so mypy
         # understands the mixin contract without circular imports.
-        def _escape_text(self, value: str) -> str: ...
-        def _ical_dt(self, name: str, value: str) -> str: ...
-        def _iter_calendars(self, calendar_id: str = "") -> list[Any]: ...
-        def _get_calendar(self, calendar_id: str = "") -> Any: ...
+        def _escape_text(self, value: str) -> str:
+            raise NotImplementedError
+
+        def _ical_dt(self, name: str, value: str) -> str:
+            raise NotImplementedError
+
+        def _iter_calendars(self, calendar_id: str = "") -> list[Any]:
+            raise NotImplementedError
+
+        def _get_calendar(self, calendar_id: str = "") -> Any:
+            raise NotImplementedError
 
     # ------------------------------------------------------------------
     # helpers

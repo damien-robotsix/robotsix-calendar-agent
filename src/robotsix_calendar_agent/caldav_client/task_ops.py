@@ -19,7 +19,8 @@ class _TaskOpsMixin:
     if TYPE_CHECKING:
         # Provided by CalDavClient at runtime; declared here so mypy
         # understands the mixin contract without circular imports.
-        def _iter_calendars(self, calendar_id: str = "") -> list[Any]: ...
+        def _iter_calendars(self, calendar_id: str = "") -> list[Any]:
+            raise NotImplementedError
 
     # ------------------------------------------------------------------
     # helpers
