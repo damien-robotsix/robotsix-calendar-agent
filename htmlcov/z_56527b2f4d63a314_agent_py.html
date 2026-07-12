@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for src/robotsix_calendar_agent/agent.py: 70%</title>
+    <title>Coverage for src/robotsix_calendar_agent/agent.py: 71%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_c827f16f.png">
     <link rel="stylesheet" href="style_cb_4667309f.css" type="text/css">
     <script src="coverage_html_cb_dd2e7eb5.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>src<span class="sep">/</span>robotsix_calendar_agent<span class="sep">/</span>agent.py</b>:
-            <span class="pc_cov">70%</span>
+            <span class="pc_cov">71%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -55,8 +55,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">129 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">91<span class="text"> run</span></button>
+            <span class="text">131 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">93<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">38<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">3<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">1<span class="text"> partial</span></button>
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_2d7c1ed7505ed5bf___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.14.3">coverage.py v7.14.3</a>,
-            created at 2026-07-12 20:25 +0000
+            created at 2026-07-12 20:39 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -505,6 +505,22 @@
     <p class="run run2"><span class="n"><a id="t421" href="#t421">421</a></span><span class="t">    <span class="fst">f"</span><span class="fst">Mismatch: extra in dict=</span><span class="op">{</span><span class="nam">_DISPATCH_KEYS</span> <span class="op">-</span> <span class="nam">_ENUM_VALUES</span><span class="op">}</span><span class="fst">, </span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t422" href="#t422">422</a></span><span class="t">    <span class="fst">f"</span><span class="fst">missing=</span><span class="op">{</span><span class="nam">_ENUM_VALUES</span> <span class="op">-</span> <span class="nam">_DISPATCH_KEYS</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t423" href="#t423">423</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t424" href="#t424">424</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t425" href="#t425">425</a></span><span class="t"><span class="com"># Every dispatch key that can reach _render_reply must have a noun or</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t426" href="#t426">426</a></span><span class="t"><span class="com"># verb entry.  delete_event/delete_contact are handled by the</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t427" href="#t427">427</a></span><span class="t"><span class="com"># "deleted": True branch and need neither.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t428" href="#t428">428</a></span><span class="t"><span class="nam">_NOUN_VERB_KEYS</span> <span class="op">=</span> <span class="nam">_OPERATION_NOUN</span><span class="op">.</span><span class="nam">keys</span><span class="op">(</span><span class="op">)</span> <span class="op">|</span> <span class="nam">_OPERATION_VERB</span><span class="op">.</span><span class="nam">keys</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t429" href="#t429">429</a></span><span class="t"><span class="key">assert</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t430" href="#t430">430</a></span><span class="t">    <span class="nam">_NOUN_VERB_KEYS</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t431" href="#t431">431</a></span><span class="t">    <span class="op">|</span> <span class="op">{</span>  <span class="com"># nosec B101</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t432" href="#t432">432</a></span><span class="t">        <span class="str">"delete_event"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t433" href="#t433">433</a></span><span class="t">        <span class="str">"delete_contact"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t434" href="#t434">434</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t435" href="#t435">435</a></span><span class="t">    <span class="op">==</span> <span class="nam">_DISPATCH_KEYS</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t436" href="#t436">436</a></span><span class="t"><span class="op">)</span><span class="op">,</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t437" href="#t437">437</a></span><span class="t">    <span class="str">"_OPERATION_NOUN / _OPERATION_VERB missing entries for: "</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t438" href="#t438">438</a></span><span class="t">    <span class="fst">f"</span><span class="op">{</span><span class="nam">_DISPATCH_KEYS</span> <span class="op">-</span> <span class="nam">_NOUN_VERB_KEYS</span> <span class="op">-</span> <span class="op">{</span><span class="str">'delete_event'</span><span class="op">,</span> <span class="str">'delete_contact'</span><span class="op">}</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t439" href="#t439">439</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -514,7 +530,7 @@
             <a class="nav" href="z_2d7c1ed7505ed5bf___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.14.3">coverage.py v7.14.3</a>,
-            created at 2026-07-12 20:25 +0000
+            created at 2026-07-12 20:39 +0000
         </p>
     </div>
 </footer>
