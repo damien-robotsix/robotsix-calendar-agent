@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add `TestDispatchNounVerbSync` test verifying `_OPERATION_NOUN` / `_OPERATION_VERB` cover every `_DISPATCH` key (complementing the import-time assert).
 - Fix pre-existing CodeQL ``py/ineffectual-statement`` and ``py/unnecessary-lambda`` alerts in vulture_whitelist.py, test_hypothesis_roundtrip.py, calendar_ops.py, contact_ops.py, and task_ops.py.
 - Remove dead `_token_required_when_enabled` entry from `vulture_whitelist.py`.
 - Add import-time assert guarding `_OPERATION_NOUN` and `_OPERATION_VERB` dict completeness against `_DISPATCH` keys

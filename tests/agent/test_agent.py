@@ -79,6 +79,29 @@ class TestDispatchEnumSync:
         )
 
 
+class TestDispatchNounVerbSync:
+    """Verify _OPERATION_NOUN / _OPERATION_VERB cover every _DISPATCH key
+    that can reach _render_reply (delete operations are exempt — they are
+    handled by the ``deleted``-is-True branch)."""
+
+    def test_noun_verb_dicts_cover_dispatch_keys(self) -> None:
+        from robotsix_calendar_agent.agent import (
+            _DISPATCH,
+            _OPERATION_NOUN,
+            _OPERATION_VERB,
+        )
+
+        dispatch_keys = set(_DISPATCH)
+        noun_verb_keys = set(_OPERATION_NOUN) | set(_OPERATION_VERB)
+        exempt = {"delete_event", "delete_contact"}
+
+        missing = dispatch_keys - noun_verb_keys - exempt
+        assert not missing, (
+            "_OPERATION_NOUN / _OPERATION_VERB missing entries for: "
+            f"{missing}"
+        )
+
+
 # ---------------------------------------------------------------------------
 # _summarize_item unit tests
 # ---------------------------------------------------------------------------
