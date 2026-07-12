@@ -70,7 +70,7 @@ _text_required = st.text(
 _date = st.dates(
     min_value=datetime.date(2020, 1, 1),
     max_value=datetime.date(2030, 12, 31),
-).map(lambda d: d.isoformat())
+).map(datetime.date.isoformat)
 
 # UIDs that are valid in CalDAV / CardDAV contexts.
 _uid = st.uuids().map(lambda u: str(u))

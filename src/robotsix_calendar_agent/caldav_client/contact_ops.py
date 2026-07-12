@@ -21,8 +21,11 @@ class _ContactOpsMixin:
     if TYPE_CHECKING:
         # Provided by CalDavClient at runtime; declared here so mypy
         # understands the mixin contract without circular imports.
-        def _escape_text(self, value: str) -> str: ...
-        def _get_addressbook(self, addressbook_id: str = "") -> Any: ...
+        def _escape_text(self, value: str) -> str:
+            raise NotImplementedError
+
+        def _get_addressbook(self, addressbook_id: str = "") -> Any:
+            raise NotImplementedError
 
     # ------------------------------------------------------------------
     # helpers
