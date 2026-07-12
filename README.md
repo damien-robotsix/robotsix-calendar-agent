@@ -13,11 +13,11 @@
 | src/robotsix\_calendar\_agent/caldav\_client/contact\_ops.py  |      102 |       11 |       32 |        4 |     89% |43, 65-67, 73-75, 82-85 |
 | src/robotsix\_calendar\_agent/caldav\_client/exceptions.py    |       19 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/caldav\_client/task\_ops.py     |       18 |        0 |        2 |        0 |    100% |           |
-| src/robotsix\_calendar\_agent/entrypoint.py                   |       52 |        0 |        6 |        0 |    100% |           |
+| src/robotsix\_calendar\_agent/entrypoint.py                   |       24 |        0 |        0 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/healthcheck.py                  |       48 |        1 |       12 |        1 |     97% |       107 |
 | src/robotsix\_calendar\_agent/intent\_parser.py               |       56 |        0 |        2 |        0 |    100% |           |
 | src/robotsix\_calendar\_agent/settings.py                     |       25 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                                                     |  **749** |   **68** |  **156** |   **10** | **90%** |           |
+| **TOTAL**                                                     |  **721** |   **68** |  **150** |   **10** | **90%** |           |
 
 
 ## Setup coverage badge
