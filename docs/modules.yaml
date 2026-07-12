@@ -45,12 +45,17 @@ modules:
       - src/robotsix_calendar_agent/caldav_client/task_ops.py
     depends_on: []
     test_paths:
-      - tests/caldav_client/test_caldav_client.py
       - tests/caldav_client/__init__.py
       - tests/caldav_client/caldav_test_server.py
+      - tests/caldav_client/conftest.py
+      - tests/caldav_client/test_caldav_client.py
       - tests/caldav_client/test_caldav_integration.py
+      - tests/caldav_client/test_calendar_ops.py
+      - tests/caldav_client/test_contact_ops.py
+      - tests/caldav_client/test_exceptions.py
       - tests/caldav_client/test_hypothesis_roundtrip.py
       - tests/caldav_client/test_shared.py
+      - tests/caldav_client/test_task_ops.py
     doc_paths:
       - docs/caldav_client/reference.md
 
