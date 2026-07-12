@@ -421,3 +421,19 @@ assert _DISPATCH_KEYS == _ENUM_VALUES, (  # nosec B101 — import-time invariant
     f"Mismatch: extra in dict={_DISPATCH_KEYS - _ENUM_VALUES}, "
     f"missing={_ENUM_VALUES - _DISPATCH_KEYS}"
 )
+
+# Every dispatch key that can reach _render_reply must have a noun or
+# verb entry.  delete_event/delete_contact are handled by the
+# "deleted": True branch and need neither.
+_NOUN_VERB_KEYS = _OPERATION_NOUN.keys() | _OPERATION_VERB.keys()
+assert (
+    _NOUN_VERB_KEYS
+    | {  # nosec B101
+        "delete_event",
+        "delete_contact",
+    }
+    == _DISPATCH_KEYS
+), (
+    "_OPERATION_NOUN / _OPERATION_VERB missing entries for: "
+    f"{_DISPATCH_KEYS - _NOUN_VERB_KEYS - {'delete_event', 'delete_contact'}}"
+)
