@@ -27,11 +27,13 @@ uv sync
 
 ### Running checks
 
+Use `make` (run `make help` for all targets):
+
 ```bash
-uv run ruff check .           # lint
-uv run ruff format --check .  # formatting check
-uv run mypy .                 # static type checking (strict)
-uv run pytest                 # tests
+make lint      # lint and format check
+make typecheck # static type checking (strict)
+make test      # fast tests (non-integration)
+make all       # run all checks (default)
 ```
 
 ## Configuration
