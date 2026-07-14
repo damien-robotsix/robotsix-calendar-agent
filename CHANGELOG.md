@@ -2,6 +2,7 @@
 
 
 - CI: Fix SBOM generation to exclude dev-only dependencies by adding `--no-dev` to `uv sync` in the `sbom` job.
+- Migrate from hand-rolled pre-commit CI workflow to pre-commit.ci by adding `ci:` section to `.pre-commit-config.yaml` and removing `.github/workflows/pre-commit-ci.yml`.
 - Updated AGENT.md module layout rule: `depends_on` → `dependencies` to match robotsix-modules v0.2 schema (PR #312).
 - Add missing `__init__.py` files to `tests/agent/`, `tests/intent_parser/`, and `tests/settings/` for consistent test-package structure
 - Add `Makefile` with standardised dev targets (`install`, `lint`, `format`, `typecheck`, `test`, `clean`, `help`, `all`); update `README.md` and `CONTRIBUTING.md` to reference `make <target>` instead of raw `uv run` commands.

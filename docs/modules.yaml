@@ -134,7 +134,6 @@ modules:
       - .github/workflows/docker-publish.yml
       - .github/workflows/docs.yml
       - .github/workflows/lint-workflows.yml
-      - .github/workflows/pre-commit-ci.yml
       - .github/workflows/release.yml
       - .github/workflows/scan-container.yml
       - .robotsix-mill/config.yaml
