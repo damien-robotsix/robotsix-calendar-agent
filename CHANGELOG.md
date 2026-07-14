@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Updated AGENT.md module layout rule: `depends_on` → `dependencies` to match robotsix-modules v0.2 schema (PR #312).
 - Add missing `__init__.py` files to `tests/agent/`, `tests/intent_parser/`, and `tests/settings/` for consistent test-package structure
 - Add `Makefile` with standardised dev targets (`install`, `lint`, `format`, `typecheck`, `test`, `clean`, `help`, `all`); update `README.md` and `CONTRIBUTING.md` to reference `make <target>` instead of raw `uv run` commands.
 - Add `TestDispatchNounVerbSync` test verifying `_OPERATION_NOUN` / `_OPERATION_VERB` cover every `_DISPATCH` key (complementing the import-time assert).
