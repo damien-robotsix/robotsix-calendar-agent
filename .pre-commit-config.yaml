@@ -36,6 +36,11 @@ repos:
     hooks:
       - id: actionlint
 
+  - repo: https://github.com/damien-robotsix/robotsix-modules
+    rev: b2e82231fa2f260589be9ba757c6be450f4e5d3e  # main
+    hooks:
+      - id: validate-module-taxonomy
+
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.16.4
     hooks:

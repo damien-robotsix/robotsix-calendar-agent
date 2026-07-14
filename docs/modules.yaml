@@ -1,42 +1,47 @@
+package: robotsix_calendar_agent
+
 modules:
-  - name: init
-    path: src/robotsix_calendar_agent/__init__.py
+  - id: init
+    description: >-
+      Package initialisation and public API surface. Re-exports key types
+      and wires module-level imports.
     paths:
       - src/robotsix_calendar_agent/__init__.py
       - src/robotsix_calendar_agent/py.typed
-    depends_on:
-      - agent
-      - caldav_client
-    test_paths:
       - tests/test_smoke.py
       - tests/__init__.py
       - tests/conftest.py
-    doc_paths:
       - docs/index.md
       - docs/configuration.md
-      - docs/tutorials/index.md
-      - docs/reference/index.md
       - docs/modules.yaml
+      - docs/reference/index.md
+      - docs/tutorials/index.md
       - docs/tutorials/basic/first-agent.md
+    dependencies:
+      - agent
+      - caldav-client
 
-  - name: agent
-    path: src/robotsix_calendar_agent/agent.py
+  - id: agent
+    description: >-
+      CalendarAgent — the top-level orchestrator that wires together
+      CalDAV client, intent parser, and settings into a single
+      in-process agent.
     paths:
       - src/robotsix_calendar_agent/agent.py
-    test_paths:
       - tests/agent/__init__.py
       - tests/agent/test_agent.py
-    doc_paths:
       - docs/agent/reference.md
       - docs/reference/component_agent.md
       - docs/agent/tutorials/manage-events.md
       - docs/tutorials/intermediate/component-agent-management.md
-    depends_on:
-      - caldav_client
-      - intent_parser
+    dependencies:
+      - caldav-client
+      - intent-parser
 
-  - name: caldav_client
-    path: src/robotsix_calendar_agent/caldav_client/__init__.py
+  - id: caldav-client
+    description: >-
+      Typed CalDAV/CardDAV client wrapper with tenacity-based retry logic
+      for calendar, contact, and task operations against a Radicale server.
     paths:
       - src/robotsix_calendar_agent/caldav_client/__init__.py
       - src/robotsix_calendar_agent/caldav_client/_shared.py
@@ -44,8 +49,6 @@ modules:
       - src/robotsix_calendar_agent/caldav_client/contact_ops.py
       - src/robotsix_calendar_agent/caldav_client/exceptions.py
       - src/robotsix_calendar_agent/caldav_client/task_ops.py
-    depends_on: []
-    test_paths:
       - tests/caldav_client/__init__.py
       - tests/caldav_client/caldav_test_server.py
       - tests/caldav_client/conftest.py
@@ -57,54 +60,118 @@ modules:
       - tests/caldav_client/test_hypothesis_roundtrip.py
       - tests/caldav_client/test_shared.py
       - tests/caldav_client/test_task_ops.py
-    doc_paths:
       - docs/caldav_client/reference.md
+    dependencies: []
 
-  - name: intent_parser
-    path: src/robotsix_calendar_agent/intent_parser.py
+  - id: intent-parser
+    description: >-
+      LLM-based natural-language intent parser that converts user
+      calendar/contact instructions into structured ParsedIntent objects
+      via robotsix-llmio.
     paths:
       - src/robotsix_calendar_agent/intent_parser.py
-    test_paths:
       - tests/intent_parser/__init__.py
       - tests/intent_parser/test_intent_parser.py
       - tests/intent_parser/test_intent_parser_contract.py
-    doc_paths:
       - docs/intent_parser/reference.md
-    depends_on: []
+    dependencies: []
 
-  - name: entrypoint
-    path: src/robotsix_calendar_agent/entrypoint.py
+  - id: entrypoint
+    description: >-
+      Service entrypoint — long-lived in-process main() that blocks until
+      SIGTERM/SIGINT, suitable for containerised deployments.
     paths:
       - src/robotsix_calendar_agent/entrypoint.py
       - src/robotsix_calendar_agent/__main__.py
-    test_paths:
       - tests/entrypoint/__init__.py
       - tests/entrypoint/test_entrypoint.py
-    doc_paths:
       - docs/entrypoint/reference.md
-    depends_on: []
+    dependencies: []
 
-  - name: healthcheck
-    path: src/robotsix_calendar_agent/healthcheck.py
+  - id: healthcheck
+    description: >-
+      Health check endpoint for container orchestration — verifies
+      connectivity to the configured Radicale CalDAV/CardDAV server.
     paths:
       - src/robotsix_calendar_agent/healthcheck.py
-    test_paths:
       - tests/healthcheck/__init__.py
       - tests/healthcheck/test_healthcheck.py
       - tests/healthcheck/conftest.py
-    doc_paths:
       - docs/healthcheck/reference.md
-    depends_on:
+    dependencies:
       - settings
-      - caldav_client
+      - caldav-client
 
-  - name: settings
-    path: src/robotsix_calendar_agent/settings.py
+  - id: settings
+    description: >-
+      Pydantic BaseSettings configuration — the single source of truth
+      for all environment-variable-driven settings in the agent.
     paths:
       - src/robotsix_calendar_agent/settings.py
-    test_paths:
       - tests/settings/__init__.py
       - tests/settings/test_settings.py
-    doc_paths:
       - docs/settings/reference.md
-    depends_on: []
+    dependencies: []
+
+  - id: repo-config
+    description: >-
+      Repository-level configuration, CI/CD workflows, build tooling,
+      and documentation files that are not owned by any single code module.
+    paths:
+      - .dockerignore
+      - .env.example
+      - .gitignore
+      - .pre-commit-config.yaml
+      - .github/CODEOWNERS
+      - .github/ISSUE_TEMPLATE/bug_report.yml
+      - .github/ISSUE_TEMPLATE/config.yml
+      - .github/ISSUE_TEMPLATE/feature_request.yml
+      - .github/PULL_REQUEST_TEMPLATE.md
+      - .github/dependabot.yml
+      - .github/dependency-review-config.yml
+      - .github/workflows/ci.yml
+      - .github/workflows/dependabot-auto-merge.yml
+      - .github/workflows/docker-publish.yml
+      - .github/workflows/docs.yml
+      - .github/workflows/lint-workflows.yml
+      - .github/workflows/pre-commit-ci.yml
+      - .github/workflows/release.yml
+      - .github/workflows/scan-container.yml
+      - .robotsix-mill/config.yaml
+      - .robotsix-mill/boilerplate/auto-approve-boilerplate.md
+      - .robotsix-mill/boilerplate/auto-approve-reject-boilerplate.md
+      - .robotsix-mill/boilerplate/doc-classifier-boilerplate.md
+      - .robotsix-mill/boilerplate/doc-recommendation-only-boilerplate.md
+      - .robotsix-mill/boilerplate/maintenance-triage-boilerplate.md
+      - .robotsix-mill/boilerplate/mechanical-fastpath-boilerplate.md
+      - .robotsix-mill/boilerplate/triage-skip-boilerplate.md
+      - .robotsix-mill/periodic/agent_check.yaml
+      - .robotsix-mill/periodic/audit.yaml
+      - .robotsix-mill/periodic/bc_check.yaml
+      - .robotsix-mill/periodic/changelog_autofill.yaml
+      - .robotsix-mill/periodic/completeness_check.yaml
+      - .robotsix-mill/periodic/copy_paste.yaml
+      - .robotsix-mill/periodic/health.yaml
+      - .robotsix-mill/periodic/module_curator.yaml
+      - .robotsix-mill/periodic/repo_description_sync.yaml
+      - .robotsix-mill/periodic/security_posture.yaml
+      - .robotsix-mill/periodic/state_sync.yaml
+      - .robotsix-mill/periodic/survey.yaml
+      - .robotsix-mill/periodic/test_gap.yaml
+      - .robotsix-mill/periodic/trace_review.yaml
+      - .robotsix-mill/periodic/triage_boilerplate.yaml
+      - AGENT.md
+      - CHANGELOG.md
+      - CONTRIBUTING.md
+      - Dockerfile
+      - LICENSE
+      - Makefile
+      - README.md
+      - SECURITY.md
+      - badges/.gitkeep
+      - docker-compose.yml
+      - mkdocs.yml
+      - pyproject.toml
+      - uv.lock
+      - vulture_whitelist.py
+    dependencies: []
