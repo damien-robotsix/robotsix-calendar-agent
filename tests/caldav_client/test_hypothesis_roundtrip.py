@@ -73,7 +73,7 @@ _date = st.dates(
 ).map(datetime.date.isoformat)
 
 # UIDs that are valid in CalDAV / CardDAV contexts.
-_uid = st.uuids().map(lambda u: str(u))
+_uid = st.uuids().map(str)
 
 # ---------------------------------------------------------------------------
 # event roundtrip
