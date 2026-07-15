@@ -150,18 +150,6 @@ def _comp_dt(comp: Any, name: str) -> str:
     return str(moment)
 
 
-def _event_to_dict(event: CalendarEvent) -> dict[str, Any]:
-    return {
-        "uid": event.uid,
-        "summary": event.summary,
-        "description": event.description,
-        "location": event.location,
-        "dtstart": event.dtstart,
-        "dtend": event.dtend,
-        "calendar_id": event.calendar_id,
-    }
-
-
 def _unescape_text(value: str) -> str:
     """Reverse the escaping applied by ``_escape_text``.
 
