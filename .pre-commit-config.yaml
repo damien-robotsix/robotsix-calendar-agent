@@ -1,7 +1,7 @@
 ci:
   autofix_prs: true
   autoupdate_schedule: weekly
-  autofix_commit_msg: "style(pre-commit.ci): auto-fix hook%s"
+  autofix_commit_msg: "style(pre-commit.ci): auto-fix hook{hook_id}"
   submodules: false
 
 repos:
@@ -22,14 +22,15 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+  - repo: local
     hooks:
       - id: mypy
-        files: ^src/
-        additional_dependencies:
-          - pydantic
-          - pydantic-settings
+        name: mypy
+        entry: uv run mypy src/
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+        require_serial: true
 
   - repo: https://github.com/betterleaks/betterleaks
     rev: v1.6.1
@@ -57,6 +58,6 @@ repos:
     hooks:
       - id: vulture
         name: vulture
-        entry: vulture src/ vulture_whitelist.py
-        language: system
+        entry: uv run --frozen vulture src/ vulture_whitelist.py
+        language: unsupported
         pass_filenames: false
