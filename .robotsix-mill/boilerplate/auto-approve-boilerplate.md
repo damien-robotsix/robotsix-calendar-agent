@@ -14,7 +14,13 @@ Use these for tickets filed by deterministic periodic agents — the rule engine
 | `audit` | `audit (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
 | `module_curator` | `module_curator (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
 | `security_posture` | `security_posture (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
-| `survey` | `survey (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
+| `bc_check` | `bc_check (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
+| `completeness_check` | `completeness_check (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
+| `state_sync` | `state_sync (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
+| `test_gap` | `test_gap (deterministic rule: mill-internal periodic-agent proposal, no design risk)` |
+
+**Note:** `survey` is not a deterministic periodic agent — survey tickets use change-type-based
+justifications (see "Change-type-based templates" below), not the source-based template above.
 
 ### Change-type-based templates
 
