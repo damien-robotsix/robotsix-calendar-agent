@@ -27,7 +27,6 @@ from .caldav_client import (
     Contact,
     Task,
 )
-from .caldav_client._shared import _event_to_dict
 from .caldav_client.exceptions import AgentLogicError
 from .intent_parser import (
     CalendarOperation,
@@ -238,7 +237,7 @@ def _handle_list_events(
     params: dict[str, Any],
 ) -> list[dict[str, Any]]:
     return [
-        _event_to_dict(e)
+        asdict(e)
         for e in client.list_events(
             start=params.get("start", ""),
             end=params.get("end", ""),
@@ -267,7 +266,7 @@ def _handle_create_or_update_event(
     return _entity_op(
         params,
         builder=_build_event,
-        serializer=_event_to_dict,
+        serializer=asdict,
         create_fn=client.create_event,
         update_fn=client.update_event,
         id_key="calendar_id",

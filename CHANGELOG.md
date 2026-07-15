@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Replace hand-rolled `_event_to_dict` serializer with `dataclasses.asdict()` in the event dispatch handlers. Removes the private `_event_to_dict` function and its module-level import from `agent.py`, eliminating unnecessary coupling between the top-level agent and an internal caldav_client detail.
 - Modernize `.pre-commit-config.yaml`: replace deprecated `mirrors-mypy` with local `uv run mypy` hook (`language: unsupported`), fix `autofix_commit_msg` placeholder from `%s` to `{hook_id}`, and migrate vulture hook from `language: system` to `language: unsupported` with `uv run --frozen`.
 - CI: Fix SBOM generation to exclude dev-only dependencies by adding `--no-dev` to `uv sync` in the `sbom` job.
 - Migrate from hand-rolled pre-commit CI workflow to pre-commit.ci by adding `ci:` section to `.pre-commit-config.yaml` and removing `.github/workflows/pre-commit-ci.yml`.
