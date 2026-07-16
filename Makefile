@@ -38,6 +38,14 @@ coverage: .venv  ## Run tests with coverage report
 coverage-view: coverage  ## Run tests with coverage and open HTML report
 	open htmlcov/index.html 2>/dev/null || xdg-open htmlcov/index.html 2>/dev/null || true
 
+.PHONY: docs
+docs: .venv  ## Build documentation with mkdocs
+	uv run mkdocs build
+
+.PHONY: docs-serve
+docs-serve: .venv  ## Serve documentation locally with live reload
+	uv run mkdocs serve
+
 .PHONY: clean
 clean:  ## Remove caches and build artifacts
 	rm -rf __pycache__ .pytest_cache .ruff_cache htmlcov build dist *.egg-info
