@@ -93,7 +93,6 @@ class CalendarAgent:
         settings = Settings()
 
         self._agent_id = agent_id
-        self._settings = settings
 
         url = radicale_url or settings.RADICALE_URL
         username = radicale_username or settings.RADICALE_USERNAME
