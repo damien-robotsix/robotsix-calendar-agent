@@ -29,10 +29,12 @@ Run the full set of checks locally before opening a pull request.
 Use `make` (run `make help` for all available targets):
 
 ```bash
-make lint      # lint and format check
-make typecheck # static type checking (strict)
-make test      # fast tests (non-integration)
-make all       # run all checks
+make lint          # lint and format check
+make typecheck     # static type checking (strict)
+make test          # fast tests (non-integration)
+make coverage      # run tests with coverage report (HTML + terminal)
+make coverage-view # same, then open the HTML report in a browser
+make all           # run all checks
 ```
 
 `make format` rewrites files to the canonical format.

@@ -29,6 +29,15 @@ typecheck: .venv  ## Run mypy static type checker
 test: .venv  ## Run tests (non-integration)
 	uv run pytest -m 'not integration' tests/
 
+.PHONY: coverage
+coverage: .venv  ## Run tests with coverage report
+	uv run pytest --cov=robotsix_calendar_agent --cov-report=html --cov-report=term \
+		-m 'not integration' tests/
+
+.PHONY: coverage-view
+coverage-view: coverage  ## Run tests with coverage and open HTML report
+	open htmlcov/index.html 2>/dev/null || xdg-open htmlcov/index.html 2>/dev/null || true
+
 .PHONY: clean
 clean:  ## Remove caches and build artifacts
 	rm -rf __pycache__ .pytest_cache .ruff_cache htmlcov build dist *.egg-info

@@ -30,10 +30,12 @@ uv sync
 Use `make` (run `make help` for all targets):
 
 ```bash
-make lint      # lint and format check
-make typecheck # static type checking (strict)
-make test      # fast tests (non-integration)
-make all       # run all checks (default)
+make lint          # lint and format check
+make typecheck     # static type checking (strict)
+make test          # fast tests (non-integration)
+make coverage      # run tests with coverage report (HTML + terminal)
+make coverage-view # same, then open the HTML report in a browser
+make all           # run all checks (default)
 ```
 
 ## Configuration
