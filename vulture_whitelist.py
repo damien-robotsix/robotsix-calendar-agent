@@ -36,7 +36,6 @@ _ = health
 
 # CalendarAgent attributes/methods — used by removed broker integration;
 # kept as public API / still exercised in unit tests
-_ = _settings
 _ = _intent_parser
 _ = _dispatch
 _ = _render_reply
