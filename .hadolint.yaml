@@ -1,0 +1,6 @@
+ignored:
+  - DL3059    # multiple consecutive RUN — relaxed for clarity
+  - DL3013    # pip install ".[extras]" is a local project install, not an external package
+              # version to pin; the version is this repo.
+trustedRegistries:
+  - docker.io
