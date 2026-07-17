@@ -1,0 +1,8 @@
+name: Setup uv
+description: Install uv with caching enabled
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
+      with:
+        enable-cache: true

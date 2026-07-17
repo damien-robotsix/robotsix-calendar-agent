@@ -72,9 +72,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv lock --check
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
@@ -85,9 +83,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv run --frozen vulture src/ vulture_whitelist.py
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
@@ -98,9 +94,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv run --frozen deptry src/
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
@@ -111,9 +105,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv run --frozen robotsix-modules validate docs/modules.yaml
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
@@ -125,9 +117,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: |
           for i in 1 2 3; do
             uv audit --frozen && exit 0
@@ -160,9 +150,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv sync --frozen --no-dev
       - run: uv run --with cyclonedx-bom cyclonedx-py environment --output-file sbom.cyclonedx.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -181,9 +169,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv run --with zizmor zizmor . --format=sarif > zizmor.sarif
       - uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a  # v4
         if: ${{ always() }}
@@ -245,9 +231,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: true
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
-        with:
-          enable-cache: true
+      - uses: ./.github/actions/setup-uv
       - run: uv sync --frozen
       - name: Generate coverage report
         run: |
