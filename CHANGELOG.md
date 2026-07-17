@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add hadolint Dockerfile linting to CI and pre-commit hooks
 - Remove dead `_settings` attribute from `CalendarAgent` (never read after `__init__` assignment).
 - Add `docs` and `docs-serve` phony targets to Makefile for building and live-previewing docs with mkdocs
 - Add `make coverage` and `make coverage-view` targets for local coverage feedback, matching CI's `--cov=robotsix_calendar_agent` flags. Document both targets in `CONTRIBUTING.md`.
