@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Fixed stale `BaseSettings` field count in AGENT.md (12 → removed count entirely to prevent future drift).
 - Add hadolint Dockerfile linting to CI and pre-commit hooks
 - Remove dead `_settings` attribute from `CalendarAgent` (never read after `__init__` assignment).
 - Add `docs` and `docs-serve` phony targets to Makefile for building and live-previewing docs with mkdocs
