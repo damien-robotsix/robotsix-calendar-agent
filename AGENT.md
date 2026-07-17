@@ -22,7 +22,7 @@ requires the `tracing` extra (see Tracing below).
 
 ## Configuration conventions
 
-All configuration lives in **12 `pydantic_settings.BaseSettings` fields**
+All configuration lives in **`pydantic_settings.BaseSettings` fields**
 in `src/robotsix_calendar_agent/settings.py`. Every field is documented
 in `docs/configuration.md` with its type, default, and description.
 
