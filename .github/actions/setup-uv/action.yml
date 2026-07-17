@@ -1,0 +1,13 @@
+name: Checkout and setup uv
+inputs:
+  persist-credentials:
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      with:
+        persist-credentials: ${{ inputs.persist-credentials }}
+    - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.4.2
+      with:
+        enable-cache: true
