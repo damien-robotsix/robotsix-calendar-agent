@@ -121,6 +121,7 @@ modules:
       - .dockerignore
       - .env.example
       - .gitignore
+      - .hadolint.yaml
       - .pre-commit-config.yaml
       - .github/CODEOWNERS
       - .github/ISSUE_TEMPLATE/bug_report.yml
