@@ -11,8 +11,8 @@ Exercises the in-process Radicale server fixture with
   ``email``, ``phone``, ``address``, ``UID`` (pure serialization
   round-trip; caldav v3.x removed CardDAV address-book support).
 
-Each test runs up to 200 random examples and shrinks failures to
-a minimal reproducer.
+The number of examples is controlled by the active Hypothesis profile
+(dev=50 / CI=200). Failures are shrunk to a minimal reproducer.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import datetime
 from typing import Any
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
 from hypothesis import strategies as st
 
 from robotsix_calendar_agent.caldav_client import (
@@ -30,6 +30,7 @@ from robotsix_calendar_agent.caldav_client import (
     Contact,
     Task,
 )
+from tests.strategies import dates, text, text_required, uids
 
 pytestmark = pytest.mark.integration
 
@@ -42,38 +43,6 @@ pytestmark = pytest.mark.integration
 # Set by the first call to each roundtrip test.
 _hypothesis_cal_event: Any = None
 _hypothesis_cal_task: Any = None
-
-# Printable text — includes spaces, punctuation, emoji, but excludes
-# control characters and newlines (the latter are significant in iCal
-# folding and would complicate roundtrip comparison).
-_text = st.text(
-    alphabet=st.characters(
-        blacklist_categories=("Cc", "Cs"),  # no control / surrogate
-        blacklist_characters="\n\r",
-    ),
-    max_size=80,
-)
-
-# Non-empty variant for required fields.
-_text_required = st.text(
-    alphabet=st.characters(
-        blacklist_categories=("Cc", "Cs"),
-        blacklist_characters="\n\r",
-    ),
-    min_size=1,
-    max_size=80,
-)
-
-# ISO-8601 dates (date-only — no time component, so the serialisation
-# roundtrip is exact: ``YYYY-MM-DD`` → ``;VALUE=DATE:YYYYMMDD`` →
-# parsed back to ``YYYY-MM-DD``).
-_date = st.dates(
-    min_value=datetime.date(2020, 1, 1),
-    max_value=datetime.date(2030, 12, 31),
-).map(datetime.date.isoformat)
-
-# UIDs that are valid in CalDAV / CardDAV contexts.
-_uid = st.uuids().map(str)
 
 # ---------------------------------------------------------------------------
 # event roundtrip
@@ -102,18 +71,12 @@ def _build_event_ical(event: CalendarEvent) -> str:
 
 
 @given(
-    summary=_text_required,
-    description=_text,
-    location=_text,
-    uid=_uid,
-    dtstart=_date,
+    summary=text_required,
+    description=text,
+    location=text,
+    uid=uids,
+    dtstart=dates,
     dtend_offset=st.integers(min_value=0, max_value=30),
-)
-@settings(
-    max_examples=200,
-    derandomize=True,
-    deadline=None,  # integration: Radicale in-process but still not instant
-    suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_event_roundtrip(
     caldav_client: Any,
@@ -200,18 +163,12 @@ def _build_task_ical(task: Task) -> str:
 
 
 @given(
-    summary=_text_required,
-    description=_text,
-    uid=_uid,
-    dtstart=_date,
+    summary=text_required,
+    description=text,
+    uid=uids,
+    dtstart=dates,
     due_offset=st.integers(min_value=1, max_value=30),
     status=st.sampled_from(["NEEDS-ACTION", "IN-PROCESS", "COMPLETED", "CANCELLED"]),
-)
-@settings(
-    max_examples=200,
-    derandomize=True,
-    deadline=None,
-    suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_task_roundtrip(
     caldav_client: Any,
@@ -304,16 +261,11 @@ def _build_vcard(contact: Contact) -> str:
 
 
 @given(
-    full_name=_text_required,
-    email=_text,
-    phone=_text,
-    address=_text,
-    uid=_uid,
-)
-@settings(
-    max_examples=200,
-    derandomize=True,
-    deadline=None,
+    full_name=text_required,
+    email=text,
+    phone=text,
+    address=text,
+    uid=uids,
 )
 def test_contact_roundtrip(
     full_name: str,

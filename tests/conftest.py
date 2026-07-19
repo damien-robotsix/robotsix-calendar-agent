@@ -7,10 +7,35 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from hypothesis import HealthCheck, settings
 
 # Re-export the session-scoped integration fixture so it is explicitly
 # available to all test modules.
 from tests.caldav_client.caldav_test_server import caldav_client  # noqa: F401
+
+# ---------------------------------------------------------------------------
+# Hypothesis profile registration
+# ---------------------------------------------------------------------------
+settings.register_profile(
+    "ci",
+    max_examples=200,
+    derandomize=True,
+    deadline=None,
+    database=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
+)
+settings.register_profile(
+    "dev",
+    max_examples=50,
+    deadline=5000,
+    database=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
+)
+# In CI (GitHub Actions sets CI=true) default to the 'ci' profile;
+# locally default to 'dev'.  HYPOTHESIS_PROFILE env var always wins
+# when explicitly set.
+_default_profile = "ci" if os.getenv("CI") == "true" else "dev"
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", _default_profile))
 
 # ---------------------------------------------------------------------------
 # Fixtures

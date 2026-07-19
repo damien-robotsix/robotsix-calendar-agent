@@ -11,6 +11,7 @@ modules:
       - tests/test_smoke.py
       - tests/__init__.py
       - tests/conftest.py
+      - tests/strategies.py
       - docs/index.md
       - docs/configuration.md
       - docs/modules.yaml
