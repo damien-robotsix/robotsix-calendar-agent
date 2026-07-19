@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add supply-chain timing defense: `exclude-newer = "7d"` in `pyproject.toml` and `UV_MALWARE_CHECK=1` in CI setup-uv action.
 - Enable `docstring_coverage` periodic workflow to scan for undocumented public interfaces and file draft tickets.
 - Add weekly OpenSSF Scorecard workflow (`.github/workflows/scorecard.yml`) to surface security best-practice regressions.
 - Fixed stale `BaseSettings` field count in AGENT.md (12 → removed count entirely to prevent future drift).
