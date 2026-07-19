@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Fix stale `agent.start()`/`agent.stop()` references in docs (`docs/index.md`, `docs/agent/tutorials/manage-events.md`, `docs/tutorials/basic/first-agent.md`) and replace a broken relative link to test fixture in `first-agent.md`.
 - Add supply-chain timing defense: `exclude-newer = "7d"` in `pyproject.toml` and `UV_MALWARE_CHECK=1` in CI setup-uv action.
 - Enable `docstring_coverage` periodic workflow to scan for undocumented public interfaces and file draft tickets.
 - Add weekly OpenSSF Scorecard workflow (`.github/workflows/scorecard.yml`) to surface security best-practice regressions.
