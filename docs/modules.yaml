@@ -121,6 +121,7 @@ modules:
     paths:
       - .dockerignore
       - .env.example
+      - .gitattributes
       - .gitignore
       - .hadolint.yaml
       - .pre-commit-config.yaml

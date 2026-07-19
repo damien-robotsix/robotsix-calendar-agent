@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add `.gitattributes` with `linguist-generated=true merge=ours` for `uv.lock` to collapse lockfile diffs in PRs and resolve merge conflicts by keeping the current branch's version.
 - Add Hypothesis profile infrastructure with CI/dev split and shared strategies in `tests/strategies.py`
 - Fix stale `agent.start()`/`agent.stop()` references in docs (`docs/index.md`, `docs/agent/tutorials/manage-events.md`, `docs/tutorials/basic/first-agent.md`) and replace a broken relative link to test fixture in `first-agent.md`.
 - Add supply-chain timing defense: `exclude-newer = "7d"` in `pyproject.toml` and `UV_MALWARE_CHECK=1` in CI setup-uv action.
