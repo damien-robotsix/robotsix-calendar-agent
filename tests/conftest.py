@@ -16,9 +16,6 @@ from tests.caldav_client.caldav_test_server import caldav_client  # noqa: F401
 # ---------------------------------------------------------------------------
 # Hypothesis profile registration
 # ---------------------------------------------------------------------------
-import os
-from hypothesis import HealthCheck, settings
-
 settings.register_profile(
     "ci",
     max_examples=200,
@@ -34,7 +31,11 @@ settings.register_profile(
     database=None,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
 )
-settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "dev"))
+# In CI (GitHub Actions sets CI=true) default to the 'ci' profile;
+# locally default to 'dev'.  HYPOTHESIS_PROFILE env var always wins
+# when explicitly set.
+_default_profile = "ci" if os.getenv("CI") == "true" else "dev"
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", _default_profile))
 
 # ---------------------------------------------------------------------------
 # Fixtures

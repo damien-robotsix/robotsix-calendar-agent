@@ -4,11 +4,6 @@ from __future__ import annotations
 
 import datetime
 
-"""Shared Hypothesis strategies for property-based tests."""
-
-from __future__ import annotations
-
-import datetime
 from hypothesis import strategies as st
 
 # Printable text — includes spaces, punctuation, emoji, but excludes
@@ -32,14 +27,6 @@ text_required = st.text(
 )
 
 # ISO-8601 dates (date-only) in range 2020–2030.
-dates = st.dates(
-    min_value=datetime.date(2020, 1, 1),
-    max_value=datetime.date(2030, 12, 31),
-).map(datetime.date.isoformat)
-
-# Valid CalDAV/CardDAV UIDs.
-uids = st.uuids().map(str)
-# ISO-8601 dates (date-only) in range 2020-2030.
 dates = st.dates(
     min_value=datetime.date(2020, 1, 1),
     max_value=datetime.date(2030, 12, 31),

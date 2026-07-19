@@ -210,8 +210,6 @@ jobs:
     permissions:
       contents: read
       security-events: write  # needed to upload SARIF results from Python CI
-    env:
-      HYPOTHESIS_PROFILE: ci
     uses: damien-robotsix/robotsix-github-workflows/.github/workflows/python-ci.yml@77e10e286717cfe0eeb6b8d9ce985f3794236d15  # main
     with:
       python-version: ${{ matrix.python-version }}
@@ -229,8 +227,6 @@ jobs:
     permissions:
       contents: write  # needed to write coverage badge to the repo
       pull-requests: write  # needed to post coverage comment on PRs
-    env:
-      HYPOTHESIS_PROFILE: ci
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:

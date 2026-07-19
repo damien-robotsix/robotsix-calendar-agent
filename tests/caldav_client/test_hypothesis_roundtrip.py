@@ -11,8 +11,8 @@ Exercises the in-process Radicale server fixture with
   ``email``, ``phone``, ``address``, ``UID`` (pure serialization
   round-trip; caldav v3.x removed CardDAV address-book support).
 
-Each test runs up to 200 random examples and shrinks failures to
-a minimal reproducer.
+The number of examples is controlled by the active Hypothesis profile
+(dev=50 / CI=200). Failures are shrunk to a minimal reproducer.
 """
 
 from __future__ import annotations
