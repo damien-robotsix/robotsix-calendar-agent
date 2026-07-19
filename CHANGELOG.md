@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Normalize handler signatures in `agent.py`: pre-bind `operation` strings via lambdas in `_DISPATCH` and remove the `_CREATE_UPDATE_HANDLERS` set, simplifying `_dispatch` to a single call pattern.
 - Add `.gitattributes` with `linguist-generated=true merge=ours` for `uv.lock` to collapse lockfile diffs in PRs and resolve merge conflicts by keeping the current branch's version.
 - Add Hypothesis profile infrastructure with CI/dev split and shared strategies in `tests/strategies.py`
 - Fix stale `agent.start()`/`agent.stop()` references in docs (`docs/index.md`, `docs/agent/tutorials/manage-events.md`, `docs/tutorials/basic/first-agent.md`) and replace a broken relative link to test fixture in `first-agent.md`.

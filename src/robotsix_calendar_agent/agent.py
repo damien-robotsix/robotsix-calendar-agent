@@ -132,8 +132,6 @@ class CalendarAgent:
         with _tracer.start_as_current_span("agent.dispatch") as span:
             span.set_attribute("agent.operation", op)
             span.set_attribute("agent.agent_id", self._agent_id)
-            if handler in _CREATE_UPDATE_HANDLERS:
-                return handler(self._caldav, params, op)
             return handler(self._caldav, params)
 
     # ------------------------------------------------------------------
@@ -325,21 +323,16 @@ def _handle_delete_contact(
     )
 
 
-_CREATE_UPDATE_HANDLERS: set[Callable[..., Any]] = {
-    _handle_create_or_update_event,
-    _handle_create_or_update_contact,
-}
-
 _DISPATCH: dict[str, Callable[..., Any]] = {
     "list_events": _handle_list_events,
     "list_calendars": _handle_list_calendars,
-    "create_event": _handle_create_or_update_event,
-    "update_event": _handle_create_or_update_event,
+    "create_event": lambda c, p: _handle_create_or_update_event(c, p, "create"),
+    "update_event": lambda c, p: _handle_create_or_update_event(c, p, "update"),
     "delete_event": _handle_delete_event,
     "list_tasks": _handle_list_tasks,
     "list_contacts": _handle_list_contacts,
-    "create_contact": _handle_create_or_update_contact,
-    "update_contact": _handle_create_or_update_contact,
+    "create_contact": lambda c, p: _handle_create_or_update_contact(c, p, "create"),
+    "update_contact": lambda c, p: _handle_create_or_update_contact(c, p, "update"),
     "delete_contact": _handle_delete_contact,
 }
 
