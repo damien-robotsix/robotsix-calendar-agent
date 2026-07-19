@@ -19,6 +19,20 @@ dependencies with `uv sync --frozen`. When you change dependencies in
 `pyproject.toml`, regenerate the lockfile with `uv lock` and commit the
 result. **Never hand-edit `uv.lock`.**
 
+**Supply-chain timing defense:** The project configures
+[`exclude-newer`](https://docs.astral.sh/uv/reference/settings/#exclude-newer)
+in `pyproject.toml` (`[tool.uv]` section), which prevents `uv lock`/`uv sync`
+from resolving packages published within the last 7 days. This protects
+against malicious package uploads during the window before CVEs are
+published. If you need to temporarily override this (e.g. when testing a
+just-published dependency), pass `--no-exclude-newer` to `uv lock` or
+`uv sync`.
+
+In CI, [`UV_MALWARE_CHECK=1`](https://docs.astral.sh/uv/concepts/projects/sync/#malware-checks)
+is automatically set on all `uv` invocations (via the `setup-uv` composite
+action), checking every dependency against the OpenSSF malicious-packages
+database before code runs.
+
 Note that this repository is **not** stdlib-only — it requires runtime
 dependencies (`robotsix-llmio`, `caldav`) declared
 in `pyproject.toml`.
