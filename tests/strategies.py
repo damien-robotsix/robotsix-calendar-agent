@@ -26,7 +26,7 @@ text_required = st.text(
     max_size=80,
 )
 
-# ISO-8601 dates (date-only) in range 2020–2030.
+# ISO-8601 dates (date-only) in range 2020-2030.
 dates = st.dates(
     min_value=datetime.date(2020, 1, 1),
     max_value=datetime.date(2030, 12, 31),
