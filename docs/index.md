@@ -45,7 +45,9 @@ uv sync
 from robotsix_calendar_agent import CalendarAgent
 
 agent = CalendarAgent()
-agent.start()
+with agent:
+    # calendar operations go here
+    pass
 ```
 
 ### 4. Use the agent directly
@@ -58,11 +60,11 @@ Callers interact with these components directly:
 from robotsix_calendar_agent import CalendarAgent
 
 agent = CalendarAgent()
-agent.start()
 
 # List calendars
-calendars = agent._caldav.list_calendars()
-print(calendars)
+with agent:
+    calendars = agent._caldav.list_calendars()
+    print(calendars)
 
 # Parse a natural-language instruction
 parsed = agent._intent_parser.parse("create event Team Lunch tomorrow at noon")
@@ -78,7 +80,9 @@ and intent parser directly:
 from robotsix_calendar_agent import CalendarAgent
 
 agent = CalendarAgent()
-agent.start()
+with agent:
+    # calendar operations go here
+    pass
 ```
 
 ## Operations reference

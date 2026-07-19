@@ -37,8 +37,8 @@ full reference of every supported variable, see
 [Configuration](../../configuration.md).
 
 !!! tip "No Radicale server handy?"
-    The project's test suite includes a
-    [CalDAV test server fixture](../../../tests/caldav_client/caldav_test_server.py)
+    The project's test suite includes a CalDAV test server fixture
+    (``tests/caldav_client/caldav_test_server.py``)
     that spins up a local Radicale container via docker-compose.  You can
     point `RADICALE_URL` at `http://localhost:5232` after running it.
 
@@ -74,9 +74,9 @@ uv run python hello_calendar.py
    transport.  The CalDAV client and intent parser are accessed
    directly through the agent instance.
 
-2. **`with agent:`** — the context manager calls `agent.start()` on
-   entry and `agent.stop()` on exit.  You can replace the `with` block
-   with explicit `start()` / `stop()` calls if you prefer.
+2. **`with agent:`** — the context manager provides a clean
+   entry/exit scope for the agent.  The CalDAV client and intent
+   parser remain accessible as attributes outside the block as well.
 
 3. **CalDAV client** — `agent._caldav` provides typed methods for
    calendar, contact, and task operations against your Radicale server.

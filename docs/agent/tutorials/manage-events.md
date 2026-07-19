@@ -17,11 +17,10 @@ Save this as `manage_events.py`:
 from robotsix_calendar_agent import CalendarAgent
 
 agent = CalendarAgent()
-agent.start()
 ```
 
-We'll add each operation to the bottom of this script.  At the end,
-call `agent.stop()` to clean up.
+We'll add each operation to the bottom of this script.  When you're done,
+the `with agent:` context manager handles cleanup automatically.
 
 ---
 
