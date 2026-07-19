@@ -16,6 +16,8 @@ from tests.caldav_client.caldav_test_server import caldav_client  # noqa: F401
 # ---------------------------------------------------------------------------
 # Hypothesis profile registration
 # ---------------------------------------------------------------------------
+import os
+from hypothesis import HealthCheck, settings
 
 settings.register_profile(
     "ci",
