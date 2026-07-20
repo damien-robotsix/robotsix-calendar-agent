@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- README: update configuration section to reference all six settings fields and link to `docs/configuration.md`.
 - Inject current UTC date into the intent parser system prompt so that
   relative-date expressions ("next Tuesday", "this week") are resolved
   against the actual current date rather than the model's guess.
