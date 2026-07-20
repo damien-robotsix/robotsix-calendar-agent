@@ -48,8 +48,11 @@ The agent requires these environment variables:
 | `RADICALE_USERNAME` | Radicale username |
 | `RADICALE_PASSWORD` | Radicale password |
 
-All three can be overridden via constructor arguments when
-instantiating `CalendarAgent`.
+The three credential fields are required; three additional optional
+settings (`RADICALE_DEFAULT_CALENDAR`, `LOG_LEVEL`, `JSON_LOGS`) provide
+sensible defaults. All six are documented in
+[docs/configuration.md](docs/configuration.md) and can be overridden via
+constructor arguments when instantiating `CalendarAgent`.
 
 ## Contributing
 
