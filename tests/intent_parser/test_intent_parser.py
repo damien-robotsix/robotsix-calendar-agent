@@ -22,6 +22,7 @@ from robotsix_calendar_agent.intent_parser import (  # noqa: E402
     IntentParser,
     ParsedIntent,
     TaskOperation,
+    _build_system_prompt,
     _IntentOutput,
 )
 
@@ -176,12 +177,19 @@ class TestSystemPrompt:
     """Smoke-test the system prompt includes required operations."""
 
     def test_prompt_includes_list_calendars(self) -> None:
-        from robotsix_calendar_agent.intent_parser import _INTENT_SYSTEM_PROMPT
+        prompt = _build_system_prompt()
 
-        assert "list_calendars" in _INTENT_SYSTEM_PROMPT
-        assert (
-            "Calendar names can be obtained via list_calendars" in _INTENT_SYSTEM_PROMPT
-        )
+        assert "list_calendars" in prompt
+        assert "Calendar names can be obtained via list_calendars" in prompt
+
+    def test_prompt_includes_current_date(self) -> None:
+        """System prompt must inject the current UTC date for relative-date parsing."""
+        from datetime import UTC, datetime
+
+        prompt = _build_system_prompt()
+        today = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+
+        assert f"Today's date is {today} (UTC)" in prompt
 
     def test_calendar_operation_has_list_calendars(self) -> None:
         assert hasattr(CalendarOperation, "LIST_CALENDARS")

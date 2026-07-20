@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -90,7 +91,7 @@ class IntentParser:
             handle = build_agent_for_level(
                 2,
                 provider_kwargs=self._model_config or None,
-                system_prompt=_INTENT_SYSTEM_PROMPT,
+                system_prompt=_build_system_prompt(),
                 output_type=_IntentOutput,
             )
 
@@ -152,7 +153,16 @@ class _IntentOutput(BaseModel):
 # System prompt
 # ---------------------------------------------------------------------------
 
-_INTENT_SYSTEM_PROMPT = """\
+
+def _build_system_prompt() -> str:
+    """Return the system prompt with the current UTC date injected."""
+    today = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+    return _INTENT_SYSTEM_PROMPT_TEMPLATE.replace("{current_date}", today)
+
+
+_INTENT_SYSTEM_PROMPT_TEMPLATE = """\
+Today's date is {current_date} (UTC).
+
 You are an intent classifier for a calendar, tasks, and contacts management agent.
 
 Given a natural-language instruction, classify it into exactly one of these
