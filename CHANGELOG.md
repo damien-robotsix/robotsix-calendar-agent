@@ -1,6 +1,9 @@
 ## 0.0.0 (unreleased)
 
 
+- Inject current UTC date into the intent parser system prompt so that
+  relative-date expressions ("next Tuesday", "this week") are resolved
+  against the actual current date rather than the model's guess.
 - Normalize handler signatures in `agent.py`: pre-bind `operation` strings via lambdas in `_DISPATCH` and remove the `_CREATE_UPDATE_HANDLERS` set, simplifying `_dispatch` to a single call pattern.
 - Add `.gitattributes` with `linguist-generated=true merge=ours` for `uv.lock` to collapse lockfile diffs in PRs and resolve merge conflicts by keeping the current branch's version.
 - Add Hypothesis profile infrastructure with CI/dev split and shared strategies in `tests/strategies.py`
