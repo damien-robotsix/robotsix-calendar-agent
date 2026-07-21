@@ -1,0 +1,46 @@
+{
+  "description": "Application settings loaded from ``config/config.json``.\n\nLocated via the ``ROBOTSIX_CONFIG_FILE`` environment variable (or\nthe default ``config/config.json``).  All values live in the config\nfile \u2014 no environment overlay, no CLI merge.",
+  "properties": {
+    "RADICALE_URL": {
+      "title": "Radicale Url",
+      "type": "string"
+    },
+    "RADICALE_USERNAME": {
+      "title": "Radicale Username",
+      "type": "string"
+    },
+    "RADICALE_PASSWORD": {
+      "format": "password",
+      "title": "Radicale Password",
+      "type": "string",
+      "writeOnly": true
+    },
+    "RADICALE_DEFAULT_CALENDAR": {
+      "default": "Robotsix",
+      "title": "Radicale Default Calendar",
+      "type": "string"
+    },
+    "CALDAV_TIMEOUT": {
+      "default": 30,
+      "title": "Caldav Timeout",
+      "type": "integer"
+    },
+    "LOG_LEVEL": {
+      "default": "INFO",
+      "title": "Log Level",
+      "type": "string"
+    },
+    "JSON_LOGS": {
+      "default": false,
+      "title": "Json Logs",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "RADICALE_URL",
+    "RADICALE_USERNAME",
+    "RADICALE_PASSWORD"
+  ],
+  "title": "Settings",
+  "type": "object"
+}

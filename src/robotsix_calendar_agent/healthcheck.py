@@ -1,8 +1,8 @@
 """Docker HEALTHCHECK probe — validates CalDAV reachability.
 
-Loads credentials from the same environment variables the agent uses,
-creates a :class:`~robotsix_calendar_agent.caldav_client.CalDavClient`,
-and calls :meth:`~robotsix_calendar_agent.caldav_client.CalDavClient.health`.
+Loads credentials from the config file, creates a
+:class:`~robotsix_calendar_agent.caldav_client.CalDavClient`, and calls
+:meth:`~robotsix_calendar_agent.caldav_client.CalDavClient.health`.
 
 Exit codes:
     0 — CalDAV server is reachable and responsive.
@@ -15,6 +15,7 @@ import sys
 import time
 
 from opentelemetry import trace
+from robotsix_config import load_config
 
 from robotsix_calendar_agent.caldav_client import CalDavClient
 from robotsix_calendar_agent.settings import Settings
@@ -31,7 +32,7 @@ _tracer = trace.get_tracer(__name__)
 def main() -> None:
     """Run the Docker HEALTHCHECK probe.
 
-    Validates CalDAV reachability using credentials from the environment.
+    Validates CalDAV reachability using credentials from the config file.
     Sets OpenTelemetry spans for each attempt. Exits with code 0 on success
     or 1 if all retry attempts fail.
 
@@ -42,9 +43,9 @@ def main() -> None:
     The probe retries up to :data:`RETRIES` times (3 attempts) with
     :data:`RETRY_DELAY_SECONDS` (2 seconds) between attempts. Requires
     ``RADICALE_URL``, ``RADICALE_USERNAME``, and ``RADICALE_PASSWORD`` to
-    be set in the environment.
+    be provided in ``config/config.json``.
     """
-    settings = Settings()
+    settings = load_config(Settings)
     url = settings.RADICALE_URL
     username = settings.RADICALE_USERNAME
     password = settings.RADICALE_PASSWORD.get_secret_value()
@@ -53,7 +54,7 @@ def main() -> None:
     if not url or not username or not password:
         print(
             "healthcheck: RADICALE_URL, RADICALE_USERNAME, and "
-            "RADICALE_PASSWORD must be set",
+            "RADICALE_PASSWORD must be set in config/config.json",
             file=sys.stderr,
         )
         sys.exit(1)

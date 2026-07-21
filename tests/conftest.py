@@ -71,13 +71,20 @@ def calendar_agent() -> Any:
             "robotsix_calendar_agent.agent.IntentParser",
             autospec=True,
         ) as mock_parser_cls,
+        patch(
+            "robotsix_config.load_config",
+        ) as mock_load_config,
     ):
+        from robotsix_calendar_agent.settings import Settings
+
         mock_parser = MagicMock()
         mock_parser_cls.return_value = mock_parser
 
-        os.environ["RADICALE_URL"] = "https://radicale.example.com"
-        os.environ["RADICALE_USERNAME"] = "user"
-        os.environ["RADICALE_PASSWORD"] = "pass"  # pragma: allowlist secret
+        mock_load_config.return_value = Settings(
+            RADICALE_URL="https://radicale.example.com",
+            RADICALE_USERNAME="user",
+            RADICALE_PASSWORD="pass",  # type: ignore[arg-type]  # pragma: allowlist secret
+        )
 
         from robotsix_calendar_agent.agent import CalendarAgent
 

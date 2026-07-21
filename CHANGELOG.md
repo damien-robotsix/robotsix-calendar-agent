@@ -2,6 +2,16 @@
 
 
 - Fix stale module layout diagram in `AGENT.md`: show `caldav_client/` as a package directory instead of a single `.py` file, and add missing `__main__.py` and `healthcheck.py` entries.
+- **BREAKING**: Migrate configuration from env vars to `config/config.json` via `robotsix_config.load_config()`.
+  Settings is now a plain Pydantic `BaseModel` — `pydantic-settings` and env-var config
+  are removed. The config file is located via `ROBOTSIX_CONFIG_FILE`; credentials
+  (`RADICALE_PASSWORD`) are `SecretStr` fields in the config file.
+  `CalendarAgent` no longer accepts `radicale_url`/`radicale_username`/`radicale_password`
+  constructor arguments. Docker Compose and Dockerfile now mount the config volume
+  and set `ROBOTSIX_CONFIG_FILE` instead of `RADICALE_*` env vars.
+  `.env.example` is replaced by `config/config.example.json`.
+  A CI drift check (`config-schema-drift.yml`) ensures `config/config.schema.json`
+  stays in sync with the Settings model.
 - Add configurable `CALDAV_TIMEOUT` (default 30s) to `CalDavClient`, threaded through `CalendarAgent` and the healthcheck probe, to prevent indefinite hangs when the Radicale server becomes unresponsive.
 - Fix stale reference to decommissioned ``monitor`` system in `CalDavClient.health()` docstring.
 - README: update configuration section to reference all six settings fields and link to `docs/configuration.md`.

@@ -41,9 +41,12 @@ WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --from=builder --chown=app:app /app/src /app/src
 
+# Create config directory for volume mount.
+RUN mkdir -p /app/config && chown app:app /app/config
 
 # Runtime configuration.
-ENV PATH="/app/.venv/bin:${PATH}"
+ENV PATH="/app/.venv/bin:${PATH}" \
+    ROBOTSIX_CONFIG_FILE=/app/config/config.json
 
 USER app
 

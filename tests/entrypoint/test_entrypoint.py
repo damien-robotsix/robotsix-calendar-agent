@@ -7,6 +7,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
+from pydantic import SecretStr
 
 # ---------------------------------------------------------------------------
 # Settings LOG_LEVEL validation
@@ -20,14 +21,24 @@ def test_log_level_validation_rejects_invalid() -> None:
     from robotsix_calendar_agent.settings import Settings
 
     with pytest.raises(ValidationError):
-        Settings(LOG_LEVEL="GARBAGE")
+        Settings(
+            RADICALE_URL="https://x.com",
+            RADICALE_USERNAME="u",
+            RADICALE_PASSWORD=SecretStr("p"),
+            LOG_LEVEL="GARBAGE",
+        )
 
 
 def test_log_level_validation_normalises_case() -> None:
     """LOG_LEVEL must be normalised to uppercase."""
     from robotsix_calendar_agent.settings import Settings
 
-    s = Settings(LOG_LEVEL="debug")
+    s = Settings(
+        RADICALE_URL="https://x.com",
+        RADICALE_USERNAME="u",
+        RADICALE_PASSWORD=SecretStr("p"),
+        LOG_LEVEL="debug",
+    )
     assert s.LOG_LEVEL == "DEBUG"
 
 
@@ -42,24 +53,30 @@ class TestMain:
 
         with (
             patch("robotsix_calendar_agent.entrypoint._serve_blocking") as mock_serve,
-            patch("robotsix_calendar_agent.settings.Settings"),
+            patch("robotsix_config.load_config") as mock_load,
             patch("robotsix_llmio.logging.setup_logging"),
         ):
             entrypoint.main()
 
         mock_serve.assert_called_once_with()
+        mock_load.assert_called_once()
 
     def test_setup_logging_called_with_expected_args(self) -> None:
         from robotsix_calendar_agent import entrypoint
+        from robotsix_calendar_agent.settings import Settings
 
         with (
             patch("robotsix_calendar_agent.entrypoint._serve_blocking"),
-            patch("robotsix_calendar_agent.settings.Settings") as mock_settings_cls,
+            patch("robotsix_config.load_config") as mock_load,
             patch("robotsix_llmio.logging.setup_logging") as mock_setup,
         ):
-            mock_settings = mock_settings_cls.return_value
-            mock_settings.LOG_LEVEL = "DEBUG"
-            mock_settings.JSON_LOGS = True
+            mock_load.return_value = Settings(
+                RADICALE_URL="https://x.com",
+                RADICALE_USERNAME="u",
+                RADICALE_PASSWORD=SecretStr("p"),
+                LOG_LEVEL="DEBUG",
+                JSON_LOGS=True,
+            )
 
             entrypoint.main()
 
@@ -71,15 +88,20 @@ class TestMain:
 
     def test_setup_logging_console_fmt(self) -> None:
         from robotsix_calendar_agent import entrypoint
+        from robotsix_calendar_agent.settings import Settings
 
         with (
             patch("robotsix_calendar_agent.entrypoint._serve_blocking"),
-            patch("robotsix_calendar_agent.settings.Settings") as mock_settings_cls,
+            patch("robotsix_config.load_config") as mock_load,
             patch("robotsix_llmio.logging.setup_logging") as mock_setup,
         ):
-            mock_settings = mock_settings_cls.return_value
-            mock_settings.LOG_LEVEL = "INFO"
-            mock_settings.JSON_LOGS = False
+            mock_load.return_value = Settings(
+                RADICALE_URL="https://x.com",
+                RADICALE_USERNAME="u",
+                RADICALE_PASSWORD=SecretStr("p"),
+                LOG_LEVEL="INFO",
+                JSON_LOGS=False,
+            )
 
             entrypoint.main()
 
