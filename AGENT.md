@@ -22,15 +22,18 @@ requires the `tracing` extra (see Tracing below).
 
 ## Configuration conventions
 
-All configuration lives in **`pydantic_settings.BaseSettings` fields**
-in `src/robotsix_calendar_agent/settings.py`. Every field is documented
+All configuration lives in a single JSON config file
+(`config/config.json`, overridable via `ROBOTSIX_CONFIG_FILE`) loaded
+via **`robotsix_config.load_config(Settings)`** from
+`src/robotsix_calendar_agent/settings.py`. Every field is documented
 in `docs/configuration.md` with its type, default, and description.
 
-**Rule:** When you add, remove, or change a `BaseSettings` field in
-`settings.py`, update `docs/configuration.md` in the same change.
-The `env_doc_sync` periodic workflow enforces this automatically —
-it compares the settings fields against the docs table and blocks
-merges that drift.
+**Rule:** When you add, remove, or change a `Settings` field in
+`settings.py`, update `docs/configuration.md` and regenerate
+`config/config.schema.json` in the same change. The
+`config-schema-drift` CI job enforces that the committed schema stays
+in sync with the model — it compares `config_schema_json(Settings)`
+against the file and blocks merges that drift.
 
 **Settings loaded at import/construction time** — `Settings()` is
 instantiated inside `CalendarAgent.__init__` and `main()`, not at module
@@ -95,7 +98,7 @@ src/robotsix_calendar_agent/
 ├── healthcheck.py              # Docker HEALTHCHECK probe
 ├── intent_parser.py            # IntentParser — llmio-based NL → ParsedIntent
 ├── py.typed                    # PEP 561 marker
-└── settings.py                 # BaseSettings — single source of truth for env vars
+└── settings.py                 # BaseModel — loaded via robotsix_config.load_config from config.json
 ```
 
 > **Rule:** When adding a module-level import from an internal module to any file under `src/robotsix_calendar_agent/`, ensure the imported module appears in that file's `dependencies` list in `docs/modules.yaml`. Module-level `from .<module> import (...)` statements always require a corresponding `dependencies` entry — this is enforced by the periodic `module_curator` agent and violations will be flagged as draft tickets.
@@ -109,7 +112,7 @@ src/robotsix_calendar_agent/
 
 - **`robotsix-llmio[openrouter-deepseek,tracing]`** — LLM intent parsing + Langfuse OTLP export
 - **`caldav`** — CalDAV/CardDAV client library
-- **`pydantic` / `pydantic-settings`** — configuration & data models
+- **`pydantic` / `robotsix-config`** — configuration & data models
 - **`tenacity>=9.0`** — retry decorators on CalDAV operations
 
 ## Periodic workflows
@@ -117,10 +120,10 @@ src/robotsix_calendar_agent/
 This repo is targeted by **15 periodic agent workflows** (second-highest
 in the fleet). Key ones referenced above:
 
-- `env_doc_sync` — enforces `docs/configuration.md` ↔ `settings.py` consistency
+- `config-schema-drift` — enforces `config/config.schema.json` ↔ `Settings` model consistency
 - `trace_review` — surfaces anomalous traces
 
 When making changes, consider whether any periodic workflow's
-expectations would be violated (e.g. changing a `BaseSettings` field
-without updating `docs/configuration.md` will cause `env_doc_sync` to
-flag the PR).
+expectations would be violated (e.g. changing a `Settings` field
+without updating `config/config.schema.json` will cause the
+`config-schema-drift` CI job to fail).
