@@ -108,7 +108,11 @@ class CalendarAgent:
 
         default_calendar = settings.RADICALE_DEFAULT_CALENDAR
         self._caldav = CalDavClient(
-            url, username, password, default_calendar=default_calendar
+            url,
+            username,
+            password,
+            default_calendar=default_calendar,
+            timeout=settings.CALDAV_TIMEOUT,
         )
         self._intent_parser = IntentParser(model_config=llm_model_config)
 

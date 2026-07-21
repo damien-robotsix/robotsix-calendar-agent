@@ -56,6 +56,7 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
         url: Radicale server URL.
         username: Radicale username.
         password: Radicale password.
+        timeout: Timeout in seconds for CalDAV HTTP requests (default 30).
 
     Raises:
         AuthError: If authentication fails.
@@ -63,7 +64,12 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
     """
 
     def __init__(
-        self, url: str, username: str, password: str, default_calendar: str = ""
+        self,
+        url: str,
+        username: str,
+        password: str,
+        default_calendar: str = "",
+        timeout: int = 30,
     ) -> None:
         # ``caldav`` ships incomplete type information (mypy resolves the
         # module to ``object``), so route it through ``Any`` to keep the
@@ -76,7 +82,7 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
         self._default_calendar = default_calendar
         try:
             self._client = self._caldav.DAVClient(
-                url=url, username=username, password=password
+                url=url, username=username, password=password, timeout=timeout
             )
             self._principal = self._client.principal()
             logger.info("CalDavClient connected to %s as %s", url, username)

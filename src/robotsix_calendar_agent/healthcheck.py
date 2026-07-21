@@ -69,6 +69,7 @@ def main() -> None:
                     username=username,
                     password=password,
                     default_calendar=default_calendar,
+                    timeout=settings.CALDAV_TIMEOUT,
                 )
                 result = client.health()
             except Exception as exc:

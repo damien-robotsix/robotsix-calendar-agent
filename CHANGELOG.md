@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Add configurable `CALDAV_TIMEOUT` (default 30s) to `CalDavClient`, threaded through `CalendarAgent` and the healthcheck probe, to prevent indefinite hangs when the Radicale server becomes unresponsive.
 - Fix stale reference to decommissioned ``monitor`` system in `CalDavClient.health()` docstring.
 - README: update configuration section to reference all six settings fields and link to `docs/configuration.md`.
 - Inject current UTC date into the intent parser system prompt so that
