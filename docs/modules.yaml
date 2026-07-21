@@ -105,8 +105,9 @@ modules:
 
   - id: settings
     description: >-
-      Pydantic BaseModel configuration — loaded from a single JSON config
-      file via robotsix_config.load_config().
+      Pydantic BaseModel configuration — the single source of truth
+      for all config-file-driven settings in the agent, loaded via
+      robotsix_config.load_config.
     paths:
       - src/robotsix_calendar_agent/settings.py
       - tests/settings/__init__.py
@@ -177,6 +178,8 @@ modules:
       - README.md
       - SECURITY.md
       - badges/.gitkeep
+      - config/config.json
+      - config/config.schema.json
       - docker-compose.yml
       - mkdocs.yml
       - pyproject.toml

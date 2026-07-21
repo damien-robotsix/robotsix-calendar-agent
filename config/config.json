@@ -1,7 +1,7 @@
 {
-  "RADICALE_URL": "https://radicale.example.com",
-  "RADICALE_USERNAME": "your-username",
-  "RADICALE_PASSWORD": "your-password",
+  "RADICALE_URL": "",
+  "RADICALE_USERNAME": "",
+  "RADICALE_PASSWORD": "",
   "RADICALE_DEFAULT_CALENDAR": "Robotsix",
   "CALDAV_TIMEOUT": 30,
   "LOG_LEVEL": "INFO",

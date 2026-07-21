@@ -1,4 +1,5 @@
 {
+  "additionalProperties": false,
   "description": "Application settings loaded from ``config/config.json``.\n\nLocated via the ``ROBOTSIX_CONFIG_FILE`` environment variable (or\nthe default ``config/config.json``).  All values live in the config\nfile \u2014 no environment overlay, no CLI merge.",
   "properties": {
     "RADICALE_URL": {
