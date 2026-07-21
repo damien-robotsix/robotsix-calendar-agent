@@ -62,7 +62,6 @@ class TestMain:
 
     def test_setup_logging_called_with_expected_args(self) -> None:
         from robotsix_calendar_agent import entrypoint
-        from robotsix_calendar_agent.settings import Settings
 
         with (
             patch("robotsix_calendar_agent.entrypoint._serve_blocking"),
@@ -84,7 +83,6 @@ class TestMain:
 
     def test_setup_logging_console_fmt(self) -> None:
         from robotsix_calendar_agent import entrypoint
-        from robotsix_calendar_agent.settings import Settings
 
         with (
             patch("robotsix_calendar_agent.entrypoint._serve_blocking"),
