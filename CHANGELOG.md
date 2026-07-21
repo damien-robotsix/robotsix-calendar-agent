@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Fix stale reference to decommissioned ``monitor`` system in `CalDavClient.health()` docstring.
 - README: update configuration section to reference all six settings fields and link to `docs/configuration.md`.
 - Inject current UTC date into the intent parser system prompt so that
   relative-date expressions ("next Tuesday", "this week") are resolved
