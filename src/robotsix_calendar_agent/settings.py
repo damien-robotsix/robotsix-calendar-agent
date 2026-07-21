@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     RADICALE_DEFAULT_CALENDAR: str = "Robotsix"
     """Default calendar name when no calendar_id is provided."""
 
+    CALDAV_TIMEOUT: int = 30
+    """Timeout in seconds for CalDAV HTTP requests."""
+
     # -- Logging -------------------------------------------------------------
     LOG_LEVEL: str = "INFO"
     """Log level - one of DEBUG, INFO, WARNING, ERROR, CRITICAL."""
