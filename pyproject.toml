@@ -50,7 +50,7 @@ dev = [
     "vulture",
     "deptry>=0.20",
     "radicale",
-    "hypothesis>=6.156.1",
+    "hypothesis>=6.156.6",
     "robotsix-modules",
 ]
 docs = [
