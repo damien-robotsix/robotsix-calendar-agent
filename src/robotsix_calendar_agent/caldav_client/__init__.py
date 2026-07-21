@@ -226,8 +226,8 @@ class CalDavClient(_CalendarOpsMixin, _ContactOpsMixin, _TaskOpsMixin):
             ``{"connected": True, "calendar_count": int}`` on success, or
             ``{"connected": False, "error": str}`` when the probe fails.
 
-        This is called on-demand by ``monitor`` — it does **not** cache
-        stale state.
+        Can be called on demand (e.g. via a health-check endpoint) — it
+        does **not** cache stale state.
         """
         try:
             calendars = self._principal.calendars()
