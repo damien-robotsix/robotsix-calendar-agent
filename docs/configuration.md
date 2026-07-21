@@ -1,18 +1,28 @@
 # Configuration
 
-All configuration is loaded from a single JSON config file via
-`robotsix_config.load_config()`. The settings model lives at
+All configuration is loaded from a single JSON config file
+(`config/config.json` by default, overridable via the
+`ROBOTSIX_CONFIG_FILE` environment variable) using
+:func:`robotsix_config.load_config`. The settings model lives at
 `src/robotsix_calendar_agent/settings.py`.
 
 ## Config file
 
-The config file is located via the `ROBOTSIX_CONFIG_FILE` environment
-variable, falling back to `config/config.json`.  All values live in the
-config file — no environment overlay, no CLI merge.
-
-## Settings model
-
 ::: robotsix_calendar_agent.settings
+
+### Schema
+
+A JSON Schema (`config/config.schema.json`) is committed alongside the
+config file and kept in sync by the `config-schema-drift` CI check.
+When you change `Settings` fields, regenerate the schema:
+
+```bash
+python -c "
+from robotsix_config import config_schema_json
+from robotsix_calendar_agent.settings import Settings
+print(config_schema_json(Settings), end='')
+" > config/config.schema.json
+```
 
 !!! note "Component agent removed"
     The component-agent management package has been removed.  See

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import os
+import tempfile
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -38,21 +41,42 @@ _default_profile = "ci" if os.getenv("CI") == "true" else "dev"
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", _default_profile))
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _write_temp_config(overrides: dict[str, Any] | None = None) -> str:
+    """Write a temporary config.json and return its path.
+
+    Fills in minimal Radicale credentials so CalendarAgent can be
+    constructed without hitting the real Radicale.
+    """
+    data: dict[str, Any] = {
+        "RADICALE_URL": "https://radicale.example.com",
+        "RADICALE_USERNAME": "user",
+        "RADICALE_PASSWORD": "pass",  # pragma: allowlist secret
+        "RADICALE_DEFAULT_CALENDAR": "Robotsix",
+        "CALDAV_TIMEOUT": 30,
+        "LOG_LEVEL": "INFO",
+        "JSON_LOGS": False,
+    }
+    if overrides:
+        data.update(overrides)
+    fd, path = tempfile.mkstemp(suffix=".json", prefix="test_config_")
+    with os.fdopen(fd, "w") as f:
+        json.dump(data, f)
+    return path
+
+
+# ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture(autouse=True)
 def clean_env() -> None:
-    """Remove Radicale + logging env vars so tests don't leak state."""
-    for key in (
-        "RADICALE_URL",
-        "RADICALE_USERNAME",
-        "RADICALE_PASSWORD",
-        "LOG_LEVEL",
-        "JSON_LOGS",
-    ):
-        os.environ.pop(key, None)
+    """Remove config-file env var so tests don't leak state."""
+    os.environ.pop("ROBOTSIX_CONFIG_FILE", None)
 
 
 @pytest.fixture
@@ -80,11 +104,8 @@ def calendar_agent() -> Any:
         mock_parser = MagicMock()
         mock_parser_cls.return_value = mock_parser
 
-        mock_load_config.return_value = Settings(
-            RADICALE_URL="https://radicale.example.com",
-            RADICALE_USERNAME="user",
-            RADICALE_PASSWORD="pass",  # type: ignore[arg-type]  # pragma: allowlist secret
-        )
+        config_path = _write_temp_config()
+        os.environ["ROBOTSIX_CONFIG_FILE"] = config_path
 
         from robotsix_calendar_agent.agent import CalendarAgent
 
@@ -93,3 +114,5 @@ def calendar_agent() -> Any:
         agent._mock_caldav = mock_caldav.return_value  # type: ignore[attr-defined]
 
         yield agent
+
+        Path(config_path).unlink(missing_ok=True)

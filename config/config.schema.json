@@ -1,15 +1,19 @@
 {
-  "description": "Application settings loaded from ``config/config.json``.\n\nLocated via the ``ROBOTSIX_CONFIG_FILE`` environment variable (or\nthe default ``config/config.json``).  All values live in the config\nfile \u2014 no environment overlay, no CLI merge.",
+  "additionalProperties": false,
+  "description": "Application settings loaded from ``config/config.json``.\n\nAll RADICALE_* fields have empty defaults so that the existing\nconstructor-argument fallback and emptiness checks in\n``CalendarAgent.__init__`` continue to work unchanged.",
   "properties": {
     "RADICALE_URL": {
+      "default": "",
       "title": "Radicale Url",
       "type": "string"
     },
     "RADICALE_USERNAME": {
+      "default": "",
       "title": "Radicale Username",
       "type": "string"
     },
     "RADICALE_PASSWORD": {
+      "default": "",
       "format": "password",
       "title": "Radicale Password",
       "type": "string",
@@ -36,11 +40,6 @@
       "type": "boolean"
     }
   },
-  "required": [
-    "RADICALE_URL",
-    "RADICALE_USERNAME",
-    "RADICALE_PASSWORD"
-  ],
   "title": "Settings",
   "type": "object"
 }

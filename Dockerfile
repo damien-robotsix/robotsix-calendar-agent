@@ -37,9 +37,10 @@ RUN groupadd -g 1001 app && useradd -u 1001 -g app -m -d /app -s /bin/false app
 
 WORKDIR /app
 
-# Copy the virtualenv, source, and healthcheck from the builder.
+# Copy the virtualenv, source, config, and healthcheck from the builder.
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --from=builder --chown=app:app /app/src /app/src
+COPY --from=builder --chown=app:app /app/config /app/config
 
 # Create config directory for volume mount.
 RUN mkdir -p /app/config && chown app:app /app/config

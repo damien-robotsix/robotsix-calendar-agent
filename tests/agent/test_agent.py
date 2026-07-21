@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import os
+import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,13 +13,32 @@ from robotsix_calendar_agent.settings import Settings
 
 # Shared helpers live in conftest.
 
+
+def _write_temp_config(overrides: dict | None = None) -> str:
+    """Write a temporary config.json and return its path."""
+    data: dict = {
+        "RADICALE_URL": "https://radicale.example.com",
+        "RADICALE_USERNAME": "user",
+        "RADICALE_PASSWORD": "pass",  # pragma: allowlist secret
+    }
+    if overrides:
+        data.update(overrides)
+    fd, path = tempfile.mkstemp(suffix=".json", prefix="test_agent_config_")
+    with os.fdopen(fd, "w") as f:
+        json.dump(data, f)
+    return path
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
 
 
 class TestCalendarAgentInit:
-    def test_creates_with_valid_config(self) -> None:
+    def test_creates_with_config_file(self) -> None:
+        config_path = _write_temp_config()
+        os.environ["ROBOTSIX_CONFIG_FILE"] = config_path
+
         with (
             patch("robotsix_calendar_agent.agent.CalDavClient"),
             patch("robotsix_calendar_agent.agent.IntentParser"),
@@ -34,6 +56,15 @@ class TestCalendarAgentInit:
             assert agent._agent_id == "calendar"
 
     def test_raises_value_error_for_missing_credentials(self) -> None:
+        config_path = _write_temp_config(
+            {
+                "RADICALE_URL": "",
+                "RADICALE_USERNAME": "",
+                "RADICALE_PASSWORD": "",
+            }
+        )
+        os.environ["ROBOTSIX_CONFIG_FILE"] = config_path
+
         with (
             patch("robotsix_calendar_agent.agent.CalDavClient"),
             patch("robotsix_calendar_agent.agent.IntentParser"),

@@ -1,6 +1,9 @@
 ## 0.0.0 (unreleased)
 
 
+- Migrate config from ``pydantic_settings.BaseSettings`` (env/.env) to ``robotsix_config.load_config`` (single ``config/config.json`` file, located only by ``ROBOTSIX_CONFIG_FILE``).
+  Removed ``.env.example`` and ``pydantic-settings`` dependency; ``RADICALE_PASSWORD`` remains ``SecretStr`` but is now sourced from the JSON config file.
+  Added ``config/config.schema.json`` and a CI drift check to keep it in sync with the ``Settings`` model.
 - Fix stale module layout diagram in `AGENT.md`: show `caldav_client/` as a package directory instead of a single `.py` file, and add missing `__main__.py` and `healthcheck.py` entries.
 - **BREAKING**: Migrate configuration from env vars to `config/config.json` via `robotsix_config.load_config()`.
   Settings is now a plain Pydantic `BaseModel` — `pydantic-settings` and env-var config

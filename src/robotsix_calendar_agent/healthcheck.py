@@ -1,8 +1,8 @@
 """Docker HEALTHCHECK probe — validates CalDAV reachability.
 
-Loads credentials from the config file, creates a
-:class:`~robotsix_calendar_agent.caldav_client.CalDavClient`, and calls
-:meth:`~robotsix_calendar_agent.caldav_client.CalDavClient.health`.
+Loads credentials from the same config file the agent uses,
+creates a :class:`~robotsix_calendar_agent.caldav_client.CalDavClient`,
+and calls :meth:`~robotsix_calendar_agent.caldav_client.CalDavClient.health`.
 
 Exit codes:
     0 — CalDAV server is reachable and responsive.
@@ -43,7 +43,7 @@ def main() -> None:
     The probe retries up to :data:`RETRIES` times (3 attempts) with
     :data:`RETRY_DELAY_SECONDS` (2 seconds) between attempts. Requires
     ``RADICALE_URL``, ``RADICALE_USERNAME``, and ``RADICALE_PASSWORD`` to
-    be provided in ``config/config.json``.
+    be set in the config file.
     """
     settings = load_config(Settings)
     url = settings.RADICALE_URL

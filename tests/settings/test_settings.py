@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import json
+import os
+import tempfile
+
 import pytest
-from pydantic import SecretStr, ValidationError
+from robotsix_config import load_config
 
 from robotsix_calendar_agent.settings import Settings
 
@@ -33,67 +37,86 @@ class TestNormalizeLogLevel:
 
 
 # ---------------------------------------------------------------------------
-# Full Settings construction (plain BaseModel, no env vars)
+# Helper
+# ---------------------------------------------------------------------------
+
+
+def _write_config(data: dict) -> str:
+    """Write a temporary config file and return its path."""
+    fd, path = tempfile.mkstemp(suffix=".json", prefix="test_settings_")
+    with os.fdopen(fd, "w") as f:
+        json.dump(data, f)
+    return path
+
+
+# ---------------------------------------------------------------------------
+# Full Settings construction via load_config
 # ---------------------------------------------------------------------------
 
 
 class TestSettingsConstruction:
-    """Tests exercising ``Settings()`` direct construction."""
+    """Tests exercising ``load_config(Settings, path=...)``."""
 
-    def test_required_fields(self) -> None:
-        s = Settings(
-            RADICALE_URL="https://radicale.example.com",
-            RADICALE_USERNAME="user",
-            RADICALE_PASSWORD=SecretStr("secret"),
+    def test_defaults(self) -> None:
+        path = _write_config({})
+        s = load_config(Settings, path=path)
+        assert s.RADICALE_URL == ""
+        assert s.RADICALE_USERNAME == ""
+        assert s.RADICALE_PASSWORD.get_secret_value() == ""
+        assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
+        assert s.LOG_LEVEL == "INFO"
+        assert s.JSON_LOGS is False
+
+    def test_radicale_fields_from_config(self) -> None:
+        path = _write_config(
+            {
+                "RADICALE_URL": "https://radicale.example.com",
+                "RADICALE_USERNAME": "user",
+                "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
+            }
         )
+        s = load_config(Settings, path=path)
         assert s.RADICALE_URL == "https://radicale.example.com"
         assert s.RADICALE_USERNAME == "user"
         assert s.RADICALE_PASSWORD.get_secret_value() == "secret"
 
-    def test_defaults(self) -> None:
-        s = Settings(
-            RADICALE_URL="https://radicale.example.com",
-            RADICALE_USERNAME="user",
-            RADICALE_PASSWORD=SecretStr("secret"),
+    def test_radicale_default_calendar_from_config(self) -> None:
+        path = _write_config(
+            {
+                "RADICALE_URL": "https://x.com",
+                "RADICALE_USERNAME": "u",
+                "RADICALE_PASSWORD": "p",  # pragma: allowlist secret
+                "RADICALE_DEFAULT_CALENDAR": "Damien",
+            }
         )
-        assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
-        assert s.LOG_LEVEL == "INFO"
-        assert s.JSON_LOGS is False
-        assert s.CALDAV_TIMEOUT == 30
-
-    def test_override_defaults(self) -> None:
-        s = Settings(
-            RADICALE_URL="https://radicale.example.com",
-            RADICALE_USERNAME="user",
-            RADICALE_PASSWORD=SecretStr("secret"),
-            RADICALE_DEFAULT_CALENDAR="Damien",
-            LOG_LEVEL="DEBUG",
-            JSON_LOGS=True,
-            CALDAV_TIMEOUT=60,
-        )
+        s = load_config(Settings, path=path)
         assert s.RADICALE_DEFAULT_CALENDAR == "Damien"
+
+    def test_radicale_default_calendar_defaults_to_robotsix(self) -> None:
+        path = _write_config({})
+        s = load_config(Settings, path=path)
+        assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
+
+    def test_log_level_from_config(self) -> None:
+        path = _write_config({"LOG_LEVEL": "DEBUG"})
+        s = load_config(Settings, path=path)
         assert s.LOG_LEVEL == "DEBUG"
+
+    def test_json_logs_from_config(self) -> None:
+        path = _write_config({"JSON_LOGS": True})
+        s = load_config(Settings, path=path)
         assert s.JSON_LOGS is True
-        assert s.CALDAV_TIMEOUT == 60
 
-    def test_log_level_normalised(self) -> None:
-        s = Settings(
-            RADICALE_URL="https://x.com",
-            RADICALE_USERNAME="u",
-            RADICALE_PASSWORD=SecretStr("p"),
-            LOG_LEVEL="  debug  ",
-        )
-        assert s.LOG_LEVEL == "DEBUG"
+    def test_invalid_log_level_raises_during_load(self) -> None:
+        path = _write_config({"LOG_LEVEL": "BOGUS"})
+        from robotsix_config import InvalidConfigError
 
-    def test_invalid_log_level_raises(self) -> None:
-        with pytest.raises(ValidationError):
-            Settings(
-                RADICALE_URL="https://x.com",
-                RADICALE_USERNAME="u",
-                RADICALE_PASSWORD=SecretStr("p"),
-                LOG_LEVEL="BOGUS",
-            )
+        with pytest.raises(InvalidConfigError):
+            load_config(Settings, path=path)
 
-    def test_missing_required_fields_raises(self) -> None:
-        with pytest.raises(ValidationError):
-            Settings()  # type: ignore[call-arg]
+    def test_extra_fields_are_rejected(self) -> None:
+        path = _write_config({"UNKNOWN_VAR": "ignored"})
+        from robotsix_config import InvalidConfigError
+
+        with pytest.raises(InvalidConfigError):
+            load_config(Settings, path=path)

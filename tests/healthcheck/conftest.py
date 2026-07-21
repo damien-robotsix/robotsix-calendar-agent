@@ -60,7 +60,7 @@ def healthcheck_main(capsys: pytest.CaptureFixture[str]):
         with ExitStack() as stack:
             stack.enter_context(
                 patch(
-                    "robotsix_config.load_config",
+                    "robotsix_calendar_agent.healthcheck.load_config",
                     return_value=settings,
                 )
             )

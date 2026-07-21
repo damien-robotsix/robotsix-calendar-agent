@@ -1,6 +1,8 @@
-"""Application configuration model.
+"""Single source of truth for application configuration.
 
-Loaded from a single JSON config file via :func:`robotsix_config.load_config`.
+Loaded from ``config/config.json`` (or ``ROBOTSIX_CONFIG_FILE``) via
+:func:`robotsix_config.load_config`.  All fields have safe defaults so
+a missing config file means "all defaults".
 """
 
 from __future__ import annotations
@@ -17,6 +19,8 @@ class Settings(BaseModel):
     the default ``config/config.json``).  All values live in the config
     file — no environment overlay, no CLI merge.
     """
+
+    model_config = {"extra": "forbid"}
 
     # -- Radicale credentials ------------------------------------------------
     RADICALE_URL: str

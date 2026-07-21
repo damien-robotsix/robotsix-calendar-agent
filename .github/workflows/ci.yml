@@ -109,6 +109,30 @@ jobs:
       - run: uv run --frozen robotsix-modules validate docs/modules.yaml
 
   # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
+  config-schema-drift:
+    name: Config schema drift check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-uv
+      - run: |
+          uv run --frozen python -c "
+          from robotsix_config import config_schema_json
+          from robotsix_calendar_agent.settings import Settings
+          import sys
+          expected = config_schema_json(Settings)
+          with open('config/config.schema.json') as f:
+              actual = f.read()
+          if expected != actual:
+              print('ERROR: config/config.schema.json is out of sync with Settings model.')
+              print('Run: python -c \"from robotsix_config import config_schema_json; from robotsix_calendar_agent.settings import Settings; print(config_schema_json(Settings), end=\\\"\\\")\" > config/config.schema.json')
+              sys.exit(1)
+          print('config/config.schema.json is in sync.')
+          "
+
+  # hand-rolled: no shared workflow equivalent in robotsix-github-workflows
   dependency-audit:
     name: Dependency audit
     runs-on: ubuntu-latest
