@@ -99,7 +99,6 @@ def calendar_agent() -> Any:
             "robotsix_config.load_config",
         ),
     ):
-
         mock_parser = MagicMock()
         mock_parser_cls.return_value = mock_parser
 

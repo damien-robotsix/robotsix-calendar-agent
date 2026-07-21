@@ -58,11 +58,17 @@ class TestSettingsConstruction:
     """Tests exercising ``load_config(Settings, path=...)``."""
 
     def test_defaults(self) -> None:
-        path = _write_config({})
+        path = _write_config(
+            {
+                "RADICALE_URL": "https://radicale.example.com",
+                "RADICALE_USERNAME": "user",
+                "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
+            }
+        )
         s = load_config(Settings, path=path)
-        assert s.RADICALE_URL == ""
-        assert s.RADICALE_USERNAME == ""
-        assert s.RADICALE_PASSWORD.get_secret_value() == ""
+        assert s.RADICALE_URL == "https://radicale.example.com"
+        assert s.RADICALE_USERNAME == "user"
+        assert s.RADICALE_PASSWORD.get_secret_value() == "secret"
         assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
         assert s.LOG_LEVEL == "INFO"
         assert s.JSON_LOGS is False
@@ -93,17 +99,37 @@ class TestSettingsConstruction:
         assert s.RADICALE_DEFAULT_CALENDAR == "Damien"
 
     def test_radicale_default_calendar_defaults_to_robotsix(self) -> None:
-        path = _write_config({})
+        path = _write_config(
+            {
+                "RADICALE_URL": "https://x.com",
+                "RADICALE_USERNAME": "u",
+                "RADICALE_PASSWORD": "p",  # pragma: allowlist secret
+            }
+        )
         s = load_config(Settings, path=path)
         assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
 
     def test_log_level_from_config(self) -> None:
-        path = _write_config({"LOG_LEVEL": "DEBUG"})
+        path = _write_config(
+            {
+                "RADICALE_URL": "https://x.com",
+                "RADICALE_USERNAME": "u",
+                "RADICALE_PASSWORD": "p",  # pragma: allowlist secret
+                "LOG_LEVEL": "DEBUG",
+            }
+        )
         s = load_config(Settings, path=path)
         assert s.LOG_LEVEL == "DEBUG"
 
     def test_json_logs_from_config(self) -> None:
-        path = _write_config({"JSON_LOGS": True})
+        path = _write_config(
+            {
+                "RADICALE_URL": "https://x.com",
+                "RADICALE_USERNAME": "u",
+                "RADICALE_PASSWORD": "p",  # pragma: allowlist secret
+                "JSON_LOGS": True,
+            }
+        )
         s = load_config(Settings, path=path)
         assert s.JSON_LOGS is True
 
