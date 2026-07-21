@@ -22,6 +22,7 @@ def _make_mock_settings(
     settings.RADICALE_USERNAME = username
     settings.RADICALE_PASSWORD = SecretStr(password)
     settings.RADICALE_DEFAULT_CALENDAR = default_calendar
+    settings.CALDAV_TIMEOUT = 30
     return settings
 
 
