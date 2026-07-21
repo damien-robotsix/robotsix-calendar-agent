@@ -1,35 +1,31 @@
-"""Single source of truth for all environment-variable configuration.
+"""Application configuration model.
 
-Uses :class:`pydantic_settings.BaseSettings` to read, validate, and
-normalise configuration from the process environment.
+Loaded from a single JSON config file via :func:`robotsix_config.load_config`.
 """
 
 from __future__ import annotations
 
 import logging
 
-from pydantic import SecretStr, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel, SecretStr, field_validator
 
 
-class Settings(BaseSettings):
-    """Application settings loaded from environment variables.
+class Settings(BaseModel):
+    """Application settings loaded from ``config/config.json``.
 
-    All RADICALE_* fields have empty defaults so that the existing
-    constructor-argument fallback and emptiness checks in
-    ``CalendarAgent.__init__`` continue to work unchanged.
+    Located via the ``ROBOTSIX_CONFIG_FILE`` environment variable (or
+    the default ``config/config.json``).  All values live in the config
+    file — no environment overlay, no CLI merge.
     """
 
-    model_config = SettingsConfigDict(extra="ignore")
-
     # -- Radicale credentials ------------------------------------------------
-    RADICALE_URL: str = ""
+    RADICALE_URL: str
     """Radicale server URL (e.g. https://radicale.example.com)."""
 
-    RADICALE_USERNAME: str = ""
+    RADICALE_USERNAME: str
     """Radicale username for authentication."""
 
-    RADICALE_PASSWORD: SecretStr = SecretStr("")
+    RADICALE_PASSWORD: SecretStr
     """Radicale password for authentication."""
 
     RADICALE_DEFAULT_CALENDAR: str = "Robotsix"

@@ -119,7 +119,4 @@ reference.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `agent_id` | `str` | `"calendar"` | Agent identifier |
-| `radicale_url` | `str \| None` | `None` | Radicale URL (falls back to env) |
-| `radicale_username` | `str \| None` | `None` | Radicale username (falls back to env) |
-| `radicale_password` | `str \| None` | `None` | Radicale password (falls back to env) |
 | `llm_model_config` | `dict \| None` | `None` | Forwarded to llmio for model selection |

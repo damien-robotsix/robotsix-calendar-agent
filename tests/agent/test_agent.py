@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+from robotsix_calendar_agent.settings import Settings
 
 # Shared helpers live in conftest.
 
@@ -15,15 +16,18 @@ import pytest
 
 
 class TestCalendarAgentInit:
-    def test_creates_with_env_vars(self) -> None:
-        os.environ["RADICALE_URL"] = "https://x.com"
-        os.environ["RADICALE_USERNAME"] = "u"
-        os.environ["RADICALE_PASSWORD"] = "p"
-
+    def test_creates_with_valid_config(self) -> None:
         with (
             patch("robotsix_calendar_agent.agent.CalDavClient"),
             patch("robotsix_calendar_agent.agent.IntentParser"),
+            patch("robotsix_config.load_config") as mock_load,
         ):
+            mock_load.return_value = Settings(
+                RADICALE_URL="https://x.com",
+                RADICALE_USERNAME="u",
+                RADICALE_PASSWORD="p",  # type: ignore[arg-type]  # pragma: allowlist secret
+            )
+
             from robotsix_calendar_agent.agent import CalendarAgent
 
             agent = CalendarAgent()
@@ -33,7 +37,14 @@ class TestCalendarAgentInit:
         with (
             patch("robotsix_calendar_agent.agent.CalDavClient"),
             patch("robotsix_calendar_agent.agent.IntentParser"),
+            patch("robotsix_config.load_config") as mock_load,
         ):
+            mock_load.return_value = Settings(
+                RADICALE_URL="",
+                RADICALE_USERNAME="",
+                RADICALE_PASSWORD="",  # type: ignore[arg-type]  # pragma: allowlist secret
+            )
+
             from robotsix_calendar_agent.agent import CalendarAgent
 
             with pytest.raises(ValueError, match="credentials"):

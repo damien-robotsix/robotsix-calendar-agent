@@ -1,11 +1,9 @@
-"""Unit tests for the Settings class and its validators."""
+"""Unit tests for the Settings model and its validators."""
 
 from __future__ import annotations
 
-import os
-from unittest.mock import patch
-
 import pytest
+from pydantic import SecretStr, ValidationError
 
 from robotsix_calendar_agent.settings import Settings
 
@@ -35,85 +33,67 @@ class TestNormalizeLogLevel:
 
 
 # ---------------------------------------------------------------------------
-# Full Settings construction with env var overrides
+# Full Settings construction (plain BaseModel, no env vars)
 # ---------------------------------------------------------------------------
 
 
 class TestSettingsConstruction:
-    """Integration-style tests exercising ``Settings()`` with env vars."""
+    """Tests exercising ``Settings()`` direct construction."""
+
+    def test_required_fields(self) -> None:
+        s = Settings(
+            RADICALE_URL="https://radicale.example.com",
+            RADICALE_USERNAME="user",
+            RADICALE_PASSWORD=SecretStr("secret"),
+        )
+        assert s.RADICALE_URL == "https://radicale.example.com"
+        assert s.RADICALE_USERNAME == "user"
+        assert s.RADICALE_PASSWORD.get_secret_value() == "secret"
 
     def test_defaults(self) -> None:
-        with patch.dict(os.environ, {}, clear=True):
-            s = Settings()
-            assert s.RADICALE_URL == ""
-            assert s.RADICALE_USERNAME == ""
-            assert s.RADICALE_PASSWORD.get_secret_value() == ""
-            assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
-            assert s.LOG_LEVEL == "INFO"
-            assert s.JSON_LOGS is False
+        s = Settings(
+            RADICALE_URL="https://radicale.example.com",
+            RADICALE_USERNAME="user",
+            RADICALE_PASSWORD=SecretStr("secret"),
+        )
+        assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
+        assert s.LOG_LEVEL == "INFO"
+        assert s.JSON_LOGS is False
+        assert s.CALDAV_TIMEOUT == 30
 
-    def test_radicale_fields_from_env(self) -> None:
-        with patch.dict(
-            os.environ,
-            {
-                "RADICALE_URL": "https://radicale.example.com",
-                "RADICALE_USERNAME": "user",
-                "RADICALE_PASSWORD": "secret",  # pragma: allowlist secret
-            },
-            clear=True,
-        ):
-            s = Settings()
-            assert s.RADICALE_URL == "https://radicale.example.com"
-            assert s.RADICALE_USERNAME == "user"
-            assert s.RADICALE_PASSWORD.get_secret_value() == "secret"
+    def test_override_defaults(self) -> None:
+        s = Settings(
+            RADICALE_URL="https://radicale.example.com",
+            RADICALE_USERNAME="user",
+            RADICALE_PASSWORD=SecretStr("secret"),
+            RADICALE_DEFAULT_CALENDAR="Damien",
+            LOG_LEVEL="DEBUG",
+            JSON_LOGS=True,
+            CALDAV_TIMEOUT=60,
+        )
+        assert s.RADICALE_DEFAULT_CALENDAR == "Damien"
+        assert s.LOG_LEVEL == "DEBUG"
+        assert s.JSON_LOGS is True
+        assert s.CALDAV_TIMEOUT == 60
 
-    def test_radicale_default_calendar_from_env(self) -> None:
-        with patch.dict(
-            os.environ,
-            {
-                "RADICALE_URL": "https://x.com",
-                "RADICALE_USERNAME": "u",
-                "RADICALE_PASSWORD": "p",  # pragma: allowlist secret
-                "RADICALE_DEFAULT_CALENDAR": "Damien",
-            },
-            clear=True,
-        ):
-            s = Settings()
-            assert s.RADICALE_DEFAULT_CALENDAR == "Damien"
+    def test_log_level_normalised(self) -> None:
+        s = Settings(
+            RADICALE_URL="https://x.com",
+            RADICALE_USERNAME="u",
+            RADICALE_PASSWORD=SecretStr("p"),
+            LOG_LEVEL="  debug  ",
+        )
+        assert s.LOG_LEVEL == "DEBUG"
 
-    def test_radicale_default_calendar_defaults_to_robotsix(self) -> None:
-        with patch.dict(os.environ, {}, clear=True):
-            s = Settings()
-            assert s.RADICALE_DEFAULT_CALENDAR == "Robotsix"
+    def test_invalid_log_level_raises(self) -> None:
+        with pytest.raises(ValidationError):
+            Settings(
+                RADICALE_URL="https://x.com",
+                RADICALE_USERNAME="u",
+                RADICALE_PASSWORD=SecretStr("p"),
+                LOG_LEVEL="BOGUS",
+            )
 
-    def test_log_level_from_env(self) -> None:
-        with patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}, clear=True):
-            s = Settings()
-            assert s.LOG_LEVEL == "DEBUG"
-
-    def test_json_logs_from_env(self) -> None:
-        with patch.dict(os.environ, {"JSON_LOGS": "true"}, clear=True):
-            s = Settings()
-            assert s.JSON_LOGS is True
-
-    def test_invalid_log_level_raises_during_construction(self) -> None:
-        with (
-            patch.dict(os.environ, {"LOG_LEVEL": "BOGUS"}, clear=True),
-            pytest.raises(ValueError),
-        ):
-            Settings()
-
-    def test_ignores_unknown_env_vars(self) -> None:
-        with patch.dict(
-            os.environ,
-            {
-                "RADICALE_URL": "https://x.com",
-                "RADICALE_USERNAME": "u",
-                "RADICALE_PASSWORD": "p",
-                "UNKNOWN_VAR": "ignored",
-            },
-            clear=True,
-        ):
-            s = Settings()
-            assert s.RADICALE_URL == "https://x.com"
-            # extra="ignore" means unknown vars don't cause errors
+    def test_missing_required_fields_raises(self) -> None:
+        with pytest.raises(ValidationError):
+            Settings()  # type: ignore[call-arg]

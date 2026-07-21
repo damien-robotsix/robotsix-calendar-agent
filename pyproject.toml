@@ -16,9 +16,9 @@ dependencies = [
     # tracing extra pulls the OpenTelemetry/OTLP deps setup_langfuse_tracing()
     # needs to export intent-parse traces to Langfuse.
     "robotsix-llmio[openrouter,tracing]",
+    "robotsix-config",
     "caldav",
     "pydantic",
-    "pydantic-settings",
     "tenacity>=9.0,<10",
 ]
 classifiers = [

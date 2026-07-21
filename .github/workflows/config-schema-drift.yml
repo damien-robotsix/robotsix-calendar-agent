@@ -1,0 +1,41 @@
+name: Config schema drift
+
+on:
+  push:
+    paths:
+      - "src/robotsix_calendar_agent/settings.py"
+      - "config/config.schema.json"
+  pull_request:
+    paths:
+      - "src/robotsix_calendar_agent/settings.py"
+      - "config/config.schema.json"
+
+concurrency:
+  group: config-schema-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  schema-drift:
+    name: Check config schema is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-uv
+
+      - name: Regenerate config schema
+        run: |
+          uv run --frozen python -c "
+          from robotsix_config import config_schema_json
+          from robotsix_calendar_agent.settings import Settings
+          with open('config/config.schema.json', 'w') as f:
+              f.write(config_schema_json(Settings))
+          "
+
+      - name: Check for drift
+        run: git diff --exit-code config/config.schema.json

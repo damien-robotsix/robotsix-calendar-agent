@@ -1,10 +1,16 @@
 # Configuration
 
-All configuration is read from environment variables via
-`pydantic_settings.BaseSettings`. The settings class lives at
+All configuration is loaded from a single JSON config file via
+`robotsix_config.load_config()`. The settings model lives at
 `src/robotsix_calendar_agent/settings.py`.
 
-## Environment variables
+## Config file
+
+The config file is located via the `ROBOTSIX_CONFIG_FILE` environment
+variable, falling back to `config/config.json`.  All values live in the
+config file — no environment overlay, no CLI merge.
+
+## Settings model
 
 ::: robotsix_calendar_agent.settings
 

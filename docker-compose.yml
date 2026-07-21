@@ -4,10 +4,10 @@ services:
     image: ghcr.io/damien-robotsix/robotsix-calendar-agent:main
     ports:
       - "8201:8080"
+    volumes:
+      - ./config/config.json:/app/config/config.json:ro
     environment:
-      RADICALE_URL: http://radicale:5232
-      RADICALE_USERNAME: ""
-      RADICALE_PASSWORD: ""
+      ROBOTSIX_CONFIG_FILE: /app/config/config.json
     healthcheck:
       test: ["CMD", "calendar-agent-healthcheck"]
       interval: 30s
