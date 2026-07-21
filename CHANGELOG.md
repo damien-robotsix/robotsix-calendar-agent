@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 
+- Fix stale module layout diagram in `AGENT.md`: show `caldav_client/` as a package directory instead of a single `.py` file, and add missing `__main__.py` and `healthcheck.py` entries.
 - Add configurable `CALDAV_TIMEOUT` (default 30s) to `CalDavClient`, threaded through `CalendarAgent` and the healthcheck probe, to prevent indefinite hangs when the Radicale server becomes unresponsive.
 - Fix stale reference to decommissioned ``monitor`` system in `CalDavClient.health()` docstring.
 - README: update configuration section to reference all six settings fields and link to `docs/configuration.md`.
