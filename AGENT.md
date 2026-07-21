@@ -82,9 +82,17 @@ Both are active and must not be disabled without coordination.
 ```
 src/robotsix_calendar_agent/
 ├── __init__.py
+├── __main__.py                 # python -m entry point
 ├── agent.py                    # CalendarAgent — wires everything together
+├── caldav_client/              # typed CalDAV/CardDAV wrapper with tenacity retries
+│   ├── __init__.py
+│   ├── _shared.py              # shared helpers
+│   ├── calendar_ops.py         # calendar operations
+│   ├── contact_ops.py          # contact operations
+│   ├── exceptions.py           # CalDAV exception types
+│   └── task_ops.py             # task (VTODO) operations
 ├── entrypoint.py               # main() — long-lived in-process service
-├── caldav_client.py            # CalDavClient — typed CalDAV/CardDAV wrapper with tenacity retries
+├── healthcheck.py              # Docker HEALTHCHECK probe
 ├── intent_parser.py            # IntentParser — llmio-based NL → ParsedIntent
 ├── py.typed                    # PEP 561 marker
 └── settings.py                 # BaseSettings — single source of truth for env vars
