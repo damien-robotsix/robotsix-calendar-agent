@@ -102,6 +102,7 @@ filterwarnings = [
     "error",
 ]
 markers = ["integration: Slower tests requiring a live Radicale server"]
+strict_markers = true
 
 [tool.coverage.run]
 source = ["robotsix_calendar_agent"]
