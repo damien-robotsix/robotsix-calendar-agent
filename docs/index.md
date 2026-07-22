@@ -23,15 +23,19 @@ Caller → CalendarAgent → IntentParser (llmio)
 
 ### 1. Configure Radicale access
 
-Set the environment variables pointing to your Radicale server:
+Edit (or create) `config/config.json` with your Radicale server details:
 
-```bash
-export RADICALE_URL="https://radicale.example.com"
-export RADICALE_USERNAME="your-username"
-export RADICALE_PASSWORD="your-password"  # pragma: allowlist secret
+```json
+{
+  "radicale_url": "https://radicale.example.com",
+  "radicale_username": "your-username",
+  "radicale_password": "your-password"
+}
 ```
 
-Alternatively, pass these values as constructor arguments to `CalendarAgent`.
+The config file path can be customised via the `ROBOTSIX_CONFIG_FILE`
+environment variable.  See [Configuration](configuration.md) for the full
+config-file reference.
 
 ### 2. Install dependencies
 
@@ -102,16 +106,9 @@ with agent:
 
 ## Configuration reference
 
-See [Configuration](configuration.md) for the canonical environment-variable
-reference.
-
-### Environment variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `RADICALE_URL` | Yes | — | Radicale server URL |
-| `RADICALE_USERNAME` | Yes | — | Radicale username |
-| `RADICALE_PASSWORD` | Yes | — | Radicale password |
+See [Configuration](configuration.md) for the canonical config-file
+reference.  All settings — including the three required Radicale
+credentials — live in `config/config.json`.
 
 
 ### Constructor options (`CalendarAgent`)
