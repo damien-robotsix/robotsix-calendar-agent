@@ -102,7 +102,7 @@ class TestToTask:
 
     def test_missing_fields_yield_empty(self) -> None:
         comp = MagicMock()
-        comp.get.side_effect = lambda name, default=None: default
+        comp.get.side_effect = lambda _name, default=None: default
         obj = MagicMock()
         obj.icalendar_component = comp
 

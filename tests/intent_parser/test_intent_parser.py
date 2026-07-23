@@ -217,7 +217,7 @@ class TestParseError:
         mock_handle.run_sync.return_value = run_result
 
         # Make run_agent actually call the supplied _run callback.
-        def _call_run(handle: object, run: object, **kwargs: object) -> object:
+        def _call_run(_handle: object, run: object, **_kwargs: object) -> object:
             return run()  # type: ignore[operator]
 
         _mock_llmio_core.run_agent.side_effect = _call_run
