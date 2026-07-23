@@ -268,7 +268,7 @@ def _handle_create_or_update_event(
 
 def _handle_list_calendars(
     client: CalDavClient,
-    params: dict[str, Any],
+    _params: dict[str, Any],
 ) -> list[str]:
     """Return the names of the user's available calendars."""
     return client.list_calendars()
