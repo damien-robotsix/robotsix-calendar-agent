@@ -34,7 +34,6 @@ modules:
       - docs/agent/reference.md
       - docs/reference/component_agent.md
       - docs/agent/tutorials/manage-events.md
-      - docs/tutorials/intermediate/component-agent-management.md
     dependencies:
       - caldav-client
       - intent-parser

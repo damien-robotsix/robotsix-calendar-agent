@@ -13,12 +13,6 @@ code blocks, fill in your credentials, and run.
   (create, list, update, delete) for calendar events, all driven by
   natural language.
 
-## Intermediate
-
-- **[Component-Agent Management](intermediate/component-agent-management.md)** —
-  enable the management plane and use `monitor`, `config-get`, and
-  `config-set` to inspect and reconfigure the agent at runtime.
-
 ---
 
 Looking for API details?  Head to [Code Reference](../reference/index.md).
