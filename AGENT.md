@@ -66,6 +66,7 @@ import (`src/robotsix_calendar_agent/agent.py`):
 
 ```python
 from robotsix_llmio.core import setup_langfuse_tracing
+
 setup_langfuse_tracing()
 ```
 
