@@ -10,6 +10,7 @@
 - Removed the stale "Component-Agent Management" intermediate tutorial
   (nav, index, and module registration) — the management plane was
   decommissioned with the `robotsix-agent-comm` broker removal.
+- Add `check-json` pre-commit hook to validate JSON syntax in `config/` files at commit time.
 - Migrate config from ``pydantic_settings.BaseSettings`` (env/.env) to ``robotsix_config.load_config`` (single ``config/config.json`` file, located only by ``ROBOTSIX_CONFIG_FILE``).
   Removed ``.env.example`` and ``pydantic-settings`` dependency; ``RADICALE_PASSWORD`` remains ``SecretStr`` but is now sourced from the JSON config file.
   Added ``config/config.schema.json`` and a CI drift check to keep it in sync with the ``Settings`` model.
