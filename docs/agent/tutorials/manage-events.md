@@ -5,7 +5,7 @@ This tutorial covers the four calendar-event operations —
 CalDAV client and intent parser directly.
 
 We assume you've completed [Your First Agent](../../tutorials/basic/first-agent.md) and have
-the three `RADICALE_*` environment variables set.
+`config/config.json` configured with your Radicale credentials.
 
 ---
 
@@ -102,5 +102,5 @@ The same pattern works for contacts — use `agent._caldav.create_contact`,
 
 ## Next steps
 
-- [Configuration](../../configuration.md) — complete environment variable
+- [Configuration](../../configuration.md) — complete config-file
   reference.

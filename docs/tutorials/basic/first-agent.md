@@ -23,24 +23,26 @@ uv sync
 
 ## 2. Configure Radicale access
 
-The agent reads credentials from environment variables.  Set the three
-required Radicale variables pointing at your server:
+The agent reads credentials from `config/config.json`.  Edit (or create)
+that file with your Radicale server details:
 
-```bash
-export RADICALE_URL="https://radicale.example.com"
-export RADICALE_USERNAME="your-username"
-export RADICALE_PASSWORD="your-password"  # pragma: allowlist secret
+```json
+{
+  "radicale_url": "https://radicale.example.com",
+  "radicale_username": "your-username",
+  "radicale_password": "your-password"
+}
 ```
 
-You can also pass these as constructor arguments (see step 3).  For a
-full reference of every supported variable, see
+The config file path can be customised via the `ROBOTSIX_CONFIG_FILE`
+environment variable.  For a full reference of every supported setting, see
 [Configuration](../../configuration.md).
 
 !!! tip "No Radicale server handy?"
     The project's test suite includes a CalDAV test server fixture
     (``tests/caldav_client/caldav_test_server.py``)
     that spins up a local Radicale container via docker-compose.  You can
-    point `RADICALE_URL` at `http://localhost:5232` after running it.
+    point `radicale_url` at `http://localhost:5232` in your config after running it.
 
 ---
 
@@ -87,5 +89,5 @@ uv run python hello_calendar.py
 
 - [Managing Calendar Events](../../agent/tutorials/manage-events.md) — create, update, and delete
   events.
-- [Configuration](../../configuration.md) — complete environment variable
+- [Configuration](../../configuration.md) — complete config-file
   reference.

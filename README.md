@@ -40,19 +40,11 @@ make all           # run all checks (default)
 
 ## Configuration
 
-The agent requires these environment variables:
-
-| Variable | Description |
-|---|---|
-| `RADICALE_URL` | URL of the Radicale server (e.g. `https://radicale.example.com`) |
-| `RADICALE_USERNAME` | Radicale username |
-| `RADICALE_PASSWORD` | Radicale password |
-
-The three credential fields are required; four additional optional
-settings (`RADICALE_DEFAULT_CALENDAR`, `CALDAV_TIMEOUT`, `LOG_LEVEL`,
-`JSON_LOGS`) provide sensible defaults. All seven are documented in
-[docs/configuration.md](docs/configuration.md) and can be overridden via
-constructor arguments when instantiating `CalendarAgent`.
+The agent reads credentials from `config/config.json` (customisable via
+the `ROBOTSIX_CONFIG_FILE` environment variable).  See
+[Configuration](docs/configuration.md) for all settings and the config-file
+reference.  Settings can also be overridden via constructor arguments when
+instantiating `CalendarAgent`.
 
 ## Contributing
 
