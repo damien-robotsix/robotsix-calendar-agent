@@ -27,8 +27,6 @@ nav:
       - Basic:
           - Your First Agent: tutorials/basic/first-agent.md
           - Managing Calendar Events: agent/tutorials/manage-events.md
-      - Intermediate:
-          - Component-Agent Management: tutorials/intermediate/component-agent-management.md
   - Configuration: configuration.md
   - Code Reference:
       - reference/index.md

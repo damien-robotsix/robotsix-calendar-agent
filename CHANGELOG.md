@@ -7,6 +7,9 @@
   cause hard collection errors instead of silent warnings.
 - Refactor: extract repeated span-boilerplate from `_wrap_caldav_op` exception handlers into a `_record_and_raise` helper, eliminating ~20 lines of duplicate code.
 - Add missing `step-security/harden-runner` step to the `config-schema-drift` job in `ci.yml` and the `schema-drift` job in `config-schema-drift.yml`, for parity with all other hand-rolled jobs.
+- Removed the stale "Component-Agent Management" intermediate tutorial
+  (nav, index, and module registration) — the management plane was
+  decommissioned with the `robotsix-agent-comm` broker removal.
 - Migrate config from ``pydantic_settings.BaseSettings`` (env/.env) to ``robotsix_config.load_config`` (single ``config/config.json`` file, located only by ``ROBOTSIX_CONFIG_FILE``).
   Removed ``.env.example`` and ``pydantic-settings`` dependency; ``RADICALE_PASSWORD`` remains ``SecretStr`` but is now sourced from the JSON config file.
   Added ``config/config.schema.json`` and a CI drift check to keep it in sync with the ``Settings`` model.
