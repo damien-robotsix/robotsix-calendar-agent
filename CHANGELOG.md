@@ -5,6 +5,7 @@
 - Updated README and tutorial docs to reference `config/config.json` instead of stale `RADICALE_*` environment variables, matching the `robotsix_config` migration.
 - Enable `strict_markers = true` in pytest config so typo'd markers
   cause hard collection errors instead of silent warnings.
+- Refactor: extract repeated span-boilerplate from `_wrap_caldav_op` exception handlers into a `_record_and_raise` helper, eliminating ~20 lines of duplicate code.
 - Migrate config from ``pydantic_settings.BaseSettings`` (env/.env) to ``robotsix_config.load_config`` (single ``config/config.json`` file, located only by ``ROBOTSIX_CONFIG_FILE``).
   Removed ``.env.example`` and ``pydantic-settings`` dependency; ``RADICALE_PASSWORD`` remains ``SecretStr`` but is now sourced from the JSON config file.
   Added ``config/config.schema.json`` and a CI drift check to keep it in sync with the ``Settings`` model.

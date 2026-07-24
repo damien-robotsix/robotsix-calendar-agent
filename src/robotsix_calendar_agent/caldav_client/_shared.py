@@ -15,6 +15,7 @@ from typing import Any, TypeVar, cast
 
 import tenacity
 from opentelemetry import trace
+from opentelemetry.trace import Span
 from tenacity import (
     retry_if_exception,
     retry_if_exception_type,
@@ -171,6 +172,19 @@ def _unescape_text(value: str) -> str:
     return result
 
 
+def _record_and_raise(
+    exc: Exception,
+    error_code: str,
+    target_exc_cls: type[CalendarError],
+    message: str,
+    span: Span,
+) -> None:
+    span.set_attribute("caldav.error_code", error_code)
+    span.set_attribute("error", True)
+    span.record_exception(exc)
+    raise target_exc_cls(message) from exc
+
+
 def _wrap_caldav_op(op_name: str) -> Callable[[_F], _F]:
     """Wrap a method with retry logic and standard CalDAV error handling.
 
@@ -204,41 +218,30 @@ def _wrap_caldav_op(op_name: str) -> Callable[[_F], _F]:
                 except CalendarError:
                     raise
                 except self._caldav.lib.error.NotFoundError as exc:
-                    span.set_attribute("caldav.error_code", "not_found")
-                    span.set_attribute("error", True)
-                    span.record_exception(exc)
-                    raise NotFoundError(
-                        f"{op_name}: {exc}",
-                    ) from exc
+                    _record_and_raise(
+                        exc, "not_found", NotFoundError, f"{op_name}: {exc}", span
+                    )
                 except self._caldav.lib.error.RateLimitError as exc:
-                    span.set_attribute("caldav.error_code", "rate_limited")
-                    span.set_attribute("error", True)
-                    span.record_exception(exc)
-                    raise RateLimitError(
-                        f"{op_name}: {exc}",
-                    ) from exc
+                    _record_and_raise(
+                        exc, "rate_limited", RateLimitError, f"{op_name}: {exc}", span
+                    )
                 except self._caldav.lib.error.EtagMismatchError as exc:
-                    span.set_attribute("caldav.error_code", "conflict")
-                    span.set_attribute("error", True)
-                    span.record_exception(exc)
-                    raise ConflictError(
-                        f"{op_name}: {exc}",
-                    ) from exc
+                    _record_and_raise(
+                        exc, "conflict", ConflictError, f"{op_name}: {exc}", span
+                    )
                 except self._caldav.lib.error.AuthorizationError as exc:
-                    span.set_attribute("caldav.error_code", "auth_failed")
-                    span.set_attribute("error", True)
-                    span.record_exception(exc)
-                    raise AuthError(
-                        f"{op_name}: {exc}",
-                    ) from exc
+                    _record_and_raise(
+                        exc, "auth_failed", AuthError, f"{op_name}: {exc}", span
+                    )
                 except Exception as exc:
-                    span.set_attribute("caldav.error_code", "caldav_error")
-                    span.set_attribute("error", True)
-                    span.record_exception(exc)
                     logger.exception("%s failed: %s", func.__name__, exc)
-                    raise CalDAVError(
+                    _record_and_raise(
+                        exc,
+                        "caldav_error",
+                        CalDAVError,
                         f"Failed to {op_name}: {exc}",
-                    ) from exc
+                        span,
+                    )
 
         return cast(_F, wrapper)
 
