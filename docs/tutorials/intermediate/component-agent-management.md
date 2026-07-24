@@ -9,5 +9,5 @@
 
 ## Next steps
 
-- [Configuration](../../configuration.md) — complete environment variable
+- [Configuration](../../configuration.md) — complete configuration
   reference.

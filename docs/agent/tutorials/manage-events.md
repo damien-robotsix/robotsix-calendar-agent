@@ -5,7 +5,11 @@ This tutorial covers the four calendar-event operations —
 CalDAV client and intent parser directly.
 
 We assume you've completed [Your First Agent](../../tutorials/basic/first-agent.md) and have
+<<<<<<< HEAD
 `config/config.json` configured with your Radicale credentials.
+=======
+your `config/config.json` configured with Radicale credentials.
+>>>>>>> d3622ed (mill: Update README.md and docs/ after config migration from env vars to config.json (20260722T205416Z-update-readme-md-and-docs-after-config-m-8f70))
 
 ---
 

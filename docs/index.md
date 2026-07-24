@@ -110,6 +110,10 @@ See [Configuration](configuration.md) for the canonical config-file
 reference.  All settings — including the three required Radicale
 credentials — live in `config/config.json`.
 
+Four additional optional keys (`RADICALE_DEFAULT_CALENDAR`, `CALDAV_TIMEOUT`,
+`LOG_LEVEL`, `JSON_LOGS`) provide sensible defaults.  Copy
+`config/config.example.json` to `config/config.json` as a starting template.
+
 
 ### Constructor options (`CalendarAgent`)
 

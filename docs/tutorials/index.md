@@ -22,5 +22,5 @@ code blocks, fill in your credentials, and run.
 ---
 
 Looking for API details?  Head to [Code Reference](../reference/index.md).
-Need a complete list of environment variables?  See
+Need a complete list of configuration settings?  See
 [Configuration](../configuration.md).
