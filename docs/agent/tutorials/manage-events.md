@@ -9,6 +9,7 @@ We assume you've completed [Your First Agent](../../tutorials/basic/first-agent.
 `config/config.json` configured with your Radicale credentials.
 =======
 your `config/config.json` configured with Radicale credentials.
+>>>>>>> d3622ed (mill: Update README.md and docs/ after config migration from env vars to config.json ...)
 >>>>>>> d3622ed (mill: Update README.md and docs/ after config migration from env vars to config.json (20260722T205416Z-update-readme-md-and-docs-after-config-m-8f70))
 
 ---
