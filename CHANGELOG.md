@@ -1,6 +1,8 @@
 ## 0.0.0 (unreleased)
 
 
+- Fix unresolved merge conflict markers in `docs/agent/tutorials/manage-events.md`
+  and stale constructor-arguments claim in `README.md`.
 - Removed accidentally-committed 37 MB `core` binary (ruff executable) from git tracking and added `core` to `.gitignore` to prevent re-occurrence.
 - Updated README and tutorial docs to reference `config/config.json` instead of stale `RADICALE_*` environment variables, matching the `robotsix_config` migration.
 - Enable `strict_markers = true` in pytest config so typo'd markers
