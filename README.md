@@ -43,8 +43,7 @@ make all           # run all checks (default)
 The agent reads credentials from `config/config.json` (customisable via
 the `ROBOTSIX_CONFIG_FILE` environment variable).  See
 [Configuration](docs/configuration.md) for all settings and the config-file
-reference.  Settings can also be overridden via constructor arguments when
-instantiating `CalendarAgent`.
+reference.  The `llm_model_config` can also be provided via the `CalendarAgent` constructor.
 
 ## Contributing
 
