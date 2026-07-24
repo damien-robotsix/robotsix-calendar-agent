@@ -17,6 +17,9 @@ site/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+# Core dumps / binaries
+core
+
 # coverage data
 .coverage
 .coverage.*
